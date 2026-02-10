@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${producto.nombre} + ' | Sneakers Fever'">Detalle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/web/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .thumb-img { 
+            cursor: pointer; 
+            border: 2px solid transparent; 
+            transition: all 0.2s; 
+            width: 100%; 
+            aspect-ratio: 1/1; 
+            object-fit: cover; 
+            border-radius: 4px;
+        }
+        .thumb-img:hover, .thumb-img.active { border-color: #000; opacity: 0.8; }
+        
+        .main-image-container { 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            padding: 2rem; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+        }
+        .main-image-container img {
+            max-height: 500px;
+            max-width: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .main-image-container img:hover { transform: scale(1.05); }
+
+        .size-btn { border: 1px solid #ddd; background: white; color: #000; font-weight: 500; width: 100%; padding: 10px 0; transition: all 0.2s; }
+        .size-btn:hover { border-color: #000; }
+        .size-btn.active { background: #000; color: white; border-color: #000; }
+        
+        /* Scroll suave para las miniaturas si son muchas */
+        .thumbnails-wrapper {
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{web/navbar :: navbar('catalogo')}"></div>
+
+    <div class="container mt-5 pt-5 mb-5">
+        
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted">HOME</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/catalogo}" class="text-decoration-none text-muted">CATÁLOGO</a></li>
+                <li class="breadcrumb-item active text-dark fw-bold" aria-current="page" th:text="${producto.nombre}">NOMBRE</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-md-1 d-none d-md-block">
+                <div class="d-flex flex-column gap-2 thumbnails-wrapper pe-1">
+                    
+                    <img th:src="${producto.imagen}" 
+                         class="img-fluid thumb-img active" 
+                         onmouseover="cambiarImagen(this)"
+                         onerror="this.src='/web/images/placeholder.png'">
+
+                    <th:block th:if="${producto.imagenes != null and !producto.imagenes.isEmpty()}">
+                        <img th:each="imgUrl : ${producto.imagenes}" 
+                             th:src="${imgUrl}" 
+                             class="img-fluid thumb-img" 
+                             onmouseover="cambiarImagen(this)"
+                             onerror="this.style.display='none'">
+                    </th:block>
+
+                    <th:block th:if="${producto.imagenes == null or producto.imagenes.isEmpty()}">
+                        <img th:src="${producto.imagen}" class="img-fluid thumb-img" onmouseover="cambiarImagen(this)" style="filter: brightness(0.9)">
+                        <img th:src="${producto.imagen}" class="img-fluid thumb-img" onmouseover="cambiarImagen(this)" style="filter: grayscale(1)">
+                    </th:block>
+
+                </div>
+            </div>
+
+            <div class="col-md-7 mb-4">
+                <div class="main-image-container shadow-sm">
+                    <img id="mainImage" 
+                         th:src="${producto.imagen}" 
+                         class="img-fluid" 
+                         th:alt="${producto.nombre}"
+                         onerror="this.src='/web/images/placeholder.png'">
+                </div>
+            </div>
+
+            <div class="col-md-4 ps-md-4">
+                
+                <div class="mb-3">
+                    <span class="badge bg-dark mb-2" th:text="${producto.brand.nombre}">MARCA</span>
+                    <span class="badge bg-danger mb-2" th:if="${producto.descuento != null and producto.descuento > 0}">OFERTA</span>
+                    <h1 class="fw-bold text-uppercase h2" th:text="${producto.nombre}">NOMBRE PRODUCTO</h1>
+                    <p class="text-muted small" th:text="${producto.category.nombre}">CATEGORÍA</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h2 class="fw-bold d-inline-block me-2">S/ <span th:text="${#numbers.formatDecimal(producto.precio, 1, 2)}">0.00</span></h2>
+                    <span th:if="${producto.descuento != null and producto.descuento > 0}" 
+                          class="text-decoration-line-through text-muted fs-5">
+                        S/ <span th:text="${#numbers.formatDecimal(producto.precio / (1 - producto.descuento/100), 1, 2)}">0.00</span>
+                    </span>
+                </div>
+
+                <div class="alert alert-light border mb-4">
+                    <small class="text-muted">
+                        <i class="fas fa-truck me-1"></i> Envío gratis a todo el Perú.<br>
+                        <i class="fas fa-shield-alt me-1"></i> Garantía de tienda oficial.
+                    </small>
+                </div>
+
+                <p class="fw-bold mb-2 small">SELECCIONAR TALLA:</p>
+                <div class="row row-cols-4 g-2 mb-4" id="tallasContainer">
+                    <div class="col" th:each="talla : ${tallas}">
+                        <button class="btn size-btn" onclick="seleccionarTalla(this)" th:text="${talla}">US 7</button>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mb-4">
+                    <button class="btn btn-dark btn-lg py-3 shadow-sm" 
+                            th:onclick="'agregarAlCarrito(' + ${producto.id} + ')'"
+                            th:disabled="${producto.stock == 0}">
+                        <span th:if="${producto.stock > 0}">
+                            AGREGAR AL CARRITO <i class="fas fa-shopping-bag ms-2"></i>
+                        </span>
+                        <span th:if="${producto.stock == 0}">
+                            AGOTADO <i class="fas fa-times-circle ms-2"></i>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="accordion" id="accordionDesc">
+                    <div class="accordion-item border-0 border-bottom">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button bg-transparent shadow-none ps-0 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#descCollapse">
+                                DESCRIPCIÓN
+                            </button>
+                        </h2>
+                        <div id="descCollapse" class="accordion-collapse collapse show" data-bs-parent="#accordionDesc">
+                            <div class="accordion-body ps-0 text-muted" th:text="${producto.descripcion}">
+                                Descripción del producto...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/web/js/navbar.js}"></script>
+    <script th:src="@{/web/js/carrito.js}"></script>
+
+    <script>
+        // Cambiar imagen al pasar el mouse (efecto PRO)
+        function cambiarImagen(img) {
+            const mainImg = document.getElementById('mainImage');
+            
+            // Efecto de transición simple
+            mainImg.style.opacity = '0.8';
+            setTimeout(() => {
+                mainImg.src = img.src;
+                mainImg.style.opacity = '1';
+            }, 100);
+
+            document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
+            img.classList.add('active');
+        }
+
+        function seleccionarTalla(btn) {
+            document.querySelectorAll('.size-btn').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

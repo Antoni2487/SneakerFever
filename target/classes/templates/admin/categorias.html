@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Categorías</title>
+
+    <!-- CSS - Bootstrap y DataTables -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS personalizado -->
+    <link th:href="@{/admin/css/main.css}" rel="stylesheet">
+
+    <style>
+      /* tipografía y overlay ya provistos */
+      body { font-family: 'Inter', sans-serif; }
+      .loading-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 9999;
+      }
+
+      /* ==== Forzar alineación de tabla ==== */
+      #tablaCategorias th,
+      #tablaCategorias td {
+        vertical-align: middle !important;
+        text-align: center;
+        padding: .55rem .65rem; /* controla altura/cápsula */
+        white-space: nowrap; /* evita que los botones rompan la celda */
+      }
+
+      /* Columna de acciones centrada y con ancho controlado */
+      #tablaCategorias th:last-child,
+      #tablaCategorias td:last-child {
+        text-align: center;
+        width: 160px;
+        max-width: 220px;
+      }
+
+      /* Contenedor de botones: asegurar centrado vertical y gap pequeño */
+      #tablaCategorias td .d-flex {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem; /* pequeño espacio entre botones/switch */
+      }
+
+      /* Forzar el switch de bootstrap a comportarse inline y sin márgenes extra */
+      #tablaCategorias .form-check.form-switch {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        height: auto !important;
+      }
+
+      /* Reducir márgenes del input switch y ajustar tamaño visual */
+      #tablaCategorias .form-check-input {
+        margin: 0 !important;
+        vertical-align: middle !important;
+        transform: scale(0.92); /* ajusta tamaño del switch si es necesario */
+        line-height: 1 !important;
+      }
+
+      /* Botones: tamaño compacto, centrados y con iconos centrados */
+      #tablaCategorias .btn {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+      #tablaCategorias .btn .bi {
+        vertical-align: middle;
+        font-size: 1rem;
+      }
+
+      /* Asegurar que el switch y los botones no ocupen varias líneas */
+      #tablaCategorias td:last-child > .d-flex { white-space: nowrap; }
+
+      /* Responsive tweaks: en pantallas pequeñas permitir que la columna ajuste */
+      @media (max-width: 576px) {
+        #tablaCategorias th:last-child,
+        #tablaCategorias td:last-child {
+          width: auto;
+          max-width: none;
+        }
+        #tablaCategorias td .d-flex { gap: .25rem; }
+      }
+    </style>
+
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- Sidebar -->
+   <div th:replace="~{admin/sidebar :: sidebar(activeUri='/categorias')}"></div>
+
+
+    <!-- Main content -->
+    <main id="main-content" class="main-content w-100">
+        <!-- Top bar -->
+        <header class="p-3 mb-3 border-bottom bg-white shadow-sm">
+            <div class="d-flex align-items-center">
+                <h1 class="h3 mb-0 fw-bold">Gestión de Categorías</h1>
+                <button id="btnNuevoRegistro" class="btn btn-primary ms-auto">
+                    <i class="bi bi-plus-circle me-2"></i>Nueva Categoría
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <div class="container-fluid p-4">
+            <div class="card shadow-sm rounded-lg">
+                <div class="card-body">
+                    <h2 class="card-title h5 mb-4 fw-bold">Lista de Categorías</h2>
+
+                    <!-- Tabla -->
+                    <div class="table-responsive">
+                        <table id="tablaCategorias" class="table table-hover" style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre de la Categoría</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los datos serán cargados dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Formulario -->
+<div class="modal fade" id="categoriaModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Agregar Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCategoria" novalidate>
+                    <input type="hidden" id="id" name="id">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label for="nombre" class="form-label">Nombre de la Categoría:</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Ingrese el nombre de la categoría" required>
+                            <div id="nombre-error" class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="descripcion" class="form-label">Descripción (Opcional):</label>
+                            <textarea id="descripcion" name="descripcion" class="form-control" rows="3" placeholder="Descripción de la categoría"></textarea>
+                            <div id="descripcion-error" class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formCategoria" class="btn btn-primary">Guardar Categoría</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalles -->
+<div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="detalleModalTitle">
+                    <i class="bi bi-info-circle me-2"></i>Detalles de la Categoría
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary mb-3">
+                                    <i class="bi bi-tag me-2"></i>Información Básica
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold text-muted">ID:</label>
+                                        <p class="form-control-plaintext" id="detalle-id">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold text-muted">Estado:</label>
+                                        <p class="form-control-plaintext">
+                                            <span class="badge" id="detalle-estado-badge">-</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label fw-bold text-muted">Nombre:</label>
+                                        <p class="form-control-plaintext fw-semibold" id="detalle-nombre">-</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold text-muted">Descripción:</label>
+                                        <p class="form-control-plaintext" id="detalle-descripcion">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-success mb-3">
+                                    <i class="bi bi-clock-history me-2"></i>Información de Fechas
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-muted">
+                                            <i class="bi bi-calendar-plus text-success me-1"></i>Fecha de Creación:
+                                        </label>
+                                        <p class="form-control-plaintext" id="detalle-fecha-creacion">-</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-muted">
+                                            <i class="bi bi-calendar-check text-warning me-1"></i>Última Actualización:
+                                        </label>
+                                        <p class="form-control-plaintext" id="detalle-fecha-actualizacion">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnEditarDesdeDetalle">
+                    <i class="bi bi-pencil me-2"></i>Editar Categoría
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="notification-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<!-- Scripts en el orden correcto -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Scripts personalizados -->
+<script src="/admin/js/main.js"></script>
+<script src="/admin/js/categorias.js"></script>
+
+
+</body>
+</html>

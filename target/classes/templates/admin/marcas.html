@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Marcas</title>
+
+    <!-- Bootstrap & DataTables -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/admin/css/main.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div th:replace="~{admin/sidebar :: sidebar(activeUri='/marcas')}"></div>
+
+    <!-- Main -->
+    <main id="main-content" class="main-content w-100">
+        <header class="p-3 mb-3 border-bottom bg-white shadow-sm">
+            <div class="d-flex align-items-center">
+                <h1 class="h3 mb-0 fw-bold">Gestión de Marcas</h1>
+                <button id="btnNuevoRegistro" class="btn btn-primary ms-auto">
+                    <i class="bi bi-plus-circle me-2"></i>Nueva Marca
+                </button>
+            </div>
+            <div class="alert alert-warning mt-3 mb-0" role="alert">
+                ⚠️ <strong>Nota:</strong> Las imágenes que subas o modifiques aquí se mostrarán automáticamente
+                en la página principal, dentro de la sección <strong>"Marcas"</strong> del sitio web.
+            </div>
+        </header>
+
+        <div class="container-fluid p-4">
+            <!-- Tabla de marcas -->
+            <div class="card shadow-sm rounded-lg">
+                <div class="card-body">
+                    <h2 class="card-title h5 mb-4 fw-bold">Lista de Marcas</h2>
+                    <div class="table-responsive">
+                        <table id="tablaMarcas" class="table table-hover" style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Imagen</th>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Se cargan dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Formulario -->
+<div class="modal fade" id="marcaModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="bi bi-tag me-2"></i>Agregar Nueva Marca
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formMarca" novalidate>
+                    <!-- Campo oculto para ID -->
+                    <input type="hidden" id="marcaId" name="id">
+
+                    <!-- Nombre -->
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label fw-semibold">
+                            <i class="bi bi-tag-fill text-primary me-2"></i>Nombre de la Marca
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               id="nombre"
+                               name="nombre"
+                               class="form-control"
+                               placeholder="Ej: Nike, Adidas, Puma"
+                               required
+                               maxlength="100">
+                        <small class="form-text text-muted">
+                            Mínimo 2 caracteres, máximo 100
+                        </small>
+                    </div>
+
+                    <!-- Sistema de Imágenes -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-image text-success me-2"></i>Imagen de la Marca
+                        </label>
+
+                        <!-- Tabs personalizados (sin Bootstrap tabs) -->
+                        <div class="image-source-tabs mb-2">
+                            <button type="button"
+                                    class="image-source-tab active"
+                                    data-tab="url-tab">
+                                <i class="bi bi-link-45deg me-1"></i>URL
+                            </button>
+                            <button type="button"
+                                    class="image-source-tab"
+                                    data-tab="file-tab">
+                                <i class="bi bi-cloud-upload me-1"></i>Subir Archivo
+                            </button>
+                        </div>
+
+                        <!-- Contenido de los tabs -->
+                        <div class="tab-content-wrapper">
+                            <!-- Tab URL -->
+                            <div id="url-tab" class="tab-content-panel active">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-link"></i>
+                                    </span>
+                                    <input type="url"
+                                           id="imagenUrl"
+                                           class="form-control"
+                                           placeholder="https://ejemplo.com/imagen-marca.jpg">
+                                </div>
+                                <small class="form-text text-muted d-block mt-1">
+                                    Ingresa la URL de una imagen externa
+                                </small>
+                            </div>
+
+                            <!-- Tab Upload -->
+                            <div class="file-input-wrapper">
+                                <label for="imagenFile" class="file-input-label">
+                                    <i class="bi bi-cloud-upload"></i>
+                                    Seleccionar Imagen
+                                </label>
+                                <input type="file" id="imagenFile" name="imagen" accept="image/*">
+                            </div>
+                        </div>
+
+                        <!-- Contenedor de previews -->
+                        <div id="imagePreviewContainer" class="mt-3">
+                            <div id="imagePreviewPlaceholder" class="image-preview-placeholder">
+                                <i class="bi bi-image"></i>
+                                <p>Arrastra imágenes aquí o selecciona archivos</p>
+                                <small>Máximo 5 imágenes (5MB c/u)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Nota informativa -->
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <small>
+                            Los campos marcados con <span class="text-danger">*</span> son obligatorios.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                </button>
+                <button type="submit" form="formMarca" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>Guardar Marca
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor de notificaciones -->
+<div id="notification-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Scripts personalizados -->
+<script th:src="@{/admin/js/imagenes.js}"></script>
+<script th:src="@{/admin/js/marcas.js}"></script>
+<script th:src="@{/admin/js/main.js}"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Finalizar Compra | Sneakers Fever</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-chevron-left me-2"></i> Volver al catálogo
+            </a>
+            <span class="navbar-text fw-bold">FINALIZAR COMPRA</span>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${mensajeError}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <form th:action="@{/carrito/procesar}" method="POST" class="row g-4">
+            
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Datos de Facturación</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control bg-light" name="correo" 
+                                       th:value="${cliente.correo}" readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo Comprobante <span class="text-danger">*</span></label>
+                                <select class="form-select" name="tipoComprobanteStr" id="tipoComprobante" required>
+                                    <option value="BOLETA">Boleta de Venta</option>
+                                    <option value="FACTURA">Factura</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Documento (DNI/RUC) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="documento" id="documento"
+                                       th:value="${cliente.documento}" required 
+                                       pattern="[0-9]{8,11}" title="Ingrese 8 dígitos para DNI o 11 para RUC">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Nombre Completo / Razón Social <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="nombre" 
+                                       th:value="${cliente.nombre}" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Teléfono / Celular <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="telefono" 
+                                       th:value="${cliente.telefono}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm border-0 mt-3">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-credit-card me-2"></i>Método de Pago</h6>
+                        <div class="form-check p-3 border rounded bg-light">
+                            <input class="form-check-input" type="radio" name="metodoPago" id="pagoTarjeta" checked>
+                            <label class="form-check-label w-100" for="pagoTarjeta">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Tarjeta de Crédito / Débito (Simulado)</span>
+                                    <div>
+                                        <i class="fab fa-cc-visa fa-lg text-primary"></i>
+                                        <i class="fab fa-cc-mastercard fa-lg text-danger"></i>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="mb-0 fw-bold">Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                            <div th:each="item : ${session.carrito.items}" class="list-group-item p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <img th:src="${item.imagen}" class="rounded border" 
+                                             style="width: 60px; height: 60px; object-fit: cover;"
+                                             onerror="this.src='/web/images/placeholder.png'">
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-0 text-truncate" style="max-width: 200px;" th:text="${item.nombre}">Producto</h6>
+                                        <small class="text-muted">
+                                            <span th:text="${item.cantidad}">1</span> x S/ <span th:text="${item.precio}">100.00</span>
+                                        </small>
+                                    </div>
+                                    <div class="flex-shrink-0 fw-bold">
+                                        S/ <span th:text="${item.subtotal}">100.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light p-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="fw-bold">S/ <span th:text="${session.carrito.total}">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="text-muted">Envío</span>
+                            <span class="text-success fw-bold">Gratis</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3 mb-4">
+                            <span class="h5 fw-bold mb-0">Total a Pagar</span>
+                            <span class="h4 fw-bold text-primary mb-0">S/ <span th:text="${session.carrito.total}">0.00</span></span>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-dark w-100 btn-lg py-3 fw-bold shadow-sm">
+                            CONFIRMAR COMPRA <i class="fas fa-check-circle ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('tipoComprobante').addEventListener('change', function() {
+            const docInput = document.getElementById('documento');
+            if (this.value === 'FACTURA') {
+                docInput.setAttribute('pattern', '[0-9]{11}');
+                docInput.setAttribute('title', 'Para Factura se requiere RUC (11 dígitos)');
+                docInput.placeholder = 'Ingrese RUC (11 dígitos)';
+            } else {
+                docInput.setAttribute('pattern', '[0-9]{8,11}');
+                docInput.setAttribute('title', 'DNI (8) o RUC (11)');
+                docInput.placeholder = 'Ingrese DNI o RUC';
+            }
+        });
+    </script>
+
+</body>
+</html>

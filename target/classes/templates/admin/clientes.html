@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes</title>
+
+    <!-- CSS - Bootstrap y DataTables -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS personalizado -->
+    <link th:href="@{/admin/css/main.css}" rel="stylesheet">
+
+    <style>
+      /* tipografía y overlay ya provistos */
+      body { font-family: 'Inter', sans-serif; }
+      .loading-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 9999;
+      }
+
+      /* ==== Forzar alineación de tabla ==== */
+      #tablaClientes th,
+      #tablaClientes td {
+        vertical-align: middle !important;
+        text-align: center;
+        padding: .55rem .65rem;
+        white-space: nowrap;
+      }
+
+      /* Columna de acciones centrada y con ancho controlado */
+      #tablaClientes th:last-child,
+      #tablaClientes td:last-child {
+        text-align: center;
+        width: 160px;
+        max-width: 220px;
+      }
+
+      /* Contenedor de botones: asegurar centrado vertical y gap pequeño */
+      #tablaClientes td .d-flex {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+      }
+
+      /* Forzar el switch de bootstrap a comportarse inline y sin márgenes extra */
+      #tablaClientes .form-check.form-switch {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        height: auto !important;
+      }
+
+      /* Reducir márgenes del input switch y ajustar tamaño visual */
+      #tablaClientes .form-check-input {
+        margin: 0 !important;
+        vertical-align: middle !important;
+        transform: scale(0.92);
+        line-height: 1 !important;
+      }
+
+      /* Botones: tamaño compacto, centrados y con iconos centrados */
+      #tablaClientes .btn {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+      #tablaClientes .btn .bi {
+        vertical-align: middle;
+        font-size: 1rem;
+      }
+
+      /* Asegurar que el switch y los botones no ocupen varias líneas */
+      #tablaClientes td:last-child > .d-flex { white-space: nowrap; }
+
+      /* Responsive tweaks: en pantallas pequeñas permitir que la columna ajuste */
+      @media (max-width: 576px) {
+        #tablaClientes th:last-child,
+        #tablaClientes td:last-child {
+          width: auto;
+          max-width: none;
+        }
+        #tablaClientes td .d-flex { gap: .25rem; }
+      }
+
+      /* Estilos para el botón de consultar documento */
+      #btnConsultarDocumento {
+        height: 38px;
+      }
+
+      .input-group-documento {
+        position: relative;
+      }
+    </style>
+
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- Sidebar -->
+   <div th:replace="~{admin/sidebar :: sidebar(activeUri='/clientes')}"></div>
+
+
+    <!-- Main content -->
+    <main id="main-content" class="main-content w-100">
+        <!-- Top bar -->
+        <header class="p-3 mb-3 border-bottom bg-white shadow-sm">
+            <div class="d-flex align-items-center">
+                <h1 class="h3 mb-0 fw-bold">Gestión de Clientes</h1>
+                <button id="btnNuevoRegistro" class="btn btn-primary ms-auto">
+                    <i class="bi bi-plus-circle me-2"></i>Nuevo Cliente
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <div class="container-fluid p-4">
+            <div class="card shadow-sm rounded-lg">
+                <div class="card-body">
+                    <h2 class="card-title h5 mb-4 fw-bold">Lista de Clientes</h2>
+
+                    <!-- Tabla -->
+                    <div class="table-responsive">
+                        <table id="tablaClientes" class="table table-hover" style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Documento</th>
+                                    <th>Teléfono</th>
+                                    <th>Correo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los datos serán cargados dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Formulario -->
+<div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Agregar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCliente" novalidate>
+                    <input type="hidden" id="id" name="id">
+
+                    <!-- Sección: Consultar Documento -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary mb-3">
+                                <i class="bi bi-search me-2"></i>Consultar Documento (DNI/RUC)
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="documentoConsulta" class="form-label">Documento:</label>
+                                    <div class="input-group input-group-documento">
+                                        <input type="text"
+                                               id="documentoConsulta"
+                                               class="form-control"
+                                               placeholder="Ingrese DNI (8 dígitos) o RUC (11 dígitos)"
+                                               maxlength="11">
+                                        <button type="button"
+                                                id="btnConsultarDocumento"
+                                                class="btn btn-info">
+                                            <i class="bi bi-search me-2"></i>Consultar
+                                        </button>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Ingrese el documento y haga clic en "Consultar" para autocompletar el nombre
+                                    </small>
+                                    <div id="consulta-mensaje" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección: Datos del Cliente -->
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title text-success mb-3">
+                                <i class="bi bi-person-fill me-2"></i>Datos del Cliente
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="nombre" class="form-label">Nombre Completo / Razón Social: <span class="text-danger">*</span></label>
+                                    <input type="text"
+                                           id="nombre"
+                                           name="nombre"
+                                           class="form-control"
+                                           placeholder="Ingrese el nombre completo o razón social"
+                                           required>
+                                    <div id="nombre-error" class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="documento" class="form-label">Documento (DNI/RUC): <span class="text-danger">*</span></label>
+                                    <input type="text"
+                                           id="documento"
+                                           name="documento"
+                                           class="form-control"
+                                           placeholder="8 o 11 dígitos"
+                                           maxlength="11"
+                                           required>
+                                    <div id="documento-error" class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="telefono" class="form-label">Teléfono: <span class="text-danger">*</span></label>
+                                    <input type="text"
+                                           id="telefono"
+                                           name="telefono"
+                                           class="form-control"
+                                           placeholder="9 dígitos"
+                                           maxlength="9"
+                                           required>
+                                    <div id="telefono-error" class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="correo" class="form-label">Correo Electrónico (Opcional):</label>
+                                    <input type="email"
+                                           id="correo"
+                                           name="correo"
+                                           class="form-control"
+                                           placeholder="ejemplo@correo.com">
+                                    <div id="correo-error" class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            <small><strong>Nota:</strong> Los campos marcados con <span class="text-danger">*</span> son obligatorios.</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formCliente" class="btn btn-primary">Guardar Cliente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="notification-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<!-- Scripts en el orden correcto -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Scripts personalizados -->
+<script src="/admin/js/main.js"></script>
+<script src="/admin/js/clientes.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "informacion": {
+    "nombre": "SneackerFever Perú",
+    "eslogan": "La mejor web de sneakers en Perú",
+    "descripcion": "Somos la tienda líder en venta de calzado y accesorios en Perú. Más de 10 años brindando los mejores productos y servicio.",
+    "direccion": {
+      "calle": "Av. Balta 523",
+      "distrito": "Chiclayo",
+      "departamento": "Lambayeque",
+      "codigo_postal": "14001",
+      "pais": "Perú"
+    },
+    "contacto": {
+      "telefono": "+51 074 123 456",
+      "celular": "+51 987 654 321",
+      "email": "contacto@sneackerfever.pe",
+      "whatsapp": "+51987654321"
+    },
+    "horarios": {
+      "lunes_viernes": "9:00 AM - 7:00 PM",
+      "sabado": "10:00 AM - 5:00 PM",
+      "domingo": "Cerrado"
+    },
+    "redes_sociales": {
+      "facebook": "https://facebook.com/SneackerFeverperu",
+      "instagram": "https://instagram.com/SneackerFeverperu",
+      "twitter": "https://twitter.com/SneackerFeverperu",
+      "tiktok": "https://tiktok.com/@SneackerFeverperu"
+    },
+    "politicas": {
+      "envio_gratis_desde": 100,
+      "acepta_devoluciones": true,
+      "dias_devolucion": 7,
+      "garantia_minima_meses": 6
+    }
+  }
+}
