@@ -1,7 +1,5 @@
 # SneakerFever
-Tienda online de zapatillas, ropa y accesorios | Spring Boot + Thymeleaf | Proyecto académico UTP
-
-# SneakerFever
+Spring Boot + Thymeleaf | Proyecto académico UTP
 
 Tienda online de zapatillas, ropa y accesorios con marcas reconocidas.
 Proyecto académico desarrollado en la Universidad Tecnológica del Perú (UTP).
