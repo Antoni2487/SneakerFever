@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Personalización</title>
+
+    <!-- Bootstrap & Plugins -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    <link th:href="@{/admin/css/main.css}" rel="stylesheet">
+
+    <style>
+        /* Estilos para preview de imágenes con aspect ratio correcto */
+        .logo-preview-container {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .logo-preview {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .logo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .logo-preview-placeholder {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
+
+        .logo-preview-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .slide-preview-container {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .slide-preview {
+            aspect-ratio: 3 / 2;
+            width: 100%;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slide-preview-placeholder {
+            text-align: center;
+            color: #6c757d;
+            padding: 15px;
+        }
+
+        .slide-preview-placeholder i {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .slide-card {
+            height: 100%;
+            transition: transform 0.2s;
+        }
+
+        .slide-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+        }
+
+        .slide-order-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(13, 110, 253, 0.9);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 1;
+        }
+
+        .marca-info {
+            background: #e7f1ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .marca-info.empty {
+            background: #fff3cd;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 10px 15px;
+            background: #0d6efd;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #0b5ed7;
+        }
+
+        .file-input-label i {
+            margin-right: 8px;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div th:replace="~{admin/sidebar :: sidebar(activeUri='/personalizacion')}"></div>
+
+    <!-- Main -->
+    <main id="main-content" class="main-content w-100">
+        <header class="p-3 mb-3 border-bottom bg-white shadow-sm">
+            <div class="d-flex align-items-center">
+                <h1 class="h3 mb-0 fw-bold">
+                    <i class="bi bi-palette me-2 text-primary"></i>Centro de Personalización
+                </h1>
+            </div>
+            <div class="alert alert-info mt-3 mb-0" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Información:</strong> Aquí puedes configurar el logo y los slides del carrusel principal de tu sitio web.
+                <br><small>Logo: 500x500px sin fondo | Slides: 1080x720px | Máximo 5 slides</small>
+            </div>
+        </header>
+
+        <div class="container-fluid p-4">
+
+            <!-- Sección Logo -->
+            <div class="card shadow-sm rounded-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0 fw-bold">
+                        <i class="bi bi-star-fill me-2"></i>Logo del Sitio
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <div class="logo-preview-container">
+                                <div id="logoPreview" class="logo-preview">
+                                    <div class="logo-preview-placeholder">
+                                        <i class="bi bi-image"></i>
+                                        <p class="mb-0">Sin logo</p>
+                                        <small>500x500px sin fondo</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="fw-bold mb-3">Gestión del Logo</h5>
+                            <p class="text-muted">
+                                El logo se mostrará en la cabecera de tu sitio web.
+                                Asegúrate de usar una imagen con fondo transparente en formato PNG.
+                            </p>
+
+                            <div class="file-input-wrapper mb-3">
+                                <label for="logoFile" class="file-input-label">
+                                    <i class="bi bi-cloud-upload"></i>
+                                    Subir Nuevo Logo
+                                </label>
+                                <input type="file" id="logoFile" accept="image/png,image/jpeg,image/jpg,image/webp">
+                            </div>
+
+                            <button id="btnEliminarLogo" class="btn btn-danger" disabled>
+                                <i class="bi bi-trash me-2"></i>Eliminar Logo
+                            </button>
+
+                            <div class="alert alert-warning mt-3 mb-0" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <small><strong>Recomendación:</strong> Usa formato PNG con fondo transparente para mejor visualización.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección Slides -->
+            <div class="card shadow-sm rounded-lg">
+                <div class="card-header bg-success text-white">
+                    <h2 class="h5 mb-0 fw-bold">
+                        <i class="bi bi-images me-2"></i>Slides del Carrusel Principal
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Configura hasta 5 slides para el carrusel principal. Cada slide puede estar asociado a una marca
+                        y redirigirá al catálogo de productos al hacer clic.
+                    </p>
+
+                    <div class="row g-4" id="slidesContainer">
+                        <!-- Los slides se cargarán dinámicamente aquí -->
+                        <!-- Ejemplo de estructura de un slide: -->
+                        <!--
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card slide-card shadow-sm">
+                                <div class="card-body">
+                                    <div class="slide-preview-container">
+                                        <div class="slide-preview">
+                                            <div class="slide-order-badge">1</div>
+                                            <div class="slide-preview-placeholder">
+                                                <i class="bi bi-image"></i>
+                                                <p class="mb-0">Slide vacío</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="marca-info empty mb-3">
+                                        <i class="bi bi-tag me-2"></i>
+                                        <span>Sin marca asignada</span>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary btn-sm">
+                                            <i class="bi bi-cloud-upload me-2"></i>Subir Imagen
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-tag me-2"></i>Asignar Marca
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" disabled>
+                                            <i class="bi bi-trash me-2"></i>Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Modal Asignar Marca -->
+<div class="modal fade" id="modalAsignarMarca" tabindex="-1" aria-labelledby="modalAsignarMarcaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalAsignarMarcaLabel">
+                    <i class="bi bi-tag me-2"></i>Asignar Marca al Slide
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="slideOrdenModal">
+
+                <div class="mb-3">
+                    <label for="selectMarca" class="form-label fw-semibold">
+                        Selecciona una marca:
+                    </label>
+                    <select id="selectMarca" class="form-select" style="width: 100%;">
+                        <option value="">Sin marca</option>
+                        <!-- Las marcas se cargan dinámicamente -->
+                    </select>
+                    <small class="form-text text-muted">
+                        Al hacer clic en el slide, se redirigirá al catálogo de productos de la marca seleccionada.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                </button>
+                <button type="button" id="btnGuardarMarca" class="btn btn-success">
+                    <i class="bi bi-check-circle me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor de notificaciones -->
+<div id="notification-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Scripts personalizados -->
+<script th:src="@{/admin/js/imagenes.js}"></script>
+<script th:src="@{/admin/js/personalizacion.js}"></script>
+<script th:src="@{/admin/js/main.js}"></script>
+</body>
+</html>

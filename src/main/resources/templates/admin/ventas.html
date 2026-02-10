@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Ventas y Créditos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link th:href="@{/admin/css/main.css}" rel="stylesheet">
+    <style>
+        .main-tabs {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 2rem;
+        }
+        .main-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6c757d;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+        .main-tabs .nav-link:hover {
+            color: #0d6efd;
+            border-bottom-color: #0d6efd;
+            background-color: transparent;
+        }
+        .main-tabs .nav-link.active {
+            color: #0d6efd;
+            border-bottom-color: #0d6efd;
+            background-color: transparent;
+        }
+        .main-tabs .nav-link i {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .filter-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            height: 100%;
+        }
+        .filter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        }
+        .filter-card.active {
+            border-color: #0d6efd;
+            box-shadow: 0 0.5rem 1rem rgba(13,110,253,0.25);
+        }
+        .filter-card .card-body {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .filter-card .icon-wrapper {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .filter-card .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        .filter-card .count {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Estilos para tabla del modal */
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8f9fa !important;
+        }
+
+        #tablaProductosModal tbody tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #tablaProductosModal tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Estilos para inputs de cantidad en tabla */
+        .input-cantidad-detalle {
+            max-width: 80px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div th:replace="~{admin/sidebar :: sidebar(activeUri='/ventas-creditos')}"></div>
+
+    <!-- Main content -->
+    <main id="main-content" class="main-content w-100">
+        <!-- Top bar -->
+        <header class="p-3 mb-3 border-bottom bg-white shadow-sm">
+            <div class="d-flex align-items-center">
+                <h1 class="h3 mb-0 fw-bold">Gestión de Ventas y Créditos</h1>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <div class="container-fluid p-4">
+
+            <!-- TABS PRINCIPALES -->
+            <ul class="nav nav-tabs main-tabs" id="mainTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-ventas" data-bs-toggle="tab"
+                            data-bs-target="#panel-ventas" type="button" role="tab">
+                        <i class="bi bi-cart-check"></i>Ventas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-creditos" data-bs-toggle="tab"
+                            data-bs-target="#panel-creditos" type="button" role="tab">
+                        <i class="bi bi-credit-card"></i>Créditos
+                    </button>
+                </li>
+            </ul>
+
+            <!-- CONTENIDO DE LOS TABS -->
+            <div class="tab-content" id="mainTabsContent">
+
+                <!-- ==================== PANEL VENTAS ==================== -->
+                <div class="tab-pane fade show active" id="panel-ventas" role="tabpanel">
+                    <div class="fade-in">
+                        <!-- Estadísticas de Ventas -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card shadow-sm stats-card border-primary">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-calendar-day text-primary fs-3"></i>
+                                        <h6 class="text-muted mt-2">Ventas Hoy</h6>
+                                        <h3 class="mb-0 text-primary" id="ventas-hoy">S/ 0.00</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card shadow-sm stats-card border-success">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-calendar-week text-success fs-3"></i>
+                                        <h6 class="text-muted mt-2">Ventas Semana</h6>
+                                        <h3 class="mb-0 text-success" id="ventas-semana">S/ 0.00</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card shadow-sm stats-card border-info">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-calendar-month text-info fs-3"></i>
+                                        <h6 class="text-muted mt-2">Ventas Mes</h6>
+                                        <h3 class="mb-0 text-info" id="ventas-mes">S/ 0.00</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card shadow-sm stats-card border-warning">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-receipt text-warning fs-3"></i>
+                                        <h6 class="text-muted mt-2">Total Ventas</h6>
+                                        <h3 class="mb-0 text-warning" id="ventas-total">0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón Nueva Venta -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0"><i class="bi bi-list-ul me-2"></i>Lista de Ventas</h4>
+                            <button id="btnNuevaVenta" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Nueva Venta
+                            </button>
+                        </div>
+
+                        <!-- Tabla de Ventas -->
+                        <div class="card shadow-sm rounded-lg">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="tablaVentas" class="table table-hover" style="width:100%">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Comprobante</th>
+                                                <th>Cliente</th>
+                                                <th>Forma Pago</th>
+                                                <th>Total</th>
+                                                <th>Estado</th>
+                                                <th>Fecha</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Datos cargados dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== PANEL CRÉDITOS ==================== -->
+                <div class="tab-pane fade" id="panel-creditos" role="tabpanel">
+                    <div class="fade-in">
+                        <!-- Filtros de Créditos (Cards Clickeables) -->
+                        <div class="row mb-4" id="filtrosCreditosContainer">
+                            <div class="col-md-4">
+                                <div class="card filter-card active shadow-sm border-success" data-filter="activos" id="tabActivos">
+                                    <div class="card-body">
+                                        <div class="icon-wrapper">
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                        </div>
+                                        <h6 class="text-muted">Créditos Activos</h6>
+                                        <div class="amount text-success" id="monto-activos">S/ 0.00</div>
+                                        <div class="count">
+                                            <span id="count-activos">0</span> créditos
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card filter-card shadow-sm border-danger" data-filter="vencidos" id="tabVencidos">
+                                    <div class="card-body">
+                                        <div class="icon-wrapper">
+                                            <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                                        </div>
+                                        <h6 class="text-muted">Créditos Vencidos</h6>
+                                        <div class="amount text-danger" id="monto-vencidos">S/ 0.00</div>
+                                        <div class="count">
+                                            <span id="count-vencidos">0</span> créditos
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card filter-card shadow-sm border-warning" data-filter="proximos" id="tabProximosVencer">
+                                    <div class="card-body">
+                                        <div class="icon-wrapper">
+                                            <i class="bi bi-clock-fill text-warning"></i>
+                                        </div>
+                                        <h6 class="text-muted">Próximos a Vencer</h6>
+                                        <div class="amount text-warning" id="monto-proximos">S/ 0.00</div>
+                                        <div class="count">
+                                            <span id="count-proximos">0</span> créditos
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Créditos -->
+                        <div class="card shadow-sm rounded-lg">
+                            <div class="card-body">
+                                <h4 class="card-title mb-4">
+                                    <i class="bi bi-list-check me-2"></i>
+                                    <span id="tituloTablaCreditos">Créditos Activos</span>
+                                </h4>
+                                <div class="table-responsive">
+                                    <table id="tablaCreditosActivos" class="table table-hover" style="width:100%">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Comprobante</th>
+                                                <th>Cliente</th>
+                                                <th>Monto Total</th>
+                                                <th>Pagado</th>
+                                                <th>Saldo</th>
+                                                <th>Progreso</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Datos cargados dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ==================== MODAL NUEVA VENTA ==================== -->
+<div class="modal fade" id="ventaModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="bi bi-cart-plus me-2"></i>Nueva Venta
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formVenta" novalidate>
+                    <div class="row g-3">
+                        <!-- Sección Cliente -->
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="bi bi-person-circle me-2"></i>Datos del Cliente</h6>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="documento_cliente" class="form-label">Documento del Cliente:</label>
+                            <div class="input-group">
+                                <input type="text" id="documento_cliente" class="form-control" placeholder="DNI o RUC">
+                                <button type="button" id="buscarCliente" class="btn btn-outline-primary">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-12" id="clienteSeleccionado"></div>
+
+                        <!-- Tipo de Comprobante y Forma de Pago -->
+                        <div class="col-md-4">
+                            <label for="tipo_comprobante" class="form-label">Tipo Comprobante:</label>
+                            <select id="tipo_comprobante" class="form-select" required>
+                                <option value="BOLETA">Boleta</option>
+                                <option value="FACTURA">Factura</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="serie" class="form-label">Serie</label>
+                            <input type="text" id="serie" class="form-control" readonly>
+                          </div>
+                          <div class="col-md-4">
+                            <label for="numero_venta" class="form-label">Número</label>
+                            <input type="text" id="numero_venta" class="form-control" readonly>
+                          </div>
+                        <div class="col-md-4">
+                            <label for="forma_pago" class="form-label">Forma de Pago:</label>
+                            <select id="forma_pago" class="form-select" required>
+                                <option value="CONTADO">Contado</option>
+                                <option value="CREDITO">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="forma_pago_detalle" class="form-label">Detalle:</label>
+                            <select id="billetera_pago" class="form-select">
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="YAPE">Yape</option>
+                                <option value="PLIN">Plin</option>
+                                <option value="TARJETA">Tarjeta</option>
+                            </select>
+                        </div>
+
+                        <!-- Sección Crédito (oculta por defecto) -->
+                        <div class="col-12 seccion-credito" style="display: none;">
+                            <h6 class="text-warning mb-3"><i class="bi bi-credit-card me-2"></i>Configuración del Crédito</h6>
+                        </div>
+
+                        <div class="col-md-4 seccion-credito" style="display: none;">
+                            <label for="monto_inicial" class="form-label">Monto Inicial (S/):</label>
+                            <input type="number" id="monto_inicial" class="form-control" step="0.01" min="0" value="0">
+                        </div>
+
+                        <div class="col-md-4 seccion-credito" style="display: none;">
+                            <label for="numero_cuotas" class="form-label">Número de Cuotas:</label>
+                            <input type="number" id="numero_cuotas" class="form-control" min="1" value="1">
+                        </div>
+                        <div class="col-md-4 seccion-credito" style="display: none;">
+                            <label for="intervalo_cuotas" class="form-label">Intervalo:</label>
+                            <select id="intervalo_cuotas" class="form-select">
+                                <option value="SEMANAL">Semanal</option>
+                                <option value="QUINCENAL">Quincenal</option>
+                                <option value="MENSUAL">Mensual</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 seccion-credito" style="display: none;">
+                            <label for="interes_porcentaje" class="form-label">Interés (%):</label>
+                            <input type="number" id="interes_porcentaje" class="form-control" step="0.01" min="0" value="0">
+                        </div>
+                        <!-- Cronograma de Pagos (solo visible en crédito) -->
+                        <div class="col-12 seccion-credito" style="display: none;">
+                            <div class="card border-warning mt-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Cronograma de Pagos</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="cronogramaPagos" class="table-responsive">
+                                        <p class="text-muted text-center">Configure el crédito para ver el cronograma</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón para abrir modal de productos -->
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="bi bi-box-seam me-2"></i>Productos de la Venta</h6>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <button type="button" id="btnBuscarProductos" class="btn btn-success">
+                                <i class="bi bi-plus-circle me-2"></i>Buscar y Agregar Productos
+                            </button>
+                        </div>
+
+                        <!-- Tabla de Detalles -->
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Producto</th>
+                                            <th class="text-center" style="width: 120px;">Cantidad</th>
+                                            <th class="text-end">Precio</th>
+                                            <th class="text-center">Desc.</th>
+                                            <th class="text-end">Subtotal</th>
+                                            <th class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detallesVentaBody">
+                                        <tr>
+                                            <td colspan="7" class="text-center">No hay productos agregados</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Totales -->
+                        <div class="col-md-8">
+                            <label for="descuento_general" class="form-label">Descuento General (%):</label>
+                            <input type="number" id="descuento_general" class="form-control" step="0.01" min="0" max="100" value="0">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Subtotal:</span>
+                                        <strong id="subtotalDisplay">S/ 0.00</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Descuento:</span>
+                                        <strong id="descuentoDisplay">S/ 0.00</strong>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="h5 mb-0">TOTAL:</span>
+                                        <strong class="h5 mb-0 text-primary" id="totalDisplay">S/ 0.00</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="col-12">
+                            <label for="observaciones" class="form-label">Observaciones:</label>
+                            <textarea id="observaciones" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <button type="submit" form="formVenta" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i>Guardar Venta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL LISTA DE PRODUCTOS ==================== -->
+<div class="modal fade" id="modalProductos" tabindex="-1" aria-labelledby="productosModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="productosModalTitle">
+          <i class="bi bi-box-seam me-2"></i>Seleccionar Producto
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+        <div class="modal-body">
+            <!-- Barra de búsqueda -->
+            <div class="mb-3">
+                <input type="text" id="buscarProductoInput" class="form-control"
+                       placeholder="🔍 Buscar producto por código o nombre...">
+            </div>
+
+            <!-- Tabla de productos disponibles -->
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table id="tablaProductosModal" class="table table-hover align-middle" style="width:100%">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Datos cargados dinámicamente con AJAX -->
+                    </tbody>
+                </table>
+            </div>
+
+            <hr>
+
+            <!-- Lista de productos seleccionados (temporal) -->
+            <div id="contadorProductosSeleccionados" class="alert alert-info text-center mb-0">
+                <i class="bi bi-cart-check me-2"></i>
+                <strong>Productos seleccionados: <span id="numeroProductosSeleccionados">0</span></strong>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Cancelar
+            </button>
+            <button type="button" id="btnConfirmarProductos" class="btn btn-primary">
+                <i class="bi bi-check-circle me-1"></i>Agregar Productos
+            </button>
+        </div>
+     </div>
+   </div>
+</div>
+
+
+<!-- ==================== MODAL REGISTRAR PAGO ==================== -->
+<div class="modal fade" id="pagoModal" tabindex="-1" aria-labelledby="pagoModalTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="pagoModalTitle">
+                    <i class="bi bi-cash-stack me-2"></i>Registrar Pago
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="infoCredito" class="mb-3"></div>
+                <form id="formPago" novalidate>
+                    <input type="hidden" id="credito_id">
+                    <input type="hidden" id="cuota_id">
+
+                    <div class="mb-3">
+                        <label for="monto_pagado" class="form-label">Monto a Pagar: <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">S/</span>
+                            <input type="number" id="monto_pagado" class="form-control" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="forma_pago_detalle" class="form-label">Forma de Pago:</label>
+                        <select id="forma_pago_detalle" class="form-select">
+                            <option value="EFECTIVO">Efectivo</option>
+                            <option value="YAPE">Yape</option>
+                            <option value="PLIN">Plin</option>
+                            <option value="TARJETA">Tarjeta</option>
+                            <option value="TRANSFERENCIA">Transferencia</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="numero_operacion" class="form-label">Número de Operación:</label>
+                        <input type="text" id="numero_operacion" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observaciones_pago" class="form-label">Observaciones:</label>
+                        <textarea id="observaciones_pago" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <button type="submit" form="formPago" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>Registrar Pago
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- TUS SCRIPTS - IMPORTANTE: MANTENER ESTE ORDEN -->
+<script th:src="@{/admin/js/ventas.js}"></script>
+<script th:src="@{/admin/js/creditos.js}"></script>
+<script th:src="@{/admin/js/main.js}"></script>
+</body>
+</html>

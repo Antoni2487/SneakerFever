@@ -1,0 +1,1141 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: #f8f8f8;
+}
+
+/* ==================== SWIPER SLIDER ==================== */
+.swiper {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  aspect-ratio: 1920 / 600;
+}
+
+.swiper-slide img {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+}
+
+@media (max-width: 1440px) {
+  .swiper {
+    height: 500px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .swiper {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .swiper {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .swiper {
+    height: 200px;
+  }
+}
+
+/* ==================== SEPARADORES ==================== */
+.separador {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #222;
+  margin: 60px auto 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0 40px; /* Mismo padding que el contenido */
+}
+
+.separador::before {
+  content: '';
+  flex: 1;
+  max-width: 1500px; /* MÁS LARGO */
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #333, transparent);
+}
+
+.separador::after {
+  content: '';
+  flex: 1;
+  max-width: 1500px; /* MÁS LARGO */
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #333, transparent);
+}
+
+/* Responsive separadores */
+@media (max-width: 1024px) {
+  .separador {
+    padding: 0 30px;
+  }
+  
+  .separador::before,
+  .separador::after {
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .separador {
+    font-size: 1.5rem;
+    gap: 20px;
+    padding: 0 20px;
+  }
+  
+  .separador::before,
+  .separador::after {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .separador {
+    font-size: 1.2rem;
+    gap: 15px;
+    padding: 0 15px;
+  }
+  
+  .separador::before,
+  .separador::after {
+    max-width: 200px;
+  }
+}
+
+/* ==================== ALINEACIÓN GLOBAL ==================== */
+/* Todas las secciones con el mismo ancho y padding */
+.Novedades,
+.destacados {
+  width: 100%;
+  max-width: 1920px; /* Mismo que el slider */
+  margin: 0 auto;
+  padding: 40px 40px; /* Padding uniforme */
+  box-sizing: border-box;
+}
+
+/* ==================== NOVEDADES - CARTAS ==================== */
+.contenedor-gif {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.gif-novedades {
+    flex: 1;
+    max-height: 500px;
+    width: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Responsive Novedades */
+@media (max-width: 1440px) {
+    .Novedades,
+    .destacados {
+        padding: 40px 30px;
+    }
+    
+    .contenedor-gif {
+        gap: 18px;
+    }
+    
+    .gif-novedades {
+        max-height: 450px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .Novedades,
+    .destacados {
+        padding: 30px 30px;
+    }
+    
+    .contenedor-gif {
+        gap: 15px;
+    }
+    
+    .gif-novedades {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .Novedades,
+    .destacados {
+        padding: 30px 20px;
+    }
+    
+    .contenedor-gif {
+        gap: 12px;
+    }
+    
+    .gif-novedades {
+        max-height: 350px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Novedades,
+    .destacados {
+        padding: 20px 15px;
+    }
+    
+    .contenedor-gif {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .gif-novedades {
+        flex: 0 0 calc(50% - 5px);
+        max-height: 250px;
+    }
+}
+
+/* ==================== DESTACADOS ==================== */
+/* Contenedor de pestañas */
+.tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 40px 0 30px 0;
+    flex-wrap: wrap;
+}
+
+/* Botones de pestañas */
+.tab-button {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 15px 35px;
+    background: #f5f5f5;
+    border: none;
+    border-right: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #999;
+    letter-spacing: 1px;
+    position: relative;
+    text-shadow: 
+        1px 1px 2px rgba(255, 255, 255, 0.8),
+        -1px -1px 2px rgba(0, 0, 0, 0.1);
+    clip-path: polygon(
+        0 0,
+        calc(100% - 10px) 0,
+        100% 100%,
+        10px 100%
+    );
+    margin-right: -5px;
+}
+
+.tab-button:first-child {
+    clip-path: polygon(
+        0 0,
+        calc(100% - 10px) 0,
+        100% 100%,
+        0 100%
+    );
+}
+
+.tab-button:last-child {
+    border-right: none;
+    clip-path: polygon(
+        0 0,
+        100% 0,
+        100% 100%,
+        10px 100%
+    );
+}
+
+.tab-button:hover {
+    background: #eaeaea;
+    color: #666;
+    transform: translateY(-3px);
+    z-index: 1;
+    text-shadow: 
+        2px 2px 3px rgba(255, 255, 255, 0.9),
+        -1px -1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.tab-button.active {
+    background: #fff;
+    color: #222;
+    transform: translateY(-5px);
+    z-index: 2;
+    text-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.15),
+        -1px -1px 2px rgba(255, 255, 255, 1),
+        0 0 20px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Contenido de las pestañas */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Grid de productos - SIN padding extra, ya está en la sección */
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    width: 100%;
+    margin: 0;
+}
+
+/* Tarjeta de producto - CUADRADA */
+.producto-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.producto-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Imagen del producto - CUADRADA */
+.producto-imagen {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.producto-imagen img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.producto-card:hover .producto-imagen img {
+    transform: scale(1.03);
+}
+
+/* Badge de descuento */
+.descuento-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff4444;
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 2;
+}
+
+/* Información del producto */
+.producto-info {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.producto-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.producto-marca {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Precios */
+.producto-precio {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.precio-original {
+    font-size: 14px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.precio-actual {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* Precio en ROJO solo si hay descuento */
+.producto-card:has(.descuento-badge) .precio-actual {
+    color: #ff4444;
+}
+
+/* Link sin decoración */
+.producto-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* No destacados */
+.no-destacados {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #999;
+  font-size: 1.1rem;
+}
+
+/* Responsive productos */
+@media (max-width: 1024px) {
+    .productos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tabs-container {
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .tab-button {
+        font-size: 14px;
+        padding: 12px 25px;
+    }
+    
+    .productos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+    
+    .producto-info h4 {
+        font-size: 14px;
+    }
+    
+    .precio-actual {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-button {
+        font-size: 13px;
+        padding: 10px 20px;
+        clip-path: none;
+        margin-right: 0;
+        border-right: 1px solid #e0e0e0;
+    }
+    
+    .productos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .producto-info {
+        padding: 12px;
+    }
+    
+    .producto-info h4 {
+        font-size: 13px;
+    }
+    
+    .precio-actual {
+        font-size: 15px;
+    }
+    
+    .descuento-badge {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+}
+/* BOTÓN VER MÁS */
+.ver-mas-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 50px 0;
+    padding: 20px;
+}
+
+.btn-ver-mas {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px 40px;
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 2px;
+    border: 2px solid #ffffff;
+    transition: all 0.4s ease;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-ver-mas span {
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+}
+
+.btn-ver-mas .arrow-container {
+    position: relative;
+    width: 24px;
+    height: 20px;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.btn-ver-mas .arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.4s ease;
+    font-size: 18px;
+}
+
+.btn-ver-mas .arrow:first-child {
+    left: 0;
+}
+
+.btn-ver-mas .arrow:last-child {
+    left: -30px;
+    opacity: 0;
+}
+
+/* Efecto hover */
+.btn-ver-mas:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    color: #000000;
+    border-color: #000000;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.btn-ver-mas:hover span {
+    transform: translateX(-5px);
+}
+
+.btn-ver-mas:hover .arrow:first-child {
+    left: 30px;
+    opacity: 0;
+}
+
+.btn-ver-mas:hover .arrow:last-child {
+    left: 0;
+    opacity: 1;
+}
+
+/* Efecto de onda al hacer clic */
+.btn-ver-mas::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-ver-mas:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .btn-ver-mas {
+        padding: 18px 35px;
+        font-size: 14px;
+        letter-spacing: 1.5px;
+        gap: 12px;
+    }
+    
+    .btn-ver-mas .arrow {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ver-mas-container {
+        margin: 30px 0;
+    }
+    
+    .btn-ver-mas {
+        padding: 16px 30px;
+        font-size: 13px;
+        letter-spacing: 1px;
+    }
+}
+/* ============================================
+   ZAPATILLAS DEL MES
+   ============================================ */
+
+.zapatillas-mes {
+    position: relative;
+    min-height: 700px;
+    padding: 80px 20px;
+    overflow: hidden;
+    margin: 60px 0;
+}
+
+/* Fondo de graffiti */
+.zapatillas-mes-fondo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/web/images/grafiti.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    transition: opacity 0.5s ease, filter 0.5s ease;
+    filter: brightness(0.8) contrast(1.1);
+}
+
+/* Efecto de opacidad al hover en una zapatilla */
+.zapatillas-mes:has(.zapatilla-card:hover) .zapatillas-mes-fondo {
+    opacity: 0.3;
+    filter: brightness(0.5) blur(3px);
+}
+
+/* Overlay oscuro */
+.zapatillas-mes::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%);
+    z-index: 2;
+}
+
+.zapatillas-mes-content {
+    position: relative;
+    z-index: 3;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Título */
+.zapatillas-mes-titulo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: #ffffff;
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-align: center;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+}
+
+.titulo-linea {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #fff, transparent);
+}
+
+.zapatillas-mes-subtitulo {
+    text-align: center;
+    color: #ddd;
+    font-size: 18px;
+    margin-bottom: 50px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Swiper personalizado - MÁS PADDING PARA QUE NO SE RECORTEN LAS CARTAS */
+.mySwiper2 {
+    padding: 60px 80px 80px;
+    overflow: visible !important;
+}
+
+.mySwiper2 .swiper-wrapper {
+    padding: 20px 0;
+}
+
+.mySwiper2 .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    width: 400px !important; /* Ancho fijo para cada slide */
+}
+
+/* Card de zapatilla - SIN ANIMACIÓN DE FLOTACIÓN */
+.zapatilla-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 40px 30px 30px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.zapatilla-card:hover {
+    transform: translateY(-20px) scale(1.05);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+}
+
+/* Número de ranking */
+.zapatilla-numero {
+    position: absolute;
+    top: -20px;
+    left: 20px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    box-shadow: 0 5px 15px rgba(238, 90, 111, 0.5);
+    z-index: 10;
+}
+
+/* Contenedor de imagen - MEJOR CONFIGURACIÓN PARA MOSTRAR IMÁGENES */
+.zapatilla-imagen-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    overflow: visible;
+    background: transparent;
+}
+
+.zapatilla-imagen {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
+    transition: transform 0.5s ease;
+}
+
+.zapatilla-card:hover .zapatilla-imagen {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+/* Info de la zapatilla */
+.zapatilla-info {
+    text-align: center;
+}
+
+.zapatilla-marca {
+    color: #888;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.zapatilla-nombre {
+    color: #222;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    line-height: 1.3;
+}
+
+/* Precios */
+.zapatilla-precio-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.zapatilla-precio-original {
+    color: #999;
+    font-size: 16px;
+    text-decoration: line-through;
+}
+
+.zapatilla-precio-actual {
+    color: #000;
+    font-size: 26px;
+    font-weight: 800;
+}
+
+/* Botón */
+.zapatilla-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 30px;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.zapatilla-btn:hover {
+    background: #333;
+    transform: translateX(5px);
+    color: #fff;
+}
+
+.zapatilla-btn i {
+    transition: transform 0.3s ease;
+}
+
+.zapatilla-btn:hover i {
+    transform: translateX(5px);
+}
+
+/* Badge de descuento */
+.zapatilla-descuento-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+    z-index: 10;
+}
+
+/* Navegación personalizada - SOLO PAGINACIÓN */
+.swiper-nav-custom {
+    display: none !important;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    display: none !important;
+}
+
+/* Paginación OCULTA */
+.swiper-pagination-custom {
+    display: none !important;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet {
+    display: none;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet-active {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .zapatillas-mes {
+        min-height: 600px;
+        padding: 60px 10px;
+    }
+    
+    .zapatillas-mes-titulo {
+        font-size: 28px;
+        gap: 10px;
+    }
+    
+    .titulo-linea {
+        width: 40px;
+    }
+    
+    .zapatillas-mes-subtitulo {
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+    
+    .mySwiper2 {
+        padding: 50px 60px 60px;
+    }
+    
+    .zapatilla-card {
+        padding: 30px 20px 20px;
+    }
+    
+    .zapatilla-imagen-container {
+        height: 200px;
+    }
+    
+    .zapatilla-nombre {
+        font-size: 18px;
+    }
+    
+    .zapatilla-precio-actual {
+        font-size: 22px;
+    }
+    
+    .swiper-nav-custom {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .swiper-button-next {
+        right: 10px;
+    }
+    
+    .swiper-button-prev {
+        left: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .zapatillas-mes-titulo {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .titulo-linea {
+        display: none;
+    }
+    
+    .zapatilla-numero {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        top: -15px;
+    }
+    
+    .mySwiper2 {
+        padding: 40px 50px 50px;
+    }
+}
+
+/* FOOTER STYLES */
+.main-footer {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 3rem 0 1.5rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid #333333;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.footer-column h4 {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #333333;
+    padding-bottom: 0.5rem;
+}
+
+.footer-column p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+    color: #cccccc;
+}
+
+.footer-column p strong {
+    color: #ffffff;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.footer-column p em {
+    color: #999999;
+    font-style: normal;
+}
+
+.footer-column ul {
+    padding: 0;
+    margin: 0;
+}
+
+.footer-column ul li {
+    margin-bottom: 0.7rem;
+}
+
+.footer-column ul li a {
+    color: #cccccc;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-column ul li a:hover {
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+.footer-logos {
+    margin-top: 1rem;
+    gap: 0.8rem;
+}
+
+.footer-logos img {
+    height: 35px;
+    width: auto;
+    object-fit: contain;
+    background: white;
+    padding: 5px;
+    border-radius: 5px;
+    transition: transform 0.3s ease;
+}
+
+.footer-logos img:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-column {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .footer-column h4 {
+        font-size: 1.1rem;
+    }
+    
+    .footer-logos {
+        justify-content: center;
+    }
+}
+
+/* ==================== BOTÓN WHATSAPP ==================== */
+.btn-flotante {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #25D366;
+  color: white;
+  font-size: 24px;
+  width: 60px;  /* Ancho fijo */
+  height: 60px; /* Alto fijo igual al ancho */
+  display: flex; /* Para centrar el ícono */
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0px 4px 10px rgba(37, 211, 102, 0.4);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  animation: saltar 2s ease-in-out infinite; /* Animación de rebote */
+}
+
+.btn-flotante:hover {
+  transform: scale(1.15);
+  color: white;
+  box-shadow: 0px 6px 15px rgba(37, 211, 102, 0.6);
+  animation: none; /* Detiene la animación al pasar el mouse */
+}
+
+/* Animación de salto */
+@keyframes saltar {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Efecto de pulso opcional (alternativa al salto) */
+@keyframes pulso {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0px 4px 10px rgba(37, 211, 102, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0px 6px 20px rgba(37, 211, 102, 0.7);
+  }
+}
+
+/* Si prefieres el efecto pulso, cambia la línea 14 a: */
+/* animation: pulso 2s ease-in-out infinite; */

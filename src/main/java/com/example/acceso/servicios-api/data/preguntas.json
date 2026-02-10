@@ -1,0 +1,34 @@
+{
+  "preguntas_frecuentes": [
+    {
+      "id": 1,
+      "categoria": "Envíos",
+      "pregunta": "¿Cuál es el tiempo de entrega?",
+      "respuesta": "Las entregas en Lima se realizan en 24-48 horas. Para provincias, el tiempo es de 3-5 días hábiles."
+    },
+    {
+      "id": 2,
+      "categoria": "Devoluciones",
+      "pregunta": "¿Aceptan devoluciones?",
+      "respuesta": "Sí, tienes 7 días calendario para devolver el producto en perfectas condiciones. El producto debe estar sin uso y con su empaque original."
+    },
+    {
+      "id": 3,
+      "categoria": "Pagos",
+      "pregunta": "¿Qué métodos de pago aceptan?",
+      "respuesta": "Aceptamos tarjetas de crédito/débito (Visa, MasterCard), transferencias bancarias, Yape y Plin."
+    },
+    {
+      "id": 4,
+      "categoria": "Garantía",
+      "pregunta": "¿Los productos tienen garantía?",
+      "respuesta": "Todos nuestros productos tienen garantía del fabricante. El período varía según el producto (6 meses a 2 años)."
+    },
+    {
+      "id": 5,
+      "categoria": "Envíos",
+      "pregunta": "¿Cuál es el costo de envío?",
+      "respuesta": "Envío gratis en compras mayores a S/100 en Lima. Para provincias, el costo varía según la ubicación (S/15 - S/25)."
+    }
+  ]
+}

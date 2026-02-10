@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sneakers Fever</title>
+    <meta name="description" content="Tienda de zapatillas urbanas de moda. Compra Nike, Adidas, New Balance y más.">
+    <meta name="keywords" content="Sneakers, Zapatillas, Moda urbana, Adidas, Nike, Perú">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/web/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="icon" th:href="@{/web/images/favicon.png}" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body>
+
+<!-- NAVBAR  -->
+<div th:replace="~{web/navbar :: navbar('/index')}"></div>
+
+<!-- BOTÓN WHATSAPP -->
+<a href="https://wa.me/51993903939?text=Hola%20Sneackers%20Fever!%20Tengo%20una%20duda."
+   class="btn-flotante"
+   target="_blank"
+   aria-label="Atención al cliente por WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+</a>
+
+<main>
+    <!-- SLIDER DINÁMICO -->
+    <div class="swiper mySwiper1">
+        <div class="swiper-wrapper">
+            <!-- Slides desde base de datos (solo si hay al menos 2 con imagen) -->
+            <th:block th:if="${siteSlides != null and siteSlides.size() >= 2}">
+                <div class="swiper-slide"
+                     th:each="slide : ${siteSlides}"
+                     th:if="${slide.imagenUrl != null and !slide.imagenUrl.isEmpty()}">
+                    <!-- Si el slide tiene marca asignada, hacer clic redirige al catálogo -->
+                    <a th:if="${slide.marca != null}"
+                       th:href="@{/catalogo(marca=${slide.marca.id})}"
+                       style="display: block; cursor: pointer;">
+                        <img th:src="${slide.imagenUrl}"
+                             th:alt="'Slide ' + ${slide.orden}"
+                             onerror="this.src='/web/images/no-image.png'">
+                    </a>
+                    <!-- Si no tiene marca, solo mostrar imagen -->
+                    <img th:if="${slide.marca == null}"
+                         th:src="${slide.imagenUrl}"
+                         th:alt="'Slide ' + ${slide.orden}"
+                         onerror="this.src='/web/images/no-image.png'">
+                </div>
+            </th:block>
+
+            <!-- Fallback: Si hay menos de 2 slides, mostrar imágenes por defecto -->
+            <th:block th:if="${siteSlides == null or siteSlides.size() < 2}">
+                <div class="swiper-slide">
+                    <img th:src="@{/web/images/1.png}" alt="Zapatilla modelo 1">
+                </div>
+                <div class="swiper-slide">
+                    <img th:src="@{/web/images/2.png}" alt="Zapatilla modelo 2">
+                </div>
+                <div class="swiper-slide">
+                    <img th:src="@{/web/images/3.png}" alt="Zapatilla modelo 3">
+                </div>
+                <div class="swiper-slide">
+                    <img th:src="@{/web/images/4.png}" alt="Zapatilla modelo 4">
+                </div>
+                <div class="swiper-slide">
+                    <img th:src="@{/web/images/5.png}" alt="Zapatilla modelo 5">
+                </div>
+                <div class="swiper-slide">
+                    <img th:src="@{/web/images/6.png}" alt="Zapatilla modelo 6">
+                </div>
+            </th:block>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+
+        <!-- NOVEDADES -->
+    <section class="Novedades">
+        <h2 class="separador">NOVEDADES</h2>
+        <div class="contenedor-gif">
+            <img th:src="@{/web/images/adidas.gif}" alt="Novedades Adidas" class="gif-novedades">
+            <img th:src="@{/web/images/nike.gif}" alt="Novedades Nike" class="gif-novedades">
+            <img th:src="@{/web/images/nb.gif}" alt="Novedades New Balance" class="gif-novedades">
+            <img th:src="@{/web/images/jordan.gif}" alt="Novedades Jordan" class="gif-novedades">
+        </div>
+    </section>
+
+    <!-- DESTACADOS -->
+<section class="destacados">
+    <h2 class="separador">DESTACADOS</h2>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
+    <div class="tabs-container">
+        <button class="tab-button active" data-tab="zapatillas">Zapatillas</button>
+        <button class="tab-button" data-tab="ropa">Ropa</button>
+        <button class="tab-button" data-tab="accesorios">Accesorios</button>
+    </div>
+
+    <!-- ZAPATILLAS -->
+    <div class="tab-content active" id="zapatillas" th:if="${not #lists.isEmpty(zapatillas)}">
+        <div class="productos-grid">
+            <div th:each="producto, iterStat : ${zapatillas}"
+                 th:if="${iterStat.index < 8}"
+                 class="producto-card">
+                <a th:href="@{/producto/{id}(id=${producto.id})}" class="producto-link">
+                    <div class="producto-imagen">
+                        <img th:src="@{${producto.imagen}}"
+                             th:alt="${producto.nombre}"
+                             onerror="this.src='/web/images/placeholder.png'">
+
+                        <span th:if="${producto.descuento != null and producto.descuento > 0}"
+                              class="descuento-badge">
+                            -<span th:text="${#numbers.formatDecimal(producto.descuento, 1, 0)}">10</span>%
+                        </span>
+                    </div>
+                </a>
+
+                <div class="producto-info">
+                    <h4 th:text="${producto.nombre}">Nombre del Producto</h4>
+                    <p class="producto-marca" th:text="${producto.brand.nombre}">Marca</p>
+
+                    <div class="producto-precio">
+                        <span th:if="${producto.descuento != null and producto.descuento > 0}"
+                              class="precio-original">
+                            S/. <span th:text="${#numbers.formatDecimal(producto.precio, 1, 2)}">100.00</span>
+                        </span>
+
+                        <span class="precio-actual">
+                            S/. <span th:text="${producto.descuento != null and producto.descuento > 0 ?
+                                  #numbers.formatDecimal(producto.precio * (1 - producto.descuento / 100), 1, 2) :
+                                  #numbers.formatDecimal(producto.precio, 1, 2)}">90.00</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROPA -->
+    <div class="tab-content" id="ropa" th:if="${not #lists.isEmpty(ropa)}">
+        <div class="productos-grid">
+            <div th:each="producto, iterStat : ${ropa}"
+                 th:if="${iterStat.index < 8}"
+                 class="producto-card">
+                <a th:href="@{/producto/{id}(id=${producto.id})}" class="producto-link">
+                    <div class="producto-imagen">
+                        <img th:src="@{${producto.imagen}}"
+                             th:alt="${producto.nombre}"
+                             onerror="this.src='/web/images/placeholder.png'">
+
+                        <span th:if="${producto.descuento != null and producto.descuento > 0}"
+                              class="descuento-badge">
+                            -<span th:text="${#numbers.formatDecimal(producto.descuento, 1, 0)}">10</span>%
+                        </span>
+                    </div>
+                </a>
+
+                <div class="producto-info">
+                    <h4 th:text="${producto.nombre}">Nombre del Producto</h4>
+                    <p class="producto-marca" th:text="${producto.brand.nombre}">Marca</p>
+
+                    <div class="producto-precio">
+                        <span th:if="${producto.descuento != null and producto.descuento > 0}"
+                              class="precio-original">
+                            S/. <span th:text="${#numbers.formatDecimal(producto.precio, 1, 2)}">100.00</span>
+                        </span>
+
+                        <span class="precio-actual">
+                            S/. <span th:text="${producto.descuento != null and producto.descuento > 0 ?
+                                  #numbers.formatDecimal(producto.precio * (1 - producto.descuento / 100), 1, 2) :
+                                  #numbers.formatDecimal(producto.precio, 1, 2)}">90.00</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCESORIOS -->
+    <div class="tab-content" id="accesorios" th:if="${not #lists.isEmpty(accesorios)}">
+        <div class="productos-grid">
+            <div th:each="producto, iterStat : ${accesorios}"
+                 th:if="${iterStat.index < 8}"
+                 class="producto-card">
+                <a th:href="@{/producto/{id}(id=${producto.id})}" class="producto-link">
+                    <div class="producto-imagen">
+                        <img th:src="@{${producto.imagen}}"
+                             th:alt="${producto.nombre}"
+                             onerror="this.src='/web/images/placeholder.png'">
+
+                        <span th:if="${producto.descuento != null and producto.descuento > 0}"
+                              class="descuento-badge">
+                            -<span th:text="${#numbers.formatDecimal(producto.descuento, 1, 0)}">10</span>%
+                        </span>
+                    </div>
+                </a>
+
+                <div class="producto-info">
+                    <h4 th:text="${producto.nombre}">Nombre del Producto</h4>
+                    <p class="producto-marca" th:text="${producto.brand.nombre}">Marca</p>
+
+                    <div class="producto-precio">
+                        <span th:if="${producto.descuento != null and producto.descuento > 0}"
+                              class="precio-original">
+                            S/. <span th:text="${#numbers.formatDecimal(producto.precio, 1, 2)}">100.00</span>
+                        </span>
+
+                        <span class="precio-actual">
+                            S/. <span th:text="${producto.descuento != null and producto.descuento > 0 ?
+                                  #numbers.formatDecimal(producto.precio * (1 - producto.descuento / 100), 1, 2) :
+                                  #numbers.formatDecimal(producto.precio, 1, 2)}">90.00</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- Mensaje si no hay destacados -->
+        <div th:if="${#lists.isEmpty(zapatillas) and #lists.isEmpty(ropa) and #lists.isEmpty(accesorios)}"
+             class="no-destacados">
+            <p>No hay productos destacados en este momento</p>
+        </div>
+    </section>
+    <!-- BOTÓN VER MÁS -->
+    <div class="ver-mas-container">
+        <a th:href="@{/catalogo}" class="btn-ver-mas">
+            <span>VER MÁS</span>
+            <div class="arrow-container">
+                <i class="fas fa-arrow-right arrow"></i>
+                <i class="fas fa-arrow-right arrow"></i>
+            </div>
+        </a>
+    </div>
+
+    <!-- ZAPATILLAS DEL MES -->
+
+<section class="zapatillas-mes">
+    <div class="zapatillas-mes-fondo"></div>
+    
+    <div class="zapatillas-mes-content">
+        <h2 class="zapatillas-mes-titulo">
+            <span class="titulo-linea"></span>
+            ZAPATILLAS DEL MES
+            <span class="titulo-linea"></span>
+        </h2>
+        <p class="zapatillas-mes-subtitulo">Las más vendidas de la temporada</p>
+        
+        <div class="swiper mySwiper2">
+            <div class="swiper-wrapper">
+                <!-- Zapatillas dinámicas desde backend -->
+                <div class="swiper-slide" th:each="zapatilla, iterStat : ${zapatillasMasVendidas}" th:if="${iterStat.index < 5}">
+                    <div class="zapatilla-card">
+                        <div class="zapatilla-numero" th:text="${'#' + (iterStat.index + 1)}">
+                            #1
+                        </div>
+                        
+                        <div class="zapatilla-imagen-container">
+                            <img th:src="@{${zapatilla.imagen}}" 
+                                 th:alt="${zapatilla.nombre}"
+                                 class="zapatilla-imagen"
+                                 onerror="this.src='/web/images/placeholder.png'">
+                        </div>
+                        
+                        <div class="zapatilla-info">
+                            <p class="zapatilla-marca" th:text="${zapatilla.brand.nombre}">Marca</p>
+                            <h3 class="zapatilla-nombre" th:text="${zapatilla.nombre}">Nombre Zapatilla</h3>
+                            
+                            <div class="zapatilla-precio-container">
+                                <span th:if="${zapatilla.descuento != null and zapatilla.descuento > 0}"
+                                      class="zapatilla-precio-original">
+                                    S/. <span th:text="${#numbers.formatDecimal(zapatilla.precio, 1, 2)}">100.00</span>
+                                </span>
+                                
+                                <span class="zapatilla-precio-actual">
+                                    S/. <span th:text="${zapatilla.descuento != null and zapatilla.descuento > 0 ?
+                                          #numbers.formatDecimal(zapatilla.precio * (1 - zapatilla.descuento / 100), 1, 2) :
+                                          #numbers.formatDecimal(zapatilla.precio, 1, 2)}">90.00</span>
+                                </span>
+                            </div>
+                            
+                            <a th:href="@{/producto/{id}(id=${zapatilla.id})}" class="zapatilla-btn">
+                                VER PRODUCTO
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                        
+                        <span th:if="${zapatilla.descuento != null and zapatilla.descuento > 0}"
+                              class="zapatilla-descuento-badge">
+                            -<span th:text="${#numbers.formatDecimal(zapatilla.descuento, 1, 0)}">10</span>%
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Fallback si no hay zapatillas -->
+                <th:block th:if="${zapatillasMasVendidas == null or #lists.isEmpty(zapatillasMasVendidas)}">
+                    <div class="swiper-slide">
+                        <div class="zapatilla-card">
+                            <div class="zapatilla-numero">#1</div>
+                            <div class="zapatilla-imagen-container">
+                                <img th:src="@{/web/images/placeholder.png}" alt="Zapatilla 1" class="zapatilla-imagen">
+                            </div>
+                            <div class="zapatilla-info">
+                                <p class="zapatilla-marca">Nike</p>
+                                <h3 class="zapatilla-nombre">Air Jordan 1 Retro</h3>
+                                <div class="zapatilla-precio-container">
+                                    <span class="zapatilla-precio-actual">S/. 499.00</span>
+                                </div>
+                                <a href="#" class="zapatilla-btn">VER PRODUCTO <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="zapatilla-card">
+                            <div class="zapatilla-numero">#2</div>
+                            <div class="zapatilla-imagen-container">
+                                <img th:src="@{/web/images/placeholder.png}" alt="Zapatilla 2" class="zapatilla-imagen">
+                            </div>
+                            <div class="zapatilla-info">
+                                <p class="zapatilla-marca">Adidas</p>
+                                <h3 class="zapatilla-nombre">Yeezy Boost 350</h3>
+                                <div class="zapatilla-precio-container">
+                                    <span class="zapatilla-precio-actual">S/. 599.00</span>
+                                </div>
+                                <a href="#" class="zapatilla-btn">VER PRODUCTO <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="zapatilla-card">
+                            <div class="zapatilla-numero">#3</div>
+                            <div class="zapatilla-imagen-container">
+                                <img th:src="@{/web/images/placeholder.png}" alt="Zapatilla 3" class="zapatilla-imagen">
+                            </div>
+                            <div class="zapatilla-info">
+                                <p class="zapatilla-marca">New Balance</p>
+                                <h3 class="zapatilla-nombre">550 White Green</h3>
+                                <div class="zapatilla-precio-container">
+                                    <span class="zapatilla-precio-actual">S/. 449.00</span>
+                                </div>
+                                <a href="#" class="zapatilla-btn">VER PRODUCTO <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+            
+            <!-- Navegación -->
+            <div class="swiper-button-next swiper-nav-custom"></div>
+            <div class="swiper-button-prev swiper-nav-custom"></div>
+            <div class="swiper-pagination swiper-pagination-custom"></div>
+        </div>
+    </div>
+</section>
+<section class="faq-section container mt-5 mb-5" th:if="${listaPreguntas != null}">
+        <h2 class="separador">PREGUNTAS FRECUENTES</h2>
+        
+        <div class="accordion shadow-sm" id="accordionHome">
+            <div class="accordion-item" th:each="preg, stat : ${listaPreguntas}">
+                <h2 class="accordion-header" th:id="'headingHome' + ${stat.index}">
+                    <button class="accordion-button collapsed" type="button" 
+                            data-bs-toggle="collapse" 
+                            th:data-bs-target="'#collapseHome' + ${stat.index}">
+                        <strong th:text="${preg.pregunta}">¿Pregunta?</strong>
+                    </button>
+                </h2>
+                <div th:id="'collapseHome' + ${stat.index}" class="accordion-collapse collapse" 
+                     data-bs-parent="#accordionHome">
+                    <div class="accordion-body text-muted" th:text="${preg.respuesta}">
+                        Respuesta...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="main-footer bg-dark text-white mt-5 pt-4">
+    <div class="footer-container container row row-cols-1 row-cols-md-5 g-4">
+        <div class="footer-column col">
+            <h4>TIENDAS</h4>
+            <p><strong>FLAGSHIP ACACIAS</strong><br><em>Miraflores - Lima</em></p>
+            <p><strong>TIENDA JOCKEY PLAZA</strong><br><em>Surco - Lima</em></p>
+            <p><strong>TIENDA SAN BORJA</strong><br><em>San Borja - Lima</em></p>
+        </div>
+        <div class="footer-column col">
+            <h4>CUENTA</h4>
+            <ul class="list-unstyled">
+                <li><a href="#" class="text-white">Mi Cuenta</a></li>
+                <li><a href="#" class="text-white">Registrarme</a></li>
+                <li><a href="#" class="text-white">Soporte</a></li>
+                <li><a href="#" class="text-white">Estado de pedido</a></li>
+                <li><a href="#"><img th:src="@{/web/images/libro-reclamaciones.jpg}" alt="Libro de Reclamaciones" width="100"></a></li>
+            </ul>
+        </div>
+        <div class="footer-column col">
+            <h4>INFORMACIÓN</h4>
+            <ul class="list-unstyled">
+                <li><a href="#" class="text-white">Nosotros</a></li>
+                <li><a href="#" class="text-white">Políticas</a></li>
+                <li><a href="#" class="text-white">Términos y condiciones</a></li>
+                <li><a th:href="@{/contacto}" class="text-white">Contáctanos</a></li>
+            </ul>
+        </div>
+        <div class="footer-column col">
+            <h4>REDES SOCIALES</h4>
+            <ul class="list-unstyled">
+                <li><a href="#" class="text-white">Instagram</a></li>
+                <li><a href="#" class="text-white">Facebook</a></li>
+                <li><a href="#" class="text-white">YouTube</a></li>
+            </ul>
+        </div>
+        <div class="footer-column col">
+            <h4>ÚNETE A NUESTRO EQUIPO</h4>
+            <p><a href="#" class="text-white">Trabaja con nosotros</a></p>
+            <p><strong>SNEACKERS FEVER:</strong><br>
+                RUC: 20602981658<br>
+                Razón Social: SNEACKERS FEVER S.A.C.</p>
+            <div class="footer-logos d-flex flex-wrap gap-2">
+                <img th:src="@{/web/images/izipay.png}" alt="izipay">
+                <img th:src="@{/web/images/mastercard.png}" alt="mastercard">
+                <img th:src="@{/web/images/visa.png}" alt="visa">
+                <img th:src="@{/web/images/sello-cuotasinintereses.png}" alt="6 cuotas">
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script th:src="@{/web/js/script.js}"></script>
+<script th:src="@{/web/js/navbar.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/web/js/carrito.js}"></script>
+
+</body>
+</html>

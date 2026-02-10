@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Perfiles</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link th:href="@{/admin/css/main.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="d-flex">
+
+    <div th:replace="~{admin/sidebar :: sidebar(activeUri='/usuarios/listar')}"></div>
+
+    <!-- Main content -->
+    <main id="main-content" class="main-content w-100">
+        <!-- Top bar -->
+        <header class="p-3 mb-3 border-bottom bg-white shadow-sm">
+            <div class="d-flex align-items-center">
+                <h1 class="h3 mb-0 fw-bold">Gestión de Perfiles</h1>
+                <button id="btnNuevoRegistro" class="btn btn-primary ms-auto">
+                    Nuevo Perfil
+                </button>
+            </div>
+        </header>
+
+        <!-- Tabla de Datos Dinámica -->
+        <div class="container-fluid p-4">
+            <div class="card shadow-sm rounded-lg">
+                <div class="card-body">
+                    <h2 class="card-title h5 mb-4 fw-bold">Lista de Perfiles</h2>
+                    <table id="tablaPerfiles" class="table table-hover responsive" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Los datos serán cargados dinámicamente por DataTables -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Formulario para Perfil -->
+<div class="modal fade" id="perfilModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Agregar Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formPerfil" novalidate>
+                    <input type="hidden" id="id" name="id">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Perfil:</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" required>
+                        <div id="nombre-error" class="invalid-feedback d-block"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción:</label>
+                        <textarea id="descripcion" name="descripcion" class="form-control" rows="3"></textarea>
+                        <div id="descripcion-error" class="invalid-feedback d-block"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formPerfil" class="btn btn-primary">Guardar Perfil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Permisos -->
+<div class="modal fade" id="permisosModal" tabindex="-1" aria-labelledby="permisosModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="permisosModalLabel">Asignar Permisos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formPermisos">
+                    <input type="hidden" id="permisoPerfilId">
+                    <p>Seleccione los módulos a los que tendrá acceso el perfil <strong id="permisoPerfilNombre"></strong>:</p>
+                    <div id="listaOpciones" class="list-group">
+                        <!-- Las opciones se cargarán aquí dinámicamente -->
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btnGuardarPermisos" class="btn btn-primary">Guardar Permisos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Contenedor para notificaciones Toast -->
+<div id="notification-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script th:src="@{/admin/js/perfiles.js}"></script>
+<script th:src="@{/admin/js/main.js}"></script>
+</body>
+</html>

@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+</head>
+<body>
+    <div th:fragment="navbar(activeUri)">
+      <button id="open-navbar-mobile" class="hamburger-dynamic d-lg-none" aria-label="Abrir menú">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <div id="navbar-overlay" class="navbar-overlay"></div>
+
+      <nav id="navbar" class="navbar-dynamic">
+        <div class="navbar-container">
+          <div class="navbar-left">
+            <a class="navbar-logo" th:href="@{/}">
+              <img th:src="${siteLogo}" alt="Sneakers Fever Logo" onerror="this.src='/web/images/logo.png'" />
+            </a>
+          </div>
+
+          <div class="navbar-links d-none d-lg-flex">
+            <div class="nav-dropdown">
+              <a href="#" class="nav-link">
+                HOMBRE <i class="fas fa-chevron-down nav-arrow"></i>
+              </a>
+              <div class="dropdown-content">
+                <a th:href="@{/catalogo}" class="dropdown-item filter-nav" data-category="hombre" data-subcategory="zapatillas">
+                  <i class="fas fa-shoe-prints"></i> Zapatillas
+                </a>
+                <a th:href="@{/catalogo}" class="dropdown-item filter-nav" data-category="hombre" data-subcategory="ropa">
+                  <i class="fas fa-tshirt"></i> Ropa
+                </a>
+                <a th:href="@{/catalogo}" class="dropdown-item filter-nav" data-category="hombre" data-subcategory="accesorios">
+                  <i class="fas fa-bag-shopping"></i> Accesorios
+                </a>
+              </div>
+            </div>
+
+            <div class="nav-dropdown">
+              <a href="#" class="nav-link">
+                MUJER <i class="fas fa-chevron-down nav-arrow"></i>
+              </a>
+              <div class="dropdown-content">
+                <a th:href="@{/catalogo}" class="dropdown-item filter-nav" data-category="mujer" data-subcategory="zapatillas">
+                  <i class="fas fa-shoe-prints"></i> Zapatillas
+                </a>
+                <a th:href="@{/catalogo}" class="dropdown-item filter-nav" data-category="mujer" data-subcategory="ropa">
+                  <i class="fas fa-tshirt"></i> Ropa
+                </a>
+                <a th:href="@{/catalogo}" class="dropdown-item filter-nav" data-category="mujer" data-subcategory="accesorios">
+                  <i class="fas fa-bag-shopping"></i> Accesorios
+                </a>
+              </div>
+            </div>
+
+            <div class="nav-dropdown brands-dropdown">
+              <a href="#" class="nav-link">
+                MARCAS <i class="fas fa-chevron-down nav-arrow"></i>
+              </a>
+              <div class="dropdown-content brands-grid">
+                <a th:each="marca : ${marcas}" th:href="@{/catalogo}" class="brand-item filter-nav" th:data-brand="${marca.nombre}">
+                  <img th:src="${marca.imagen}" th:alt="${marca.nombre}" th:title="${marca.nombre}" onerror="this.src='/web/images/placeholder.png'" />
+                </a>
+              </div>
+            </div>
+
+            <a th:href="@{/catalogo}" class="nav-link sale-link filter-nav" data-sale="true">
+              <span class="sale-badge">SALE</span>
+            </a>
+          </div>
+
+          <div class="navbar-right d-none d-lg-flex">
+            <div class="search-container">
+              <button class="search-toggle" id="search-toggle">
+                <i class="fas fa-search"></i>
+              </button>
+              <form class="search-form" id="search-form" th:action="@{/catalogo}" method="get">
+                <input type="search" name="q" placeholder="Buscar productos..." aria-label="Buscar" />
+                <button type="submit">
+                  <i class="fas fa-arrow-right"></i>
+                </button>
+              </form>
+            </div>
+
+            <div class="navbar-actions">
+              <a th:href="@{/login}" class="action-btn" data-tooltip="Mi Cuenta">
+                <i class="fa-solid fa-user"></i>
+              </a>
+              
+              <a href="#" class="action-btn cart-btn" data-tooltip="Carrito" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCarrito">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="cart-badge" id="cart-badge">0</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+          <img th:src="@{/web/images/logo.png}" alt="Logo" class="mobile-logo" />
+          <button class="close-menu" id="close-menu" aria-label="Cerrar menú">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="mobile-menu-content">
+          <form class="mobile-search" th:action="@{/catalogo}" method="get">
+            <input type="search" name="q" placeholder="¿Qué estás buscando?" />
+            <button type="submit">
+              <i class="fas fa-search"></i>
+            </button>
+          </form>
+
+          <nav class="mobile-nav">
+            <div class="mobile-nav-item">
+              <button class="mobile-nav-link" data-target="hombre">
+                HOMBRE <i class="fas fa-chevron-right"></i>
+              </button>
+              <div class="mobile-submenu" id="hombre">
+                <button class="submenu-back">
+                  <i class="fas fa-chevron-left"></i> Atrás
+                </button>
+                <a th:href="@{/catalogo}" class="filter-nav" data-category="hombre" data-subcategory="zapatillas">Zapatillas</a>
+                <a th:href="@{/catalogo}" class="filter-nav" data-category="hombre" data-subcategory="ropa">Ropa</a>
+                <a th:href="@{/catalogo}" class="filter-nav" data-category="hombre" data-subcategory="accesorios">Accesorios</a>
+              </div>
+            </div>
+
+            <div class="mobile-nav-item">
+              <button class="mobile-nav-link" data-target="mujer">
+                MUJER <i class="fas fa-chevron-right"></i>
+              </button>
+              <div class="mobile-submenu" id="mujer">
+                <button class="submenu-back">
+                  <i class="fas fa-chevron-left"></i> Atrás
+                </button>
+                <a th:href="@{/catalogo}" class="filter-nav" data-category="mujer" data-subcategory="zapatillas">Zapatillas</a>
+                <a th:href="@{/catalogo}" class="filter-nav" data-category="mujer" data-subcategory="ropa">Ropa</a>
+                <a th:href="@{/catalogo}" class="filter-nav" data-category="mujer" data-subcategory="accesorios">Accesorios</a>
+              </div>
+            </div>
+
+            <div class="mobile-nav-item">
+              <button class="mobile-nav-link" data-target="marcas">
+                MARCAS <i class="fas fa-chevron-right"></i>
+              </button>
+              <div class="mobile-submenu" id="marcas">
+                <button class="submenu-back">
+                  <i class="fas fa-chevron-left"></i> Atrás
+                </button>
+                <div class="brands-mobile-grid">
+                  <a th:each="marca : ${marcas}" th:href="@{/catalogo}" class="filter-nav" th:data-brand="${marca.nombre}">
+                    <img th:src="@{${marca.imagen}}" th:alt="${marca.nombre}" onerror="this.src='/web/images/placeholder.png'" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <a th:href="@{/catalogo}" class="mobile-nav-link sale-mobile filter-nav" data-sale="true">
+              <span>SALE</span> <i class="fas fa-fire"></i>
+            </a>
+          </nav>
+
+          <div class="mobile-actions">
+            <a th:href="@{/login}" class="mobile-action-btn">
+              <i class="fa-solid fa-user"></i> <span>Mi Cuenta</span>
+            </a>
+            <a href="#" class="mobile-action-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCarrito">
+              <i class="fa-solid fa-cart-shopping"></i> <span>Carrito</span>
+              <span class="cart-badge" id="cart-count-mobile">0</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCarrito" aria-labelledby="offcanvasCarritoLabel" style="z-index: 2000;">
+        <div class="offcanvas-header bg-light">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasCarritoLabel">
+                <i class="bi bi-cart3 me-2"></i>Tu Carrito
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <div id="carrito-items-container" class="flex-grow-1 overflow-auto p-3">
+                <div class="text-center text-muted mt-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">Cargando carrito...</p>
+                </div>
+            </div>
+
+            <div class="border-top p-3 bg-white shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="h5 mb-0 text-muted">Total:</span>
+                    <span class="h4 mb-0 fw-bold text-primary" id="carrito-total">S/ 0.00</span>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="/carrito/checkout" class="btn btn-dark btn-lg">
+                        PAGAR AHORA <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">
+                        Seguir comprando
+                    </button>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <style>
+        :root {
+          --navbar-height: 120px;
+          --primary-color: #000;
+          --secondary-color: #fff;
+          --accent-color: #ff4757;
+          --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+          padding-top: 120px;
+        }
+
+        /* NAVBAR FIJO CON DEGRADADO GRIS */
+        .navbar-dynamic {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          z-index: 1000;
+          background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          transition: var(--transition);
+          backdrop-filter: blur(10px);
+        }
+
+        .navbar-dynamic::after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(0, 0, 0, 0.1) 50%,
+            transparent
+          );
+        }
+
+        .navbar-container {
+          max-width: 1920px;
+          margin: 0 auto;
+          padding: 0 40px;
+          height: var(--navbar-height);
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: 3rem;
+        }
+
+        /* IZQUIERDA: Logo MÁS GRANDE */
+        .navbar-left {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+        }
+
+        .navbar-logo {
+          display: flex;
+          align-items: center;
+          transition: var(--transition);
+        }
+
+        .navbar-logo img {
+          height: 140px;
+          transition: var(--transition);
+        }
+
+        .navbar-logo:hover img {
+          transform: scale(1.05);
+        }
+
+        /* CENTRO: Links de navegación MÁS GRANDES */
+        .navbar-links {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 3rem;
+        }
+
+        /* Estilos de los links */
+        .nav-link {
+          position: relative;
+          color: var(--primary-color);
+          text-decoration: none;
+          font-weight: 700;
+          font-size: 0.9rem;
+          letter-spacing: 1px;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 2.3rem 1.5rem; /* Padding para la sombra */
+          transition: var(--transition);
+          border-radius: 8px; /* Bordes redondeados */
+        }
+
+        .nav-link::after {
+          display: none; /* Quitar la línea inferior */
+        }
+
+        .nav-link:hover {
+          color: white; /* Letra blanca */
+          background: #000; /* Fondo negro */
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Sombra negra */
+        }
+
+        .nav-arrow {
+          font-size: 0.9rem;
+          transition: var(--transition);
+        }
+
+        .nav-dropdown:hover .nav-arrow {
+          transform: rotate(180deg);
+        }
+
+        /* Sale Badge MÁS GRANDE */
+        .sale-link {
+          background: linear-gradient(135deg, #ff4757, #ff6b81);
+          color: white !important;
+          padding: 2.3rem 2rem;
+          border-radius: 25px;
+          font-weight: 700;
+          font-size: 0.9rem;
+          box-shadow: 0 4px 15px rgba(255, 71, 87, 0.5); /* Sombra roja */
+          transition: var(--transition);
+        }
+
+        .sale-link:hover {
+          background: #000; /* Fondo negro al hover */
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); /* Sombra negra */
+          transform: translateY(-2px);
+        }
+
+        .sale-link::after {
+          display: none;
+        }
+
+        /* Dropdown Menu MÁS GRANDE */
+        .nav-dropdown {
+          position: relative;
+        }
+
+        .dropdown-content {
+          position: absolute;
+          top: calc(100% + 1.5rem);
+          left: 50%;
+          transform: translateX(-50%) translateY(-10px);
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          border-radius: 16px;
+          padding: 1.5rem;
+          min-width: 260px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+          opacity: 0;
+          visibility: hidden;
+          transition: var(--transition);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-dropdown:hover .dropdown-content {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem 1.2rem;
+          color: var(--primary-color);
+          text-decoration: none;
+          border-radius: 12px;
+          transition: var(--transition);
+          font-weight: 600;
+          font-size: 1rem;
+        }
+
+        .dropdown-item:hover {
+          background: rgba(255, 71, 87, 0.1);
+          color: var(--accent-color);
+          transform: translateX(5px);
+        }
+
+        .dropdown-item i {
+          font-size: 1.2rem;
+          opacity: 0.7;
+        }
+
+        /* Brands Grid MÁS GRANDE */
+        .brands-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 2rem; /* Separación entre marcas */
+          padding: 2rem;
+          min-width: 600px; /* Dropdown más ancho */
+        }
+
+        .brand-item {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0; /* SIN padding */
+          background: transparent; /* SIN fondo blanco */
+          border-radius: 0; /* SIN bordes redondeados */
+          transition: var(--transition);
+          border: none; /* SIN borde */
+        }
+
+        .brand-item:hover {
+          transform: translateY(-5px) scale(0.9); /* Agranda al pasar mouse */
+          box-shadow: none; /* SIN sombra */
+        }
+
+        .brand-item img {
+          height: 80px; /* Imágenes MÁS GRANDES */
+          width: 100%;
+          object-fit: contain;
+          filter: grayscale(0); /* SIN filtro gris (logos a color) */
+          transition: var(--transition);
+        }
+
+        .brand-item:hover img {
+          filter: grayscale(0);
+          transform: scale(1.15); /* Crece más al hover */
+        }
+
+        /* DERECHA: Búsqueda y acciones */
+        .navbar-right {
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 1.2rem;
+        }
+
+        /* Search Container */
+        .search-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .search-toggle {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(0, 0, 0, 0.08);
+          color: var(--primary-color);
+          cursor: pointer;
+          transition: var(--transition);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .search-toggle:hover {
+          background: var(--accent-color);
+          color: white;
+          transform: rotate(90deg);
+        }
+
+        .search-form {
+          position: absolute;
+          right: 45px;
+          display: flex;
+          align-items: center;
+          background: white;
+          border-radius: 30px;
+          padding: 0.3rem 0.6rem;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+          opacity: 0;
+          visibility: hidden;
+          transform: scale(0.8);
+          transition: var(--transition);
+          width: 0;
+          height: 50px;
+        }
+
+        .search-form.active {
+          opacity: 1;
+          visibility: visible;
+          transform: scale(1);
+          width: 300px;
+        }
+
+        .search-form input {
+          border: none;
+          outline: none;
+          flex: 1;
+          padding: 0.5rem;
+          font-size: 0.9rem;
+        }
+
+        .search-form button {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: none;
+          background: var(--accent-color);
+          color: white;
+          cursor: pointer;
+          transition: var(--transition);
+          font-size: 0.85rem;
+          display: none;
+        }
+
+        .search-form button:hover {
+          transform: rotate(45deg);
+        }
+
+        /* Action Buttons */
+        .navbar-actions {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .action-btn {
+          position: relative;
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          color: var(--primary-color);
+          text-decoration: none;
+          transition: var(--transition);
+          background: rgba(0, 0, 0, 0.08);
+          font-size: 1.1rem;
+        }
+
+        .action-btn:hover {
+          background: var(--accent-color);
+          color: white;
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3);
+        }
+
+        .action-btn[data-tooltip]::before {
+          content: attr(data-tooltip);
+          position: absolute;
+          top: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%);
+          padding: 0.5rem 1rem;
+          background: var(--primary-color);
+          color: white;
+          border-radius: 8px;
+          font-size: 0.8rem;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: var(--transition);
+        }
+
+        .action-btn:hover[data-tooltip]::before {
+          opacity: 1;
+        }
+
+        .cart-badge {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: var(--accent-color);
+          color: white;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          font-weight: 700;
+          border: 2px solid #f5f5f5;
+        }
+
+        /* ========== MÓVIL ========== */
+
+        /* Hamburger Dynamic */
+        .hamburger-dynamic {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 1100;
+          width: 50px;
+          height: 50px;
+          border-radius: 25px;
+          background: linear-gradient(135deg, #333, #555);
+          border: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          cursor: pointer;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+          transition: var(--transition);
+        }
+
+        .hamburger-dynamic:hover {
+          transform: scale(1.1);
+        }
+
+        .hamburger-line {
+          width: 22px;
+          height: 2px;
+          background: white;
+          border-radius: 2px;
+          transition: var(--transition);
+        }
+
+        .hamburger-dynamic.active .hamburger-line:nth-child(1) {
+          transform: translateY(7px) rotate(45deg);
+        }
+
+        .hamburger-dynamic.active .hamburger-line:nth-child(2) {
+          opacity: 0;
+        }
+
+        .hamburger-dynamic.active .hamburger-line:nth-child(3) {
+          transform: translateY(-7px) rotate(-45deg);
+        }
+
+        /* Overlay */
+        .navbar-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.5);
+          backdrop-filter: blur(5px);
+          z-index: 1050;
+          opacity: 0;
+          visibility: hidden;
+          transition: var(--transition);
+        }
+
+        .navbar-overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        /* Mobile Menu BLANCO */
+        .mobile-menu {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: 100%;
+          max-width: 400px;
+          height: 100vh;
+          background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+          z-index: 1060;
+          transition: var(--transition);
+          overflow-y: auto;
+          box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .mobile-menu.active {
+          right: 0;
+        }
+
+        .mobile-menu-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          background: white;
+        }
+
+        .mobile-logo {
+          height: 50px;
+        }
+
+        /* Botón cerrar - ICON ÚNICO */
+        .close-menu {
+          width: 40px;
+          height: 40px;
+          background: rgba(0, 0, 0, 0.05);
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: var(--transition);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.3rem;
+          color: #333;
+        }
+
+        .close-menu:hover {
+          background: var(--accent-color);
+          color: white;
+          transform: rotate(90deg);
+        }
+
+        .mobile-menu-content {
+          padding: 1.5rem;
+        }
+
+        .mobile-search {
+          display: flex;
+          background: white;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 25px;
+          padding: 0.8rem 1.2rem;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .mobile-search input {
+          flex: 1;
+          background: none;
+          border: none;
+          color: #333;
+          outline: none;
+          font-size: 0.95rem;
+        }
+
+        .mobile-search input::placeholder {
+          color: rgba(0, 0, 0, 0.4);
+        }
+
+        .mobile-search button {
+          background: none;
+          border: none;
+          color: #333;
+          cursor: pointer;
+          font-size: 1.1rem;
+        }
+
+        .mobile-nav {
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+        }
+
+        .mobile-nav-item {
+          position: relative;
+        }
+
+        .mobile-nav-link {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem 1.2rem;
+          background: white;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 12px;
+          color: #333;
+          font-weight: 600;
+          font-size: 0.95rem;
+          text-decoration: none;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .mobile-nav-link:hover {
+          background: #f5f5f5;
+          border-color: rgba(0, 0, 0, 0.15);
+          transform: translateX(3px);
+        }
+
+        .sale-mobile {
+          background: linear-gradient(135deg, var(--accent-color), #ff6b81);
+          border: none;
+          color: white;
+        }
+
+        .sale-mobile:hover {
+          transform: translateX(3px) scale(1.02);
+        }
+
+        /* Submenú móvil ARREGLADO */
+        .mobile-submenu {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: 100%;
+          max-width: 400px;
+          height: 100vh;
+          background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+          transition: var(--transition);
+          z-index: 1070;
+          overflow-y: auto;
+        }
+
+        .mobile-submenu.active {
+          right: 0;
+        }
+
+        .submenu-back {
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+          background: white;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          color: #333;
+          font-size: 0.95rem;
+          font-weight: 600;
+          padding: 1rem 1.2rem;
+          margin-bottom: 1rem;
+          cursor: pointer;
+          border-radius: 12px;
+          transition: var(--transition);
+        }
+
+        .submenu-back:hover {
+          background: #f5f5f5;
+        }
+
+        .mobile-submenu a {
+          color: #333;
+          text-decoration: none;
+          padding: 1rem 1.2rem;
+          background: white;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 12px;
+          font-weight: 500;
+          transition: var(--transition);
+        }
+
+        .mobile-submenu a:hover {
+          background: #f5f5f5;
+          transform: translateX(3px);
+        }
+
+        .brands-mobile-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+        }
+
+        .brands-mobile-grid a {
+          padding: 0;
+          background: white;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 70px;
+        }
+
+        .brands-mobile-grid img {
+          width: 100%;
+          height: 60px;
+          object-fit: contain;
+          padding: 0.8rem;
+        }
+
+        .mobile-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-top: 2rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .mobile-action-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 1.2rem;
+          background: white;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 12px;
+          color: #333;
+          text-decoration: none;
+          transition: var(--transition);
+          position: relative;
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+
+        .mobile-action-btn:hover {
+          background: #f5f5f5;
+        }
+
+        .mobile-action-btn i {
+          font-size: 1.4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+          body {
+            padding-top: 80px;
+          }
+
+          .navbar-dynamic {
+            --navbar-height: 80px;
+          }
+
+          .navbar-container {
+            padding: 0 20px;
+          }
+
+          .navbar-logo img {
+            height: 65px;
+          }
+        }
+
+        @media (min-width: 992px) {
+          .hamburger-dynamic,
+          .mobile-menu {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .mobile-menu {
+            max-width: 100%;
+          }
+
+          .mobile-submenu {
+            max-width: 100%;
+          }
+        }
+      </style>
+    </div>
+</body>
+</html>
