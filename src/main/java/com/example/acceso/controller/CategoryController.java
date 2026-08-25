@@ -1,5 +1,7 @@
 package com.example.acceso.controller;
 
+import com.example.acceso.dto.CategoryRequest;
+import com.example.acceso.dto.CategoryResponse;
 import com.example.acceso.model.Category;
 import com.example.acceso.service.CategoryService;
 import org.springframework.http.HttpStatus;
@@ -55,7 +57,9 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCategoriasJson() {
         try {
-            List<Category> categorias = categoryService.listarCategorias();
+            List<CategoryResponse> categorias = categoryService.listarCategorias().stream()
+                    .map(CategoryResponse::from)
+                    .toList();
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", categorias);
@@ -73,7 +77,9 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
-            List<Category> categorias = categoryService.listarTodasCategorias();
+            List<CategoryResponse> categorias = categoryService.listarTodasCategorias().stream()
+                    .map(CategoryResponse::from)
+                    .toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("draw", 1);
@@ -101,7 +107,7 @@ public class CategoryController {
             Map<String, Object> response = new HashMap<>();
             if (categoria.isPresent()) {
                 response.put("success", true);
-                response.put("data", categoria.get());
+                response.put("data", CategoryResponse.from(categoria.get()));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
@@ -118,23 +124,23 @@ public class CategoryController {
      */
     @PostMapping("/api/crear")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> crearCategoria(@Valid @RequestBody Category categoria, BindingResult result) {
+    public ResponseEntity<Map<String, Object>> crearCategoria(@Valid @RequestBody CategoryRequest request, BindingResult result) {
         if (result.hasErrors()) {
-            return createValidationErrorResponse(result);
+            return ApiResponses.validationError(result);
         }
 
         try {
             // Validar duplicados
-            if (categoryService.existeCategoria(categoria.getNombre())) {
+            if (categoryService.existeCategoria(request.getNombre())) {
                 return ApiResponses.error("Ya existe una categoría con ese nombre");
             }
 
-            Category nuevaCategoria = categoryService.guardarCategoria(categoria);
+            Category nuevaCategoria = categoryService.guardarCategoria(request.toEntity());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Categoría creada exitosamente");
-            response.put("data", nuevaCategoria);
+            response.put("data", CategoryResponse.from(nuevaCategoria));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -152,11 +158,11 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarCategoria(
             @PathVariable Long id,
-            @Valid @RequestBody Category categoria,
+            @Valid @RequestBody CategoryRequest request,
             BindingResult result) {
 
         if (result.hasErrors()) {
-            return createValidationErrorResponse(result);
+            return ApiResponses.validationError(result);
         }
 
         try {
@@ -166,17 +172,18 @@ public class CategoryController {
             }
 
             // Validar duplicados (excluyendo la actual)
-            if (categoryService.existeCategoriaParaActualizar(categoria.getNombre(), id)) {
+            if (categoryService.existeCategoriaParaActualizar(request.getNombre(), id)) {
                 return ApiResponses.error("Ya existe otra categoría con ese nombre");
             }
 
+            Category categoria = request.toEntity();
             categoria.setId(id);
             Category categoriaActualizada = categoryService.guardarCategoria(categoria);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Categoría actualizada exitosamente");
-            response.put("data", categoriaActualizada);
+            response.put("data", CategoryResponse.from(categoriaActualizada));
 
             return ResponseEntity.ok(response);
 
@@ -222,7 +229,7 @@ public class CategoryController {
             if (categoria.isPresent()) {
                 response.put("success", true);
                 response.put("message", "Estado cambiado exitosamente");
-                response.put("data", categoria.get());
+                response.put("data", CategoryResponse.from(categoria.get()));
                 return ResponseEntity.ok(response);
             } else {
                 return ApiResponses.error("Categoría no encontrada");
@@ -242,7 +249,9 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarCategorias(@RequestParam String q) {
         try {
-            List<Category> categorias = categoryService.buscarCategorias(q);
+            List<CategoryResponse> categorias = categoryService.buscarCategorias(q).stream()
+                    .map(CategoryResponse::from)
+                    .toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -262,7 +271,9 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> categoriasActivas() {
         try {
-            List<Category> categorias = categoryService.listarCategorias();
+            List<CategoryResponse> categorias = categoryService.listarCategorias().stream()
+                    .map(CategoryResponse::from)
+                    .toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -274,23 +285,4 @@ public class CategoryController {
         }
     }
 
-    // ===================== Métodos de utilidad =====================
-
-    /**
-     * Crear respuesta de errores de validación
-     */
-    private ResponseEntity<Map<String, Object>> createValidationErrorResponse(BindingResult result) {
-        Map<String, Object> response = new HashMap<>();
-        Map<String, String> errors = new HashMap<>();
-
-        result.getFieldErrors().forEach(error ->
-            errors.put(error.getField(), error.getDefaultMessage())
-        );
-
-        response.put("success", false);
-        response.put("message", "Errores de validación");
-        response.put("errors", errors);
-
-        return ResponseEntity.badRequest().body(response);
-    }
 }

@@ -1,5 +1,6 @@
 package com.example.acceso.service;
 
+import com.example.acceso.dto.PerfilRequest;
 import com.example.acceso.model.Perfil;
 import com.example.acceso.model.Opcion;
 
@@ -12,6 +13,8 @@ public interface PerfilService {
     List<Perfil> listarTodosLosPerfiles();
 
     Perfil guardarPerfil(Perfil perfil);
+
+    Perfil guardarPerfil(PerfilRequest request);
 
     Optional<Perfil> obtenerPerfilPorId(Long id);
 
