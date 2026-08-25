@@ -1,5 +1,8 @@
 package com.example.acceso.controller;
 
+import com.example.acceso.dto.OpcionResponse;
+import com.example.acceso.dto.PerfilRequest;
+import com.example.acceso.dto.PerfilResponse;
 import com.example.acceso.model.Perfil;
 import com.example.acceso.service.PerfilService;
 import org.springframework.http.HttpStatus;
@@ -31,7 +34,9 @@ public class PerfilController {
     public ResponseEntity<?> listarPerfilesApi() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", perfilService.listarTodosLosPerfiles());
+        response.put("data", perfilService.listarTodosLosPerfiles().stream()
+                .map(PerfilResponse::from)
+                .toList());
         return ResponseEntity.ok(response);
     }
 
@@ -59,13 +64,13 @@ public class PerfilController {
 
     @PostMapping("/api/guardar")
     @ResponseBody
-    public ResponseEntity<?> guardarPerfil(@RequestBody Perfil perfil) {
+    public ResponseEntity<?> guardarPerfil(@RequestBody PerfilRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Perfil perfilGuardado = perfilService.guardarPerfil(perfil);
+            Perfil perfilGuardado = perfilService.guardarPerfil(request);
             response.put("success", true);
-            response.put("message", perfil.getId() != null ? "Perfil actualizado" : "Perfil creado");
-            response.put("perfil", perfilGuardado);
+            response.put("message", request.getId() != null ? "Perfil actualizado" : "Perfil creado");
+            response.put("perfil", PerfilResponse.from(perfilGuardado));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -96,7 +101,9 @@ public class PerfilController {
     public ResponseEntity<?> listarOpcionesApi() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", perfilService.listarTodasLasOpciones());
+        response.put("data", perfilService.listarTodasLasOpciones().stream()
+                .map(OpcionResponse::from)
+                .toList());
         return ResponseEntity.ok(response);
     }
 

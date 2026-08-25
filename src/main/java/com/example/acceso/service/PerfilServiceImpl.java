@@ -1,5 +1,6 @@
 package com.example.acceso.service;
 
+import com.example.acceso.dto.PerfilRequest;
 import com.example.acceso.model.Perfil;
 import com.example.acceso.model.Opcion;
 import com.example.acceso.repository.PerfilRepository;
@@ -7,8 +8,10 @@ import com.example.acceso.repository.OpcionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PerfilServiceImpl implements PerfilService {
@@ -36,6 +39,25 @@ public class PerfilServiceImpl implements PerfilService {
     @Override
     @Transactional
     public Perfil guardarPerfil(Perfil perfil) {
+        return perfilRepository.save(perfil);
+    }
+
+    @Override
+    @Transactional
+    public Perfil guardarPerfil(PerfilRequest request) {
+        Perfil perfil = request.getId() != null
+                ? perfilRepository.findById(request.getId()).orElse(new Perfil())
+                : new Perfil();
+
+        perfil.setNombre(request.getNombre());
+        perfil.setDescripcion(request.getDescripcion());
+        perfil.setEstado(request.getEstado() != null ? request.getEstado() : true);
+
+        if (request.getOpciones() != null) {
+            Set<Opcion> opciones = new HashSet<>(opcionRepository.findAllById(request.getOpciones()));
+            perfil.setOpciones(opciones);
+        }
+
         return perfilRepository.save(perfil);
     }
 

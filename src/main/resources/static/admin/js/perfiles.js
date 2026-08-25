@@ -354,7 +354,7 @@ $(document).ready(function() {
     async function savePermissions() {
         const perfilId = $('#permisoPerfilId').val();
         const selectedOpciones = $('#listaOpciones input:checked').map(function() {
-            return { id: $(this).val() };
+            return parseInt($(this).val(), 10);
         }).get();
 
         showLoading(true);

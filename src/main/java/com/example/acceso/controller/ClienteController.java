@@ -1,5 +1,7 @@
 package com.example.acceso.controller;
 
+import com.example.acceso.dto.ClienteRequest;
+import com.example.acceso.dto.ClienteResponse;
 import com.example.acceso.model.Cliente;
 import com.example.acceso.service.ClienteService;
 import org.springframework.http.HttpStatus;
@@ -48,7 +50,9 @@ public class ClienteController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarClientesJson() {
         try {
-            List<Cliente> clientes = clienteService.listarClientes();
+            List<ClienteResponse> clientes = clienteService.listarClientes().stream()
+                    .map(ClienteResponse::from)
+                    .toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -67,7 +71,9 @@ public class ClienteController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
-            List<Cliente> clientes = clienteService.listarTodosClientes();
+            List<ClienteResponse> clientes = clienteService.listarTodosClientes().stream()
+                    .map(ClienteResponse::from)
+                    .toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("draw", 1);
@@ -157,7 +163,7 @@ public class ClienteController {
             Map<String, Object> response = new HashMap<>();
             if (cliente.isPresent()) {
                 response.put("success", true);
-                response.put("data", cliente.get());
+                response.put("data", ClienteResponse.from(cliente.get()));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
@@ -174,23 +180,23 @@ public class ClienteController {
      */
     @PostMapping("/api/crear")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> crearCliente(@Valid @RequestBody Cliente cliente, BindingResult result) {
+    public ResponseEntity<Map<String, Object>> crearCliente(@Valid @RequestBody ClienteRequest request, BindingResult result) {
         if (result.hasErrors()) {
-            return createValidationErrorResponse(result);
+            return ApiResponses.validationError(result);
         }
 
         try {
             // Validar duplicados
-            if (clienteService.existeCliente(cliente.getDocumento())) {
+            if (clienteService.existeCliente(request.getDocumento())) {
                 return ApiResponses.error("Ya existe un cliente con ese documento");
             }
 
-            Cliente nuevoCliente = clienteService.guardarCliente(cliente);
+            Cliente nuevoCliente = clienteService.guardarCliente(request.toEntity());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Cliente creado exitosamente");
-            response.put("data", nuevoCliente);
+            response.put("data", ClienteResponse.from(nuevoCliente));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -208,11 +214,11 @@ public class ClienteController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarCliente(
             @PathVariable Long id,
-            @Valid @RequestBody Cliente cliente,
+            @Valid @RequestBody ClienteRequest request,
             BindingResult result) {
 
         if (result.hasErrors()) {
-            return createValidationErrorResponse(result);
+            return ApiResponses.validationError(result);
         }
 
         try {
@@ -223,18 +229,19 @@ public class ClienteController {
             }
 
             // Validar duplicados (excluyendo el actual)
-            if (clienteService.existeClienteParaActualizar(cliente.getDocumento(), id)) {
+            if (clienteService.existeClienteParaActualizar(request.getDocumento(), id)) {
                 return ApiResponses.error("Ya existe otro cliente con ese documento");
             }
 
             // Asignar ID y guardar
+            Cliente cliente = request.toEntity();
             cliente.setId(id);
             Cliente clienteActualizado = clienteService.guardarCliente(cliente);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Cliente actualizado exitosamente");
-            response.put("data", clienteActualizado);
+            response.put("data", ClienteResponse.from(clienteActualizado));
 
             return ResponseEntity.ok(response);
 
@@ -280,7 +287,7 @@ public class ClienteController {
             if (cliente.isPresent()) {
                 response.put("success", true);
                 response.put("message", "Estado cambiado exitosamente");
-                response.put("data", cliente.get());
+                response.put("data", ClienteResponse.from(cliente.get()));
                 return ResponseEntity.ok(response);
             } else {
                 return ApiResponses.error("Cliente no encontrado");
@@ -300,7 +307,9 @@ public class ClienteController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarClientes(@RequestParam String q) {
         try {
-            List<Cliente> clientes = clienteService.buscarClientesActivos(q);
+            List<ClienteResponse> clientes = clienteService.buscarClientesActivos(q).stream()
+                    .map(ClienteResponse::from)
+                    .toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -325,7 +334,7 @@ public class ClienteController {
             Map<String, Object> response = new HashMap<>();
             if (cliente.isPresent()) {
                 response.put("success", true);
-                response.put("data", cliente.get());
+                response.put("data", ClienteResponse.from(cliente.get()));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
@@ -358,24 +367,4 @@ public class ClienteController {
         }
     }
 
-    // ===================== Métodos de utilidad =====================
-
-
-    /**
-     * Crear respuesta de errores de validación
-     */
-    private ResponseEntity<Map<String, Object>> createValidationErrorResponse(BindingResult result) {
-        Map<String, Object> response = new HashMap<>();
-        Map<String, String> errors = new HashMap<>();
-
-        result.getFieldErrors().forEach(error ->
-            errors.put(error.getField(), error.getDefaultMessage())
-        );
-
-        response.put("success", false);
-        response.put("message", "Errores de validación");
-        response.put("errors", errors);
-
-        return ResponseEntity.badRequest().body(response);
-    }
 }
