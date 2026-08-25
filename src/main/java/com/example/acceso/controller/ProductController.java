@@ -74,7 +74,7 @@ public class ProductController {
             response.put("total", productos.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar productos: " + e.getMessage());
+            return ApiResponses.error("Error al listar productos: " + e.getMessage());
         }
     }
 
@@ -95,7 +95,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al cargar datos para la tabla: " + e.getMessage());
+            return ApiResponses.error("Error al cargar datos para la tabla: " + e.getMessage());
         }
     }
     /**
@@ -135,7 +135,7 @@ public class ProductController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener estadísticas: " + e.getMessage());
+            return ApiResponses.error("Error al obtener estadísticas: " + e.getMessage());
         }
     }
     /**
@@ -201,9 +201,9 @@ public class ProductController {
             response.put("total", productos.size());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return createErrorResponse("Género no válido");
+            return ApiResponses.error("Género no válido");
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener destacados: " + e.getMessage());
+            return ApiResponses.error("Error al obtener destacados: " + e.getMessage());
         }
     }
 
@@ -227,9 +227,9 @@ public class ProductController {
             response.put("total", productos.size());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return createErrorResponse("Género no válido");
+            return ApiResponses.error("Género no válido");
         } catch (Exception e) {
-            return createErrorResponse("Error al filtrar por género: " + e.getMessage());
+            return ApiResponses.error("Error al filtrar por género: " + e.getMessage());
         }
     }
 
@@ -256,9 +256,9 @@ public class ProductController {
             response.put("total", productos.size());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return createErrorResponse("Género no válido");
+            return ApiResponses.error("Género no válido");
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener productos en rebaja: " + e.getMessage());
+            return ApiResponses.error("Error al obtener productos en rebaja: " + e.getMessage());
         }
     }
 
@@ -278,7 +278,7 @@ public class ProductController {
             response.put("total", productos.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al filtrar por categoría: " + e.getMessage());
+            return ApiResponses.error("Error al filtrar por categoría: " + e.getMessage());
         }
     }
 
@@ -296,7 +296,7 @@ public class ProductController {
             response.put("total", productos.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al filtrar por marca: " + e.getMessage());
+            return ApiResponses.error("Error al filtrar por marca: " + e.getMessage());
         }
     }
 
@@ -322,7 +322,7 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener el producto: " + e.getMessage());
+            return ApiResponses.error("Error al obtener el producto: " + e.getMessage());
         }
     }
 
@@ -339,7 +339,7 @@ public class ProductController {
         try {
             // Validar duplicados
             if (productService.existeProducto(producto.getNombre())) {
-                return createErrorResponse("Ya existe un producto con ese nombre");
+                return ApiResponses.error("Ya existe un producto con ese nombre");
             }
             // ✅ Sincronizar imágenes al crear
             if (producto.getImagenes() != null && !producto.getImagenes().isEmpty()) {
@@ -358,9 +358,9 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (ProductService.ProductoException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al crear el producto: " + e.getMessage());
+            return ApiResponses.error("Error al crear el producto: " + e.getMessage());
         }
     }
 
@@ -382,14 +382,14 @@ public class ProductController {
             // Verificar que el producto existe
             Optional<Product> productoExistenteOpt = productService.obtenerProductoPorId(id);
             if (!productoExistenteOpt.isPresent()) {
-                return createErrorResponse("Producto no encontrado");
+                return ApiResponses.error("Producto no encontrado");
             }
 
             Product productoExistente = productoExistenteOpt.get();
 
             // Validar duplicados (excluyendo el actual)
             if (productService.existeProductoParaActualizar(producto.getNombre(), id)) {
-                return createErrorResponse("Ya existe otro producto con ese nombre");
+                return ApiResponses.error("Ya existe otro producto con ese nombre");
             }
 
             // ✅ NUEVO: Sincronizar imágenes múltiples
@@ -431,9 +431,9 @@ public class ProductController {
             return ResponseEntity.ok(response);
 
         } catch (ProductService.ProductoException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al actualizar el producto: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar el producto: " + e.getMessage());
         }
     }
 
@@ -453,9 +453,9 @@ public class ProductController {
             return ResponseEntity.ok(response);
 
         } catch (ProductService.ProductoException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al eliminar el producto: " + e.getMessage());
+            return ApiResponses.error("Error al eliminar el producto: " + e.getMessage());
         }
     }
 
@@ -475,11 +475,11 @@ public class ProductController {
                 response.put("data", producto.get());
                 return ResponseEntity.ok(response);
             } else {
-                return createErrorResponse("Producto no encontrado");
+                return ApiResponses.error("Producto no encontrado");
             }
 
         } catch (Exception e) {
-            return createErrorResponse("Error al cambiar el estado: " + e.getMessage());
+            return ApiResponses.error("Error al cambiar el estado: " + e.getMessage());
         }
     }
 
@@ -499,11 +499,11 @@ public class ProductController {
                 response.put("data", producto.get());
                 return ResponseEntity.ok(response);
             } else {
-                return createErrorResponse("Producto no encontrado");
+                return ApiResponses.error("Producto no encontrado");
             }
 
         } catch (Exception e) {
-            return createErrorResponse("Error al cambiar el destacado: " + e.getMessage());
+            return ApiResponses.error("Error al cambiar el destacado: " + e.getMessage());
         }
     }
 
@@ -529,7 +529,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error en la búsqueda: " + e.getMessage());
+            return ApiResponses.error("Error en la búsqueda: " + e.getMessage());
         }
     }
 
@@ -551,7 +551,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al buscar por precio: " + e.getMessage());
+            return ApiResponses.error("Error al buscar por precio: " + e.getMessage());
         }
     }
 
@@ -570,7 +570,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener recientes: " + e.getMessage());
+            return ApiResponses.error("Error al obtener recientes: " + e.getMessage());
         }
     }
 
@@ -589,7 +589,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener destacados recientes: " + e.getMessage());
+            return ApiResponses.error("Error al obtener destacados recientes: " + e.getMessage());
         }
     }
 
@@ -612,7 +612,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener productos con stock bajo: " + e.getMessage());
+            return ApiResponses.error("Error al obtener productos con stock bajo: " + e.getMessage());
         }
     }
     /**
@@ -632,7 +632,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener productos con stock: " + e.getMessage());
+            return ApiResponses.error("Error al obtener productos con stock: " + e.getMessage());
         }
     }
 
@@ -654,24 +654,15 @@ public class ProductController {
                 response.put("data", producto.get());
                 return ResponseEntity.ok(response);
             } else {
-                return createErrorResponse("No se pudo actualizar el stock");
+                return ApiResponses.error("No se pudo actualizar el stock");
             }
         } catch (Exception e) {
-            return createErrorResponse("Error al actualizar stock: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar stock: " + e.getMessage());
         }
     }
 
     // ===================== Métodos de utilidad =====================
 
-    /**
-     * Crear respuesta de error estándar
-     */
-    private ResponseEntity<Map<String, Object>> createErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
 
     /**
      * Crear respuesta de errores de validación

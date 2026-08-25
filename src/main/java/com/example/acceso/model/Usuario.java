@@ -1,5 +1,6 @@
 package com.example.acceso.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -33,6 +34,7 @@ public class Usuario {
 
     @Size(min = 6, message = "La clave debe tener al menos 6 caracteres")
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String clave;
 
     @NotBlank(message = "El correo es obligatorio")

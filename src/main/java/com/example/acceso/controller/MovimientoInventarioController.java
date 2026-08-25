@@ -50,16 +50,16 @@ public class MovimientoInventarioController {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
-            return createErrorResponse("Usuario no autenticado", HttpStatus.UNAUTHORIZED);
+            return ApiResponses.error("Usuario no autenticado", HttpStatus.UNAUTHORIZED);
         }
 
         try {
             MovimientoInventarioResponse movimiento = movimientoService.registrarMovimiento(request, usuario.getId());
             return createSuccessResponse("Movimiento registrado correctamente", movimiento);
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return createErrorResponse("Error al registrar movimiento: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al registrar movimiento: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -76,7 +76,7 @@ public class MovimientoInventarioController {
             response.put("total", movimientos.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar movimientos: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al listar movimientos: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     /**
@@ -89,7 +89,7 @@ public class MovimientoInventarioController {
             List<MovimientoInventarioResponse> kardex = movimientoService.obtenerKardex(productoId);
             return createSuccessListResponse(kardex);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener kardex: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al obtener kardex: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -103,7 +103,7 @@ public class MovimientoInventarioController {
             List<MovimientoInventarioResponse> movimientos = movimientoService.listarPorTipo(tipo);
             return createSuccessListResponse(movimientos);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar por tipo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al listar por tipo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -119,7 +119,7 @@ public class MovimientoInventarioController {
             List<MovimientoInventarioResponse> movimientos = movimientoService.listarPorFechas(fechaInicio, fechaFin);
             return createSuccessListResponse(movimientos);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar por fechas: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al listar por fechas: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -139,13 +139,6 @@ public class MovimientoInventarioController {
         response.put("data", data);
         response.put("total", data.size());
         return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity<Map<String, Object>> createErrorResponse(String message, HttpStatus status) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return ResponseEntity.status(status).body(response);
     }
 
     private ResponseEntity<Map<String, Object>> createValidationErrorResponse(BindingResult result) {

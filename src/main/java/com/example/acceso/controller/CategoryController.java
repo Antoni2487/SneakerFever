@@ -62,7 +62,7 @@ public class CategoryController {
             response.put("total", categorias.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar categorías: " + e.getMessage());
+            return ApiResponses.error("Error al listar categorías: " + e.getMessage());
         }
     }
 
@@ -83,7 +83,7 @@ public class CategoryController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al cargar datos para la tabla: " + e.getMessage());
+            return ApiResponses.error("Error al cargar datos para la tabla: " + e.getMessage());
         }
     }
 
@@ -109,7 +109,7 @@ public class CategoryController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al obtener la categoría: " + e.getMessage());
         }
     }
 
@@ -126,7 +126,7 @@ public class CategoryController {
         try {
             // Validar duplicados
             if (categoryService.existeCategoria(categoria.getNombre())) {
-                return createErrorResponse("Ya existe una categoría con ese nombre");
+                return ApiResponses.error("Ya existe una categoría con ese nombre");
             }
 
             Category nuevaCategoria = categoryService.guardarCategoria(categoria);
@@ -139,9 +139,9 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (CategoryService.CategoriaException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al crear la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al crear la categoría: " + e.getMessage());
         }
     }
 
@@ -162,12 +162,12 @@ public class CategoryController {
         try {
             // Verificar que la categoría existe
             if (!categoryService.obtenerCategoriaPorId(id).isPresent()) {
-                return createErrorResponse("Categoría no encontrada");
+                return ApiResponses.error("Categoría no encontrada");
             }
 
             // Validar duplicados (excluyendo la actual)
             if (categoryService.existeCategoriaParaActualizar(categoria.getNombre(), id)) {
-                return createErrorResponse("Ya existe otra categoría con ese nombre");
+                return ApiResponses.error("Ya existe otra categoría con ese nombre");
             }
 
             categoria.setId(id);
@@ -181,9 +181,9 @@ public class CategoryController {
             return ResponseEntity.ok(response);
 
         } catch (CategoryService.CategoriaException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al actualizar la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar la categoría: " + e.getMessage());
         }
     }
 
@@ -203,9 +203,9 @@ public class CategoryController {
             return ResponseEntity.ok(response);
 
         } catch (CategoryService.CategoriaException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al eliminar la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al eliminar la categoría: " + e.getMessage());
         }
     }
 
@@ -225,11 +225,11 @@ public class CategoryController {
                 response.put("data", categoria.get());
                 return ResponseEntity.ok(response);
             } else {
-                return createErrorResponse("Categoría no encontrada");
+                return ApiResponses.error("Categoría no encontrada");
             }
 
         } catch (Exception e) {
-            return createErrorResponse("Error al cambiar el estado: " + e.getMessage());
+            return ApiResponses.error("Error al cambiar el estado: " + e.getMessage());
         }
     }
 
@@ -251,7 +251,7 @@ public class CategoryController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error en la búsqueda: " + e.getMessage());
+            return ApiResponses.error("Error en la búsqueda: " + e.getMessage());
         }
     }
 
@@ -270,21 +270,11 @@ public class CategoryController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener categorías activas: " + e.getMessage());
+            return ApiResponses.error("Error al obtener categorías activas: " + e.getMessage());
         }
     }
 
     // ===================== Métodos de utilidad =====================
-
-    /**
-     * Crear respuesta de error estándar
-     */
-    private ResponseEntity<Map<String, Object>> createErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
 
     /**
      * Crear respuesta de errores de validación
