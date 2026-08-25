@@ -56,7 +56,7 @@ public class ClienteController {
             response.put("total", clientes.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar clientes: " + e.getMessage());
+            return ApiResponses.error("Error al listar clientes: " + e.getMessage());
         }
     }
 
@@ -77,7 +77,7 @@ public class ClienteController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al cargar datos para la tabla: " + e.getMessage());
+            return ApiResponses.error("Error al cargar datos para la tabla: " + e.getMessage());
         }
     }
 
@@ -118,7 +118,7 @@ public class ClienteController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener estadísticas: " + e.getMessage());
+            return ApiResponses.error("Error al obtener estadísticas: " + e.getMessage());
         }
     }
 
@@ -139,7 +139,7 @@ public class ClienteController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
             }
         } catch (Exception e) {
-            return createErrorResponse("Error al consultar documento: " + e.getMessage());
+            return ApiResponses.error("Error al consultar documento: " + e.getMessage());
         }
     }
 
@@ -165,7 +165,7 @@ public class ClienteController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al obtener el cliente: " + e.getMessage());
         }
     }
 
@@ -182,7 +182,7 @@ public class ClienteController {
         try {
             // Validar duplicados
             if (clienteService.existeCliente(cliente.getDocumento())) {
-                return createErrorResponse("Ya existe un cliente con ese documento");
+                return ApiResponses.error("Ya existe un cliente con ese documento");
             }
 
             Cliente nuevoCliente = clienteService.guardarCliente(cliente);
@@ -195,9 +195,9 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (ClienteService.ClienteException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al crear el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al crear el cliente: " + e.getMessage());
         }
     }
 
@@ -219,12 +219,12 @@ public class ClienteController {
             // Verificar que el cliente existe
             Optional<Cliente> clienteExistenteOpt = clienteService.obtenerClientePorId(id);
             if (!clienteExistenteOpt.isPresent()) {
-                return createErrorResponse("Cliente no encontrado");
+                return ApiResponses.error("Cliente no encontrado");
             }
 
             // Validar duplicados (excluyendo el actual)
             if (clienteService.existeClienteParaActualizar(cliente.getDocumento(), id)) {
-                return createErrorResponse("Ya existe otro cliente con ese documento");
+                return ApiResponses.error("Ya existe otro cliente con ese documento");
             }
 
             // Asignar ID y guardar
@@ -239,9 +239,9 @@ public class ClienteController {
             return ResponseEntity.ok(response);
 
         } catch (ClienteService.ClienteException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al actualizar el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar el cliente: " + e.getMessage());
         }
     }
 
@@ -261,9 +261,9 @@ public class ClienteController {
             return ResponseEntity.ok(response);
 
         } catch (ClienteService.ClienteException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al eliminar el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al eliminar el cliente: " + e.getMessage());
         }
     }
 
@@ -283,11 +283,11 @@ public class ClienteController {
                 response.put("data", cliente.get());
                 return ResponseEntity.ok(response);
             } else {
-                return createErrorResponse("Cliente no encontrado");
+                return ApiResponses.error("Cliente no encontrado");
             }
 
         } catch (Exception e) {
-            return createErrorResponse("Error al cambiar el estado: " + e.getMessage());
+            return ApiResponses.error("Error al cambiar el estado: " + e.getMessage());
         }
     }
 
@@ -309,7 +309,7 @@ public class ClienteController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error en la búsqueda: " + e.getMessage());
+            return ApiResponses.error("Error en la búsqueda: " + e.getMessage());
         }
     }
 
@@ -333,7 +333,7 @@ public class ClienteController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
-            return createErrorResponse("Error al buscar cliente: " + e.getMessage());
+            return ApiResponses.error("Error al buscar cliente: " + e.getMessage());
         }
     }
 
@@ -354,21 +354,12 @@ public class ClienteController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al contar clientes: " + e.getMessage());
+            return ApiResponses.error("Error al contar clientes: " + e.getMessage());
         }
     }
 
     // ===================== Métodos de utilidad =====================
 
-    /**
-     * Crear respuesta de error estándar
-     */
-    private ResponseEntity<Map<String, Object>> createErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
 
     /**
      * Crear respuesta de errores de validación

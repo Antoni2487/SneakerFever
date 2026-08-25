@@ -46,9 +46,9 @@ public class CreditoVentaController {
             CreditoVentaResponse credito = creditoVentaService.obtenerCreditoPorId(id);
             return createSuccessResponse(credito);
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+            return ApiResponses.error(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener el crédito: " + e.getMessage());
+            return ApiResponses.error("Error al obtener el crédito: " + e.getMessage());
         }
     }
 
@@ -62,9 +62,9 @@ public class CreditoVentaController {
             CreditoVentaResponse credito = creditoVentaService.obtenerCreditoPorVentaId(ventaId);
             return createSuccessResponse(credito);
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+            return ApiResponses.error(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener el crédito: " + e.getMessage());
+            return ApiResponses.error("Error al obtener el crédito: " + e.getMessage());
         }
     }
 
@@ -78,7 +78,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosPorCliente(clienteId);
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar créditos del cliente: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos del cliente: " + e.getMessage());
         }
     }
 
@@ -92,7 +92,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosActivos();
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar créditos activos: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos activos: " + e.getMessage());
         }
     }
 
@@ -106,7 +106,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosVencidos();
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar créditos vencidos: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos vencidos: " + e.getMessage());
         }
     }
 
@@ -121,7 +121,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosProximosVencer(dias);
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar créditos próximos a vencer: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos próximos a vencer: " + e.getMessage());
         }
     }
 
@@ -137,7 +137,7 @@ public class CreditoVentaController {
             List<CuotaPagoResponse> cuotas = creditoVentaService.listarCuotasPorCredito(creditoId);
             return createSuccessListResponse(cuotas);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar cuotas: " + e.getMessage());
+            return ApiResponses.error("Error al listar cuotas: " + e.getMessage());
         }
     }
 
@@ -151,9 +151,9 @@ public class CreditoVentaController {
             CuotaPagoResponse cuota = creditoVentaService.obtenerCuotaPorId(cuotaId);
             return createSuccessResponse(cuota);
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+            return ApiResponses.error(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener la cuota: " + e.getMessage());
+            return ApiResponses.error("Error al obtener la cuota: " + e.getMessage());
         }
     }
 
@@ -167,7 +167,7 @@ public class CreditoVentaController {
             List<CuotaPagoResponse> cuotas = creditoVentaService.listarCuotasVencidas();
             return createSuccessListResponse(cuotas);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar cuotas vencidas: " + e.getMessage());
+            return ApiResponses.error("Error al listar cuotas vencidas: " + e.getMessage());
         }
     }
 
@@ -204,9 +204,9 @@ public class CreditoVentaController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return createErrorResponse("Error al registrar el pago: " + e.getMessage());
+            return ApiResponses.error("Error al registrar el pago: " + e.getMessage());
         }
     }
 
@@ -221,7 +221,7 @@ public class CreditoVentaController {
             List<RegistroPagoResponse> pagos = creditoVentaService.listarPagosPorCredito(creditoId);
             return createSuccessListResponse(pagos);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar pagos: " + e.getMessage());
+            return ApiResponses.error("Error al listar pagos: " + e.getMessage());
         }
     }
 
@@ -240,7 +240,7 @@ public class CreditoVentaController {
             ReporteCreditosDTO reporte = creditoVentaService.generarReporteCreditos();
             return createSuccessResponse(reporte);
         } catch (Exception e) {
-            return createErrorResponse("Error al generar reporte: " + e.getMessage());
+            return ApiResponses.error("Error al generar reporte: " + e.getMessage());
         }
     }
 
@@ -261,7 +261,7 @@ public class CreditoVentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al actualizar estados: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar estados: " + e.getMessage());
         }
     }
 
@@ -280,7 +280,7 @@ public class CreditoVentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al actualizar estados: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar estados: " + e.getMessage());
         }
     }
 
@@ -305,23 +305,6 @@ public class CreditoVentaController {
         response.put("data", data);
         response.put("total", data.size());
         return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Crear respuesta de error estándar
-     */
-    private ResponseEntity<Map<String, Object>> createErrorResponse(String message) {
-        return createErrorResponse(message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Crear respuesta de error con status personalizado
-     */
-    private ResponseEntity<Map<String, Object>> createErrorResponse(String message, HttpStatus status) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return ResponseEntity.status(status).body(response);
     }
 
     /**

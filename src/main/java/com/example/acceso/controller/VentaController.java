@@ -75,7 +75,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar ventas: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas: " + e.getMessage());
         }
     }
 
@@ -94,7 +94,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar ventas del cliente: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas del cliente: " + e.getMessage());
         }
     }
 
@@ -113,7 +113,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar ventas por estado: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas por estado: " + e.getMessage());
         }
     }
 
@@ -134,7 +134,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar ventas por rango de fechas: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas por rango de fechas: " + e.getMessage());
         }
     }
 
@@ -153,7 +153,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al listar ventas con crédito: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas con crédito: " + e.getMessage());
         }
     }
 
@@ -173,9 +173,9 @@ public class VentaController {
             response.put("data", venta);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener la venta: " + e.getMessage());
+            return ApiResponses.error("Error al obtener la venta: " + e.getMessage());
         }
     }
 
@@ -207,9 +207,9 @@ public class VentaController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al crear la venta: " + e.getMessage());
+            return ApiResponses.error("Error al crear la venta: " + e.getMessage());
         }
     }
     @GetMapping("/api/series/activas")
@@ -270,9 +270,9 @@ public class VentaController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al actualizar el estado: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar el estado: " + e.getMessage());
         }
     }
 
@@ -293,9 +293,9 @@ public class VentaController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            return createErrorResponse(e.getMessage());
+            return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("Error al anular la venta: " + e.getMessage());
+            return ApiResponses.error("Error al anular la venta: " + e.getMessage());
         }
     }
 
@@ -318,7 +318,7 @@ public class VentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al generar reporte: " + e.getMessage());
+            return ApiResponses.error("Error al generar reporte: " + e.getMessage());
         }
     }
 
@@ -337,21 +337,11 @@ public class VentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return createErrorResponse("Error al obtener estadísticas: " + e.getMessage());
+            return ApiResponses.error("Error al obtener estadísticas: " + e.getMessage());
         }
     }
 
     // ===================== Métodos de utilidad =====================
-
-    /**
-     * Crear respuesta de error estándar
-     */
-    private ResponseEntity<Map<String, Object>> createErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
 
     /**
      * Crear respuesta de errores de validación
