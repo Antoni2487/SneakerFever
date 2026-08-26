@@ -70,11 +70,28 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         // Registra nuestro SessionInterceptor
+        // Cubre tanto las páginas Thymeleaf (/admin/**) como los endpoints JSON
+        // administrativos (/*/api/**) — antes solo las páginas estaban protegidas,
+        // dejando esos endpoints alcanzables sin sesión por cualquier cliente.
         registry.addInterceptor(sessionInterceptor)
-                .addPathPatterns("/admin/**")
+                .addPathPatterns(
+                    "/admin/**",
+                    "/marcas/api/**",
+                    "/categorias/api/**",
+                    "/clientes/api/**",
+                    "/productos/api/**",
+                    "/usuarios/api/**",
+                    "/perfiles/api/**",
+                    "/ventas/api/**",
+                    "/creditos/api/**",
+                    "/inventario/api/**",
+                    "/personalizacion/api/**",
+                    "/api/upload/**"
+                )
                 .excludePathPatterns(
                     "/login",
                     "/logout",
+                    "/api/auth/**",
                     "/css/**",
                     "/js/**",
                     "/images/**",
