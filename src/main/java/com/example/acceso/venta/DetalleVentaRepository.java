@@ -1,6 +1,7 @@
 package com.example.acceso.venta;
 
 import com.example.acceso.venta.DetalleVenta;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +25,16 @@ public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long
            "GROUP BY dv.producto " +
            "ORDER BY totalVendido DESC")
     List<Object[]> findTop5ProductosMasVendidosPorCategoria(@Param("categoriaNombre") String categoriaNombre);
+
+    /**
+     * Ranking global de productos más vendidos (todas las categorías), para el dashboard.
+     * Solo cuenta ventas NO ANULADAS. Cada fila: [productoId, productoNombre, cantidadVendida, totalIngresos]
+     */
+    @Query("SELECT dv.producto.id, dv.producto.nombre, SUM(dv.cantidad), SUM(dv.subtotal) " +
+           "FROM DetalleVenta dv " +
+           "JOIN dv.venta v " +
+           "WHERE v.estado != 'ANULADA' " +
+           "GROUP BY dv.producto.id, dv.producto.nombre " +
+           "ORDER BY SUM(dv.cantidad) DESC")
+    List<Object[]> findProductosMasVendidos(Pageable pageable);
 }

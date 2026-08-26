@@ -13,13 +13,19 @@ import com.example.acceso.inventario.TipoReferencia;
 import com.example.acceso.inventario.MovimientoInventarioService;
 import com.example.acceso.inventario.RegistrarMovimientoRequest;
 import com.example.acceso.dashboard.ReporteVentasDTO;
+import com.example.acceso.dashboard.ProductoMasVendidoDTO;
+import com.example.acceso.dashboard.VentaPorDiaDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +44,7 @@ public class VentaService {
     private final ProductRepository productRepository;
     private final ClienteService clienteService;
     private final MovimientoInventarioService movimientoInventarioService;
+    private final DetalleVentaRepository detalleVentaRepository;
 
     // ===================== CREAR VENTA =====================
 
@@ -322,6 +329,55 @@ public class VentaService {
         estadisticas.put("totalVentas", totalVentas);
 
         return estadisticas;
+    }
+
+    /**
+     * Total vendido por día, para el gráfico de tendencia del dashboard.
+     * Incluye días sin ventas (total 0) para que el gráfico no tenga huecos.
+     */
+    @Transactional(readOnly = true)
+    public List<VentaPorDiaDTO> obtenerVentasPorDia(int dias) {
+        LocalDateTime fin = LocalDateTime.now();
+        LocalDateTime inicio = fin.toLocalDate().minusDays(dias - 1L).atStartOfDay();
+
+        List<Venta> ventas = ventaRepository.findByFechaCreacionBetweenOrderByFechaCreacionDesc(inicio, fin)
+                .stream()
+                .filter(v -> v.getEstado() != EstadoVenta.ANULADA)
+                .toList();
+
+        Map<LocalDate, List<Venta>> porDia = ventas.stream()
+                .collect(Collectors.groupingBy(v -> v.getFechaCreacion().toLocalDate()));
+
+        List<VentaPorDiaDTO> resultado = new ArrayList<>();
+        LocalDate cursor = inicio.toLocalDate();
+        LocalDate hoy = fin.toLocalDate();
+        while (!cursor.isAfter(hoy)) {
+            List<Venta> delDia = porDia.getOrDefault(cursor, List.of());
+            BigDecimal total = delDia.stream().map(Venta::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+            resultado.add(VentaPorDiaDTO.builder()
+                    .fecha(cursor)
+                    .total(total)
+                    .cantidadVentas((long) delDia.size())
+                    .build());
+            cursor = cursor.plusDays(1);
+        }
+        return resultado;
+    }
+
+    /**
+     * Ranking de productos más vendidos por cantidad de unidades, para el dashboard.
+     */
+    @Transactional(readOnly = true)
+    public List<ProductoMasVendidoDTO> obtenerProductosMasVendidos(int limite) {
+        return detalleVentaRepository.findProductosMasVendidos(PageRequest.of(0, limite)).stream()
+                .map(row -> ProductoMasVendidoDTO.builder()
+                        .productoId((Long) row[0])
+                        .productoNombre((String) row[1])
+                        .cantidadVendida((Long) row[2])
+                        .totalIngresos((BigDecimal) row[3])
+                        .build())
+                .sorted(Comparator.comparing(ProductoMasVendidoDTO::getCantidadVendida).reversed())
+                .toList();
     }
 
     // ===================== MÉTODOS PRIVADOS =====================

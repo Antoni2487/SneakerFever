@@ -28,7 +28,7 @@ export default function Login() {
     setSubmitting(true)
     try {
       await login(usuario, clave)
-      navigate('/categorias', { replace: true })
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Error de Acceso'
       Swal.fire({ icon: 'error', title: 'Error de Acceso', text: message, confirmButtonColor: '#dc3545' })
