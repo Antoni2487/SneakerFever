@@ -359,3 +359,19 @@ export interface ProductosDestacados {
   ropa: Product[]
   accesorios: Product[]
 }
+
+// Carrito de compras del sitio público (por sesión de invitado, ver CartController).
+// Nombrado distinto de CarritoItem (que es el carrito de la venta POS del admin) para no confundirlos.
+export interface CarritoWebItem {
+  productoId: number
+  nombre: string
+  imagen: string | null
+  precio: number
+  cantidad: number
+  subtotal: number
+}
+
+export interface CarritoWeb {
+  items: CarritoWebItem[]
+  total: number
+}

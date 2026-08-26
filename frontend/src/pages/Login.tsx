@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { useAuth } from '../context/AuthContext'
 import { ApiError } from '../lib/apiClient'
@@ -8,6 +8,8 @@ import { ApiError } from '../lib/apiClient'
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
   const [usuario, setUsuario] = useState('')
   const [clave, setClave] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -28,7 +30,7 @@ export default function Login() {
     setSubmitting(true)
     try {
       await login(usuario, clave)
-      navigate('/dashboard', { replace: true })
+      navigate(redirectTo, { replace: true })
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Error de Acceso'
       Swal.fire({ icon: 'error', title: 'Error de Acceso', text: message, confirmButtonColor: '#dc3545' })

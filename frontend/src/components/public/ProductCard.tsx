@@ -1,5 +1,9 @@
 import { useState } from 'react'
+import type { MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import { useCart } from '../../context/CartContext'
+import { ApiError } from '../../lib/apiClient'
 import type { Product } from '../../types'
 
 function precioFinal(precio: number, descuento: number | null) {
@@ -8,8 +12,40 @@ function precioFinal(precio: number, descuento: number | null) {
 }
 
 export default function ProductCard({ producto }: { producto: Product }) {
+  const { agregar } = useCart()
   const [broken, setBroken] = useState(false)
+  const [agregando, setAgregando] = useState(false)
   const tieneDescuento = !!producto.descuento && producto.descuento > 0
+  const agotado = producto.stock === 0
+
+  async function handleAgregar(event: MouseEvent) {
+    event.preventDefault()
+    event.stopPropagation()
+    setAgregando(true)
+    try {
+      await agregar(producto.id)
+      Swal.fire({
+        title: 'Agregado al carrito',
+        icon: 'success',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      })
+    } catch (err) {
+      Swal.fire({
+        title: err instanceof ApiError ? err.message : 'No se pudo agregar',
+        icon: 'error',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+      })
+    } finally {
+      setAgregando(false)
+    }
+  }
 
   return (
     <Link to={`/producto/${producto.id}`} className="group block">
@@ -28,6 +64,16 @@ export default function ProductCard({ producto }: { producto: Product }) {
         )}
         {tieneDescuento && (
           <span className="absolute right-2 top-2 rounded-full bg-brand-danger px-2 py-1 text-xs font-bold text-white">-{Math.round(producto.descuento!)}%</span>
+        )}
+        {!agotado && (
+          <button
+            onClick={handleAgregar}
+            disabled={agregando}
+            aria-label="Agregar al carrito"
+            className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full bg-black text-white opacity-0 shadow-md transition hover:bg-slate-800 group-hover:opacity-100 disabled:opacity-60"
+          >
+            <i className="bi bi-bag-plus" />
+          </button>
         )}
       </div>
       <div className="mt-3">

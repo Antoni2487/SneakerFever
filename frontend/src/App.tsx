@@ -19,7 +19,7 @@ import Landing from './pages/public/Landing'
 import Catalogo from './pages/public/Catalogo'
 import ProductoDetalle from './pages/public/ProductoDetalle'
 import Contacto from './pages/public/Contacto'
-import PublicPlaceholder from './pages/public/PublicPlaceholder'
+import Carrito from './pages/public/Carrito'
 
 export default function App() {
   return (
@@ -33,7 +33,7 @@ export default function App() {
           <Route path="/catalogo" element={<Catalogo />} />
           <Route path="/producto/:id" element={<ProductoDetalle />} />
           <Route path="/contacto" element={<Contacto />} />
-          <Route path="/carrito" element={<PublicPlaceholder />} />
+          <Route path="/carrito" element={<Carrito />} />
         </Route>
 
         {/* Panel admin - requiere sesión */}

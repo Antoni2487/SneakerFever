@@ -19,7 +19,7 @@ const PROXIED_PATHS = [
   '/inventario/api',
   '/personalizacion/api',
   '/admin/api',
-  '/carrito',
+  '/carrito/api',
   '/api',
   '/uploads',
   // Assets estáticos del sitio público (imágenes usadas por el landing/navbar), servidos
