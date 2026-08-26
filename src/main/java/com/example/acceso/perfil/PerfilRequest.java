@@ -17,7 +17,10 @@ public class PerfilRequest {
     @Size(max = 255, message = "La descripción no puede exceder los 255 caracteres")
     private String descripcion;
 
-    private Boolean estado = true;
+    // Sin inicializador a propósito, mismo criterio que "opciones": si el JSON no manda
+    // "estado", debe quedar null para que el Service conserve el estado actual en vez de
+    // reactivar el perfil en cada edición de nombre/descripción.
+    private Boolean estado;
 
     // Sin inicializador a propósito: debe quedar null si el JSON no manda la
     // clave "opciones", para distinguir "no tocar permisos" de "vaciar permisos".

@@ -42,7 +42,9 @@ public class PerfilService {
 
         perfil.setNombre(request.getNombre());
         perfil.setDescripcion(request.getDescripcion());
-        perfil.setEstado(request.getEstado() != null ? request.getEstado() : true);
+        if (request.getEstado() != null) {
+            perfil.setEstado(request.getEstado());
+        }
 
         if (request.getOpciones() != null) {
             Set<Opcion> opciones = new HashSet<>(opcionRepository.findAllById(request.getOpciones()));
