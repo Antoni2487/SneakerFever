@@ -2,6 +2,7 @@
 
 @theme {
   --font-sans: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-poppins: "Poppins", system-ui, "Segoe UI", Roboto, sans-serif;
 
   --color-brand-primary: #007bff;
   --color-brand-primary-hover: #0069d9;
