@@ -21,16 +21,19 @@ public interface CreditoVentaRepository extends JpaRepository<CreditoVenta, Long
 
     // ===================== Búsquedas por Cliente =====================
 
+    @EntityGraph(attributePaths = {"venta", "venta.cliente", "cuotas"})
     @Query("SELECT c FROM CreditoVenta c WHERE c.venta.cliente.id = :clienteId " +
            "ORDER BY c.fechaCreacion DESC")
     List<CreditoVenta> findByClienteIdOrderByFechaCreacionDesc(@Param("clienteId") Long clienteId);
 
     // ===================== Búsquedas por Estado =====================
 
+    @EntityGraph(attributePaths = {"venta", "venta.cliente", "cuotas"})
     List<CreditoVenta> findByEstadoOrderByFechaCreacionDesc(EstadoCredito estado);
 
     // ===================== Créditos Vencidos =====================
 
+    @EntityGraph(attributePaths = {"venta", "venta.cliente", "cuotas"})
     @Query("SELECT c FROM CreditoVenta c WHERE c.estado = 'ACTIVO' " +
            "AND c.fechaFin < :fecha AND c.saldoPendiente > 0 " +
            "ORDER BY c.fechaFin ASC")

@@ -1,6 +1,6 @@
 package com.example.acceso.usuario;
 
-import com.example.acceso.usuario.Usuario;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,6 +21,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByCorreo(String correo);
 
     // Métodos para el borrado lógico
+    @EntityGraph(attributePaths = {"perfil", "perfil.opciones"})
     List<Usuario> findAllByEstadoNot(Integer estado);
 
     long countByEstadoNot(Integer estado);

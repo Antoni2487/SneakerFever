@@ -43,7 +43,7 @@ public class Brand {
     @Size(max = 500, message = "La URL de la imagen no puede exceder los 500 caracteres")
     @Column(name = "imagen", length = 500)
     private String imagen;
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "brand_imagenes",  // ← Cambiar a minúsculas (convención)
         joinColumns = @JoinColumn(name = "marca_id")  // ← Cambiar de producto_id a marca_id

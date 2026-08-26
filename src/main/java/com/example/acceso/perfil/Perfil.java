@@ -32,7 +32,7 @@ public class Perfil {
     @Column(nullable = false)
     private boolean estado = true; // true: Activo, false: Inactivo
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "perfil_opcion", joinColumns = @JoinColumn(name = "id_perfil"), inverseJoinColumns = @JoinColumn(name = "id_opcion"))
     
     @JsonIgnoreProperties("perfiles")
