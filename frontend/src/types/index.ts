@@ -113,3 +113,18 @@ export interface ClienteFormData {
   telefono: string
   correo: string
 }
+
+// GET /perfiles/api/{id} devuelve las opciones como un set de IDs, no como
+// objetos completos (a diferencia de PerfilResponse, que usa OpcionResponse[]).
+export interface PerfilDetalle {
+  id: number
+  nombre: string
+  descripcion: string | null
+  estado: boolean
+  opciones: number[]
+}
+
+export interface PerfilFormData {
+  nombre: string
+  descripcion: string
+}
