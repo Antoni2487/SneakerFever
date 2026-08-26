@@ -25,4 +25,6 @@ public interface ComprobanteSecuenciaRepository extends JpaRepository<Comprobant
         TipoComprobante tipoComprobante,
         String serie
     );
+
+    Optional<ComprobanteSecuencia> findFirstByActivoTrueAndTipoComprobante(TipoComprobante tipoComprobante);
 }

@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -263,6 +265,20 @@ public class ProductService {
     @Transactional(readOnly = true)
     public long contarTodosProductos() {
         return productRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> obtenerEstadisticas() {
+        long activos = productRepository.countByEstado(1);
+        long inactivos = productRepository.countByEstado(0);
+        long eliminados = productRepository.countByEstado(2);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("activos", activos);
+        stats.put("inactivos", inactivos);
+        stats.put("eliminados", eliminados);
+        stats.put("total", activos + inactivos + eliminados);
+        return stats;
     }
 
     @Transactional(readOnly = true)

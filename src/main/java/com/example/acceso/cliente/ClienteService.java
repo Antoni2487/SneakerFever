@@ -237,6 +237,20 @@ public class ClienteService {
         return clienteRepository.countByEstado(1);
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Object> obtenerEstadisticas() {
+        long activos = clienteRepository.countByEstado(1);
+        long inactivos = clienteRepository.countByEstado(0);
+        long eliminados = clienteRepository.countByEstado(2);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("activos", activos);
+        stats.put("inactivos", inactivos);
+        stats.put("eliminados", eliminados);
+        stats.put("total", activos + inactivos + eliminados);
+        return stats;
+    }
+
     // ===================== OBTENCIÓN =====================
     @Transactional(readOnly = true)
     public Optional<Cliente> obtenerClientePorId(Long id) {

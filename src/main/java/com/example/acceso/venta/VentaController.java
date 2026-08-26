@@ -23,12 +23,12 @@ import java.util.*;
 public class VentaController {
 
     private final VentaService ventaService;
-    private final ComprobanteSecuenciaRepository comprobanteSecuenciaRepository;
+    private final ComprobanteSecuenciaService comprobanteSecuenciaService;
 
     public VentaController(VentaService ventaService,
-                           ComprobanteSecuenciaRepository comprobanteSecuenciaRepository) {
+                           ComprobanteSecuenciaService comprobanteSecuenciaService) {
         this.ventaService = ventaService;
-        this.comprobanteSecuenciaRepository = comprobanteSecuenciaRepository;
+        this.comprobanteSecuenciaService = comprobanteSecuenciaService;
     }
 
 
@@ -209,42 +209,33 @@ public class VentaController {
         }
     }
     @GetMapping("/api/series/activas")
-        @ResponseBody
-        public ResponseEntity<Map<String, Object>> obtenerSerieActiva(
-                @RequestParam("tipo_comprobante") TipoComprobante tipoComprobante) {
-            try {
-                // Busca la primera serie activa del tipo solicitado
-                Optional<ComprobanteSecuencia> serieOpt = comprobanteSecuenciaRepository
-                        .findAll()
-                        .stream()
-                        .filter(c -> Boolean.TRUE.equals(c.getActivo()) && c.getTipoComprobante() == tipoComprobante)
-                        .findFirst();
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> obtenerSerieActiva(
+            @RequestParam("tipo_comprobante") TipoComprobante tipoComprobante) {
+        try {
+            Optional<ComprobanteSecuencia> serieOpt = comprobanteSecuenciaService.obtenerSerieActiva(tipoComprobante);
 
-                if (serieOpt.isEmpty()) {
-                    Map<String, Object> error = new HashMap<>();
-                    error.put("success", false);
-                    error.put("message", "No hay series activas para " + tipoComprobante);
-                    return ResponseEntity.ok(error);
-                }
-
-                ComprobanteSecuencia serie = serieOpt.get();
-
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("data", Map.of(
-                        "serie", serie.getSerie(),
-                        "numero_actual", serie.getNumeroActual()
+            if (serieOpt.isEmpty()) {
+                return ResponseEntity.ok(Map.of(
+                        "success", false,
+                        "message", "No hay series activas para " + tipoComprobante
                 ));
-
-                return ResponseEntity.ok(response);
-
-            } catch (Exception e) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("success", false);
-                error.put("message", "Error al obtener serie activa: " + e.getMessage());
-                return ResponseEntity.internalServerError().body(error);
             }
+
+            ComprobanteSecuencia serie = serieOpt.get();
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", Map.of(
+                            "serie", serie.getSerie(),
+                            "numero_actual", serie.getNumeroActual()
+                    )
+            ));
+
+        } catch (Exception e) {
+            return ApiResponses.error("Error al obtener serie activa: " + e.getMessage());
         }
+    }
 
 
     /**

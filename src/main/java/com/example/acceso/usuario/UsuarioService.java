@@ -15,6 +15,8 @@ import java.util.Optional;
 @Service
 public class UsuarioService {
 
+    private static final String PERFIL_ADMINISTRADOR = "Administrador";
+
     private final UsuarioRepository usuarioRepository;
     private final PerfilRepository perfilRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -193,5 +195,78 @@ public class UsuarioService {
 
     public boolean verificarContrasena(String contrasenaTextoPlano, String contrasenaEncriptada) {
         return passwordEncoder.matches(contrasenaTextoPlano, contrasenaEncriptada);
+    }
+
+    // ===================== Reglas de "último administrador" =====================
+
+    private boolean esAdministrador(Perfil perfil) {
+        return perfil != null && PERFIL_ADMINISTRADOR.equalsIgnoreCase(perfil.getNombre());
+    }
+
+    @Transactional(readOnly = true)
+    public long contarAdministradoresActivos() {
+        return usuarioRepository.countByEstadoAndPerfil_NombreIgnoreCase(1, PERFIL_ADMINISTRADOR);
+    }
+
+    /**
+     * No permite que un usuario cambie su propio perfil si eso implica dejar de ser Administrador.
+     */
+    public void validarCambioPerfilPropio(Perfil perfilActual, Perfil perfilNuevo) {
+        if (esAdministrador(perfilActual) && perfilNuevo != null
+                && !perfilActual.getId().equals(perfilNuevo.getId())) {
+            throw new AccesoDenegadoException(
+                    "⛔ ACCIÓN DENEGADA: No puedes cambiar tu propio perfil de Administrador.");
+        }
+    }
+
+    /**
+     * No permite bajar de Administrador a otro perfil al único administrador activo del sistema.
+     */
+    public void validarDemocionUltimoAdmin(Usuario usuarioExistente, Perfil perfilNuevo) {
+        boolean eraAdmin = esAdministrador(usuarioExistente.getPerfil());
+        boolean seraAdmin = esAdministrador(perfilNuevo);
+
+        if (eraAdmin && !seraAdmin && contarAdministradoresActivos() <= 1) {
+            throw new AccesoDenegadoException(
+                    "⛔ No puedes cambiar el perfil del único administrador del sistema.");
+        }
+    }
+
+    /**
+     * No permite eliminar la propia cuenta ni al único administrador activo del sistema.
+     */
+    public void validarPuedeEliminar(Usuario usuario, Long usuarioLogueadoId) {
+        if (usuarioLogueadoId != null && usuario.getId().equals(usuarioLogueadoId)) {
+            throw new AccesoDenegadoException(
+                    "⛔ ACCIÓN DENEGADA: No puedes eliminar tu propia cuenta.");
+        }
+
+        if (esAdministrador(usuario.getPerfil()) && usuario.getEstado() == 1
+                && contarAdministradoresActivos() <= 1) {
+            throw new AccesoDenegadoException(
+                    "⛔ ACCIÓN DENEGADA: No puedes eliminar al único administrador activo del sistema.");
+        }
+    }
+
+    /**
+     * No permite desactivar la propia cuenta ni al único administrador activo del sistema.
+     */
+    public void validarPuedeDesactivar(Usuario usuario, Long usuarioLogueadoId) {
+        if (usuarioLogueadoId != null && usuario.getId().equals(usuarioLogueadoId)) {
+            throw new AccesoDenegadoException(
+                    "⛔ ACCIÓN DENEGADA: No puedes desactivar tu propia cuenta.");
+        }
+
+        if (usuario.getEstado() == 1 && esAdministrador(usuario.getPerfil())
+                && contarAdministradoresActivos() <= 1) {
+            throw new AccesoDenegadoException(
+                    "⛔ ACCIÓN DENEGADA: No puedes desactivar al único administrador activo del sistema.");
+        }
+    }
+
+    public static class AccesoDenegadoException extends RuntimeException {
+        public AccesoDenegadoException(String message) {
+            super(message);
+        }
     }
 }
