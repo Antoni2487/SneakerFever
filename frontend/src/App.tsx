@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Categorias from './pages/Categorias'
 import Marcas from './pages/Marcas'
 import Productos from './pages/Productos'
+import Usuarios from './pages/Usuarios'
 import Placeholder from './pages/Placeholder'
 
 export default function App() {
@@ -19,6 +20,8 @@ export default function App() {
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/marcas" element={<Marcas />} />
             <Route path="/productos" element={<Productos />} />
+            <Route path="/usuarios" element={<Navigate to="/usuarios/listar" replace />} />
+            <Route path="/usuarios/listar" element={<Usuarios />} />
             <Route path="*" element={<Placeholder />} />
           </Route>
         </Route>

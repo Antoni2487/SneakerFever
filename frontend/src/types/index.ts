@@ -87,3 +87,11 @@ export interface ProductFormData {
   destacado: boolean
   estado: boolean
 }
+
+export interface UsuarioFormData {
+  nombre: string
+  usuario: string
+  clave: string
+  correo: string
+  perfilId: string
+}
