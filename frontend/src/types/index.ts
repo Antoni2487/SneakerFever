@@ -308,3 +308,34 @@ export interface DashboardResumen {
   clientes: EstadoConteo
   productos: EstadoConteo
 }
+
+// MovimientoInventarioResponse no usa @JsonProperty, es camelCase por defecto
+// (a diferencia del paquete venta/dashboard).
+export type TipoMovimientoInventario = 'ENTRADA' | 'SALIDA' | 'DEVOLUCION' | 'MERMA'
+export type MotivoMovimiento = 'COMPRA' | 'VENTA' | 'AJUSTE_FISICO' | 'MERMA' | 'DEVOLUCION_CLIENTE' | 'AJUSTE_POSITIVO' | 'AJUSTE_NEGATIVO'
+export type TipoReferencia = 'VENTA' | 'COMPRA' | 'AJUSTE' | 'NINGUNO'
+
+export interface MovimientoInventario {
+  id: number
+  productoId: number
+  productoNombre: string
+  tipoMovimiento: TipoMovimientoInventario
+  cantidad: number
+  stockAnterior: number
+  stockNuevo: number
+  motivo: MotivoMovimiento
+  referenciaId: number | null
+  referenciaTipo: TipoReferencia
+  observaciones: string | null
+  usuarioId: number
+  usuarioNombre: string
+  fechaMovimiento: string
+}
+
+export interface RegistrarMovimientoFormData {
+  productoId: string
+  tipoMovimiento: TipoMovimientoInventario | ''
+  cantidad: string
+  motivo: MotivoMovimiento | ''
+  observaciones: string
+}
