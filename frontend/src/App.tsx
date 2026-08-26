@@ -10,6 +10,7 @@ import Usuarios from './pages/Usuarios'
 import Clientes from './pages/Clientes'
 import Perfiles from './pages/Perfiles'
 import Ventas from './pages/Ventas'
+import Dashboard from './pages/Dashboard'
 import Placeholder from './pages/Placeholder'
 
 export default function App() {
@@ -19,7 +20,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
-            <Route path="/" element={<Navigate to="/categorias" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/marcas" element={<Marcas />} />
             <Route path="/productos" element={<Productos />} />

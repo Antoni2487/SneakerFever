@@ -254,3 +254,57 @@ export interface CreditoVenta {
   porcentaje_pagado: number
   dias_restantes: number | null
 }
+
+// DTOs del paquete `dashboard` (mismo criterio de snake_case explícito que Venta/Credito).
+export interface VentaPorDia {
+  fecha: string
+  total: number
+  cantidad_ventas: number
+}
+
+export interface ProductoMasVendido {
+  producto_id: number
+  producto_nombre: string
+  cantidad_vendida: number
+  total_ingresos: number
+}
+
+export interface ReporteVentas {
+  fecha_inicio: string
+  fecha_fin: string
+  total_ventas: number
+  ventas_contado: number
+  ventas_credito: number
+  monto_total_ventas: number
+  monto_ventas_contado: number
+  monto_ventas_credito: number
+  ventas_anuladas: number
+  promedio_venta: number
+}
+
+export interface ReporteCreditos {
+  total_creditos: number
+  creditos_activos: number
+  creditos_pagados: number
+  creditos_vencidos: number
+  monto_total_creditos: number
+  monto_total_pagado: number
+  saldo_pendiente_total: number
+  porcentaje_recuperacion: number
+}
+
+interface EstadoConteo {
+  activos: number
+  inactivos: number
+  eliminados: number
+  total: number
+}
+
+export interface DashboardResumen {
+  totalUsuarios: number
+  stockBajo: number
+  ventas: VentaEstadisticas
+  creditos: ReporteCreditos
+  clientes: EstadoConteo
+  productos: EstadoConteo
+}

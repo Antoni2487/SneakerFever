@@ -18,6 +18,7 @@ const PROXIED_PATHS = [
   '/creditos/api',
   '/inventario/api',
   '/personalizacion/api',
+  '/admin/api',
   '/carrito',
   '/api',
   '/uploads',
