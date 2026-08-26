@@ -18,6 +18,7 @@ import Placeholder from './pages/Placeholder'
 import Landing from './pages/public/Landing'
 import Catalogo from './pages/public/Catalogo'
 import ProductoDetalle from './pages/public/ProductoDetalle'
+import Contacto from './pages/public/Contacto'
 import PublicPlaceholder from './pages/public/PublicPlaceholder'
 
 export default function App() {
@@ -31,7 +32,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/catalogo" element={<Catalogo />} />
           <Route path="/producto/:id" element={<ProductoDetalle />} />
-          <Route path="/contacto" element={<PublicPlaceholder />} />
+          <Route path="/contacto" element={<Contacto />} />
           <Route path="/carrito" element={<PublicPlaceholder />} />
         </Route>
 
