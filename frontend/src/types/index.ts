@@ -95,3 +95,21 @@ export interface UsuarioFormData {
   correo: string
   perfilId: string
 }
+
+export interface Cliente {
+  id: number
+  nombre: string
+  documento: string
+  telefono: string
+  correo: string | null
+  estado: number
+  fechaCreacion: string
+  fechaActualizacion: string
+}
+
+export interface ClienteFormData {
+  nombre: string
+  documento: string
+  telefono: string
+  correo: string
+}
