@@ -16,6 +16,7 @@ import Inventario from './pages/Inventario'
 import Personalizacion from './pages/Personalizacion'
 import Placeholder from './pages/Placeholder'
 import Landing from './pages/public/Landing'
+import Catalogo from './pages/public/Catalogo'
 import PublicPlaceholder from './pages/public/PublicPlaceholder'
 
 export default function App() {
@@ -27,7 +28,7 @@ export default function App() {
         {/* Sitio público - sin autenticación */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Landing />} />
-          <Route path="/catalogo" element={<PublicPlaceholder />} />
+          <Route path="/catalogo" element={<Catalogo />} />
           <Route path="/producto/:id" element={<PublicPlaceholder />} />
           <Route path="/contacto" element={<PublicPlaceholder />} />
           <Route path="/carrito" element={<PublicPlaceholder />} />

@@ -2,6 +2,8 @@ package com.example.acceso.common;
 
 import com.example.acceso.brand.BrandResponse;
 import com.example.acceso.brand.BrandService;
+import com.example.acceso.category.CategoryResponse;
+import com.example.acceso.category.CategoryService;
 import com.example.acceso.product.ProductResponse;
 import com.example.acceso.product.ProductService;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +26,12 @@ public class PublicSiteController {
 
     private final BrandService brandService;
     private final ProductService productService;
+    private final CategoryService categoryService;
 
-    public PublicSiteController(BrandService brandService, ProductService productService) {
+    public PublicSiteController(BrandService brandService, ProductService productService, CategoryService categoryService) {
         this.brandService = brandService;
         this.productService = productService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/marcas")
@@ -36,6 +40,19 @@ public class PublicSiteController {
                 .map(BrandResponse::from)
                 .toList();
         return ResponseEntity.ok(Map.of("success", true, "data", marcas));
+    }
+
+    @GetMapping("/categorias")
+    public ResponseEntity<Map<String, Object>> listarCategorias() {
+        List<CategoryResponse> categorias = categoryService.listarCategorias().stream()
+                .map(CategoryResponse::from)
+                .toList();
+        return ResponseEntity.ok(Map.of("success", true, "data", categorias));
+    }
+
+    @GetMapping("/productos")
+    public ResponseEntity<Map<String, Object>> listarProductos() {
+        return ResponseEntity.ok(Map.of("success", true, "data", mapear(productService.listarProductos())));
     }
 
     @GetMapping("/productos/destacados")
