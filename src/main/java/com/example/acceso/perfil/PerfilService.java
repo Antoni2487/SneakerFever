@@ -1,26 +1,77 @@
 package com.example.acceso.perfil;
 
-import com.example.acceso.perfil.PerfilRequest;
-import com.example.acceso.perfil.Perfil;
-import com.example.acceso.perfil.Opcion;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-public interface PerfilService {
-    List<Perfil> listarPerfilesActivos();
+@Service
+public class PerfilService {
 
-    List<Perfil> listarTodosLosPerfiles();
+    private final PerfilRepository perfilRepository;
+    private final OpcionRepository opcionRepository;
 
-    Perfil guardarPerfil(Perfil perfil);
+    public PerfilService(PerfilRepository perfilRepository, OpcionRepository opcionRepository) {
+        this.perfilRepository = perfilRepository;
+        this.opcionRepository = opcionRepository;
+    }
 
-    Perfil guardarPerfil(PerfilRequest request);
+    @Transactional(readOnly = true)
+    public List<Perfil> listarPerfilesActivos() {
+        return perfilRepository.findByEstadoTrue();
+    }
 
-    Optional<Perfil> obtenerPerfilPorId(Long id);
+    @Transactional(readOnly = true)
+    public List<Perfil> listarTodosLosPerfiles() {
+        return perfilRepository.findAll();
+    }
 
-    Optional<Perfil> cambiarEstadoPerfil(Long id);
+    @Transactional
+    public Perfil guardarPerfil(Perfil perfil) {
+        return perfilRepository.save(perfil);
+    }
 
-    List<Opcion> listarTodasLasOpciones();
+    @Transactional
+    public Perfil guardarPerfil(PerfilRequest request) {
+        Perfil perfil = request.getId() != null
+                ? perfilRepository.findById(request.getId()).orElse(new Perfil())
+                : new Perfil();
 
-    void eliminarPerfil(Long id);
+        perfil.setNombre(request.getNombre());
+        perfil.setDescripcion(request.getDescripcion());
+        perfil.setEstado(request.getEstado() != null ? request.getEstado() : true);
+
+        if (request.getOpciones() != null) {
+            Set<Opcion> opciones = new HashSet<>(opcionRepository.findAllById(request.getOpciones()));
+            perfil.setOpciones(opciones);
+        }
+
+        return perfilRepository.save(perfil);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Perfil> obtenerPerfilPorId(Long id) {
+        return perfilRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<Perfil> cambiarEstadoPerfil(Long id) {
+        return perfilRepository.findById(id).map(perfil -> {
+            perfil.setEstado(!perfil.isEstado());
+            return perfilRepository.save(perfil);
+        });
+    }
+
+    @Transactional(readOnly = true)
+    public List<Opcion> listarTodasLasOpciones() {
+        return opcionRepository.findAll();
+    }
+
+    @Transactional
+    public void eliminarPerfil(Long id) {
+        perfilRepository.deleteById(id);
+    }
 }

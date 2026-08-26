@@ -616,15 +616,14 @@ function initializeApp() {
                 precio: precio,
                 descuento: descuento,
                 stock: parseInt($('#stock').val()) || 0,
-                stock_minimo: stockMinimo,
                 stockMinimo: stockMinimo,
                 // Asignamos la lista ordenada que nos devolvió la función
                 imagenes: imageUrls.length > 0 ? imageUrls : null,
                 imagen: imageUrls.length > 0 ? imageUrls[0] : null, // La primera es la principal
                 destacado: $('#destacado').is(':checked'),
                 estado: $('#estado').is(':checked') ? 1 : 0,
-                category: { id: categoryId },
-                brand: { id: brandId }
+                categoryId: categoryId,
+                brandId: brandId
             };
 
             console.log('📦 Datos a enviar:', formData);

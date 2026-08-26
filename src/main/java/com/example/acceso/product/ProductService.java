@@ -1,10 +1,9 @@
 package com.example.acceso.product;
 
 import com.example.acceso.brand.Brand;
+import com.example.acceso.brand.BrandRepository;
 import com.example.acceso.category.Category;
-import com.example.acceso.product.Genero;
-import com.example.acceso.product.Product;
-import com.example.acceso.product.ProductRepository;
+import com.example.acceso.category.CategoryRepository;
 import com.example.acceso.venta.DetalleVentaRepository;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,10 +21,17 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final DetalleVentaRepository detalleVentaRepository;
+    private final CategoryRepository categoryRepository;
+    private final BrandRepository brandRepository;
 
-    public ProductService(ProductRepository productRepository, DetalleVentaRepository detalleVentaRepository) {
+    public ProductService(ProductRepository productRepository,
+                           DetalleVentaRepository detalleVentaRepository,
+                           CategoryRepository categoryRepository,
+                           BrandRepository brandRepository) {
         this.productRepository = productRepository;
         this.detalleVentaRepository = detalleVentaRepository;
+        this.categoryRepository = categoryRepository;
+        this.brandRepository = brandRepository;
     }
 
     // ===================== Listados =====================
@@ -201,6 +207,51 @@ public class ProductService {
         } catch (Exception e) {
             throw new ProductoException("Error al guardar el producto: " + e.getMessage(), e);
         }
+    }
+
+    @Transactional
+    public Product guardarProducto(ProductRequest request) {
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ProductoException("Categoría no encontrada"));
+        Brand brand = brandRepository.findById(request.getBrandId())
+                .orElseThrow(() -> new ProductoException("Marca no encontrada"));
+
+        Product producto = request.getId() != null
+                ? obtenerProductoPorId(request.getId())
+                        .orElseThrow(() -> new ProductoException("Producto no encontrado para actualizar"))
+                : new Product();
+
+        producto.setNombre(request.getNombre());
+        producto.setDescripcion(request.getDescripcion());
+        producto.setGenero(request.getGenero());
+        producto.setPrecio(request.getPrecio());
+        producto.setDescuento(request.getDescuento());
+        producto.setStock(request.getStock());
+        producto.setStockMinimo(request.getStockMinimo());
+        producto.setCategory(category);
+        producto.setBrand(brand);
+
+        if (request.getDestacado() != null) {
+            producto.setDestacado(request.getDestacado());
+        }
+        if (request.getEstado() != null) {
+            producto.setEstado(request.getEstado());
+        }
+
+        // Sincronizar imagen/imagenes (antes duplicado a mano en crear y actualizar del controller)
+        if (request.getImagenes() != null && !request.getImagenes().isEmpty()) {
+            producto.setImagenes(new ArrayList<>(request.getImagenes()));
+            producto.setImagen(request.getImagenes().get(0));
+        } else if (request.getImagen() != null && !request.getImagen().isEmpty()) {
+            producto.setImagen(request.getImagen());
+            producto.setImagenes(List.of(request.getImagen()));
+        }
+
+        if (request.getId() != null) {
+            producto.setId(request.getId());
+        }
+
+        return guardarProducto(producto);
     }
 
     // ===================== Contadores =====================

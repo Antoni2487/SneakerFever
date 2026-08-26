@@ -1,6 +1,5 @@
 package com.example.acceso.cliente;
 
-import com.example.acceso.cliente.Cliente;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
