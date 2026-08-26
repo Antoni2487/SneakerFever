@@ -51,3 +51,39 @@ export interface BrandFormData {
   nombre: string
   imagen: string
 }
+
+export type Genero = 'HOMBRE' | 'MUJER'
+
+export interface Product {
+  id: number
+  nombre: string
+  descripcion: string | null
+  imagen: string | null
+  imagenes: string[]
+  precio: number
+  descuento: number | null
+  destacado: boolean | null
+  stock: number
+  stockMinimo: number
+  genero: Genero
+  category: Category | null
+  brand: Brand | null
+  estado: number
+  fechaCreacion: string
+  fechaActualizacion: string
+}
+
+export interface ProductFormData {
+  nombre: string
+  descripcion: string
+  imagen: string
+  precio: string
+  descuento: string
+  stock: string
+  stockMinimo: string
+  genero: Genero | ''
+  categoryId: string
+  brandId: string
+  destacado: boolean
+  estado: boolean
+}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import Swal from 'sweetalert2'
 import Modal from '../components/ui/Modal'
+import ImageThumbnail from '../components/ui/ImageThumbnail'
 import { apiClient, ApiError, uploadFile } from '../lib/apiClient'
 import type { Brand, BrandFormData } from '../types'
 
@@ -17,27 +18,6 @@ function notify(message: string, icon: 'success' | 'error' | 'info' = 'info') {
     timer: 3000,
     timerProgressBar: true,
   })
-}
-
-function BrandThumbnail({ src }: { src: string | null }) {
-  const [broken, setBroken] = useState(false)
-
-  if (!src || broken) {
-    return (
-      <div className="mx-auto flex h-[50px] w-[80px] items-center justify-center rounded bg-slate-100 text-[10px] text-slate-400">
-        Sin imagen
-      </div>
-    )
-  }
-
-  return (
-    <img
-      src={src}
-      alt="Imagen de marca"
-      onError={() => setBroken(true)}
-      className="mx-auto block h-[50px] w-[80px] object-contain"
-    />
-  )
 }
 
 export default function Marcas() {
@@ -252,7 +232,7 @@ export default function Marcas() {
                       <tr key={marca.id} className={`border-t ${isActive ? '' : 'bg-slate-100 text-slate-500'}`}>
                         <td className="px-3 py-2">{marca.id}</td>
                         <td className="px-3 py-2">
-                          <BrandThumbnail src={marca.imagen} />
+                          <ImageThumbnail src={marca.imagen} alt="Imagen de marca" />
                         </td>
                         <td className="px-3 py-2">{marca.nombre}</td>
                         <td className="px-3 py-2">
@@ -366,7 +346,7 @@ export default function Marcas() {
               {fieldErrors.imagen && <p className="mt-1 text-sm text-brand-danger">{fieldErrors.imagen}</p>}
               {form.imagen && (
                 <div className="mt-3">
-                  <BrandThumbnail src={form.imagen} />
+                  <ImageThumbnail src={form.imagen} alt="Imagen de marca" />
                 </div>
               )}
             </div>
