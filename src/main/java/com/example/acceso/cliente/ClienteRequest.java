@@ -1,6 +1,5 @@
 package com.example.acceso.cliente;
 
-import com.example.acceso.cliente.Cliente;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

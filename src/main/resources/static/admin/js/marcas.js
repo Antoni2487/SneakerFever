@@ -391,37 +391,18 @@ function initializeMarcasApp() {
 
             let ajaxConfig;
 
-            // 4️⃣ Configurar petición según el método
-            if (isEditMode) {
-                // PUT: enviar como JSON
-                console.log('🔄 Modo edición: enviando JSON');
-                ajaxConfig = {
-                    url: url,
-                    method: method,
-                    data: JSON.stringify({
-                        nombre: nombre,
-                        imagenUrl: imagenUrl || null
-                    }),
-                    contentType: 'application/json',
-                    processData: false
-                };
-            } else {
-                // POST: enviar como FormData
-                console.log('➕ Modo creación: enviando FormData');
-                const formData = new FormData();
-                formData.append('nombre', nombre);
-                if (imagenUrl) {
-                    formData.append('imagenUrl', imagenUrl);
-                }
-
-                ajaxConfig = {
-                    url: url,
-                    method: method,
-                    data: formData,
-                    processData: false,
-                    contentType: false
-                };
-            }
+            // 4️⃣ Enviar siempre como JSON (crear y actualizar usan el mismo shape)
+            console.log(isEditMode ? '🔄 Modo edición: enviando JSON' : '➕ Modo creación: enviando JSON');
+            ajaxConfig = {
+                url: url,
+                method: method,
+                data: JSON.stringify({
+                    nombre: nombre,
+                    imagen: imagenUrl || null
+                }),
+                contentType: 'application/json',
+                processData: false
+            };
 
             // 5️⃣ Enviar datos
             $.ajax({

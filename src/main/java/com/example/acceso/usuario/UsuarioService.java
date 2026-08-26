@@ -2,6 +2,8 @@ package com.example.acceso.usuario;
 
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.usuario.UsuarioRepository;
+import com.example.acceso.perfil.Perfil;
+import com.example.acceso.perfil.PerfilRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,10 +16,12 @@ import java.util.Optional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PerfilRepository perfilRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.perfilRepository = perfilRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -89,6 +93,31 @@ public class UsuarioService {
         } catch (Exception e) {
             throw new RuntimeException("Error al guardar el usuario: " + e.getMessage(), e);
         }
+    }
+
+    @Transactional
+    public Usuario guardarUsuario(UsuarioRequest request) {
+        Usuario usuario = request.getId() != null
+                ? obtenerUsuarioPorId(request.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado para actualizar"))
+                : new Usuario();
+
+        usuario.setNombre(request.getNombre());
+        usuario.setUsuario(request.getUsuario());
+        usuario.setCorreo(request.getCorreo());
+        usuario.setClave(request.getClave());
+
+        if (request.getEstado() != null) {
+            usuario.setEstado(request.getEstado() ? 1 : 0);
+        }
+
+        if (request.getPerfilId() != null) {
+            Perfil perfil = perfilRepository.findById(request.getPerfilId())
+                    .orElseThrow(() -> new IllegalArgumentException("Perfil no encontrado"));
+            usuario.setPerfil(perfil);
+        }
+
+        return guardarUsuario(usuario);
     }
 
     @Transactional(readOnly = true)

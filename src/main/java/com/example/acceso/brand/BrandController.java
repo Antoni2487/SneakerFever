@@ -1,13 +1,14 @@
 package com.example.acceso.brand;
 
-import com.example.acceso.brand.Brand;
-import com.example.acceso.brand.BrandService;
+import com.example.acceso.common.ApiResponses;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -45,15 +46,17 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarMarcasJson() {
         try {
-            List<Brand> marcas = brandService.listarMarcas();
+            List<BrandResponse> marcas = brandService.listarMarcas().stream()
+                    .map(BrandResponse::from)
+                    .toList();
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", marcas,
-                "total", marcas.size()
+                    "success", true,
+                    "data", marcas,
+                    "total", marcas.size()
             ));
         } catch (Exception e) {
             log.error("Error al listar marcas", e);
-            return createInternalErrorResponse("Error al listar marcas");
+            return ApiResponses.error("Error al listar marcas");
         }
     }
 
@@ -61,16 +64,18 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
-            List<Brand> marcas = brandService.listarTodasMarcas();
+            List<BrandResponse> marcas = brandService.listarTodasMarcas().stream()
+                    .map(BrandResponse::from)
+                    .toList();
             return ResponseEntity.ok(Map.of(
-                "draw", 1,
-                "recordsTotal", marcas.size(),
-                "recordsFiltered", marcas.size(),
-                "data", marcas
+                    "draw", 1,
+                    "recordsTotal", marcas.size(),
+                    "recordsFiltered", marcas.size(),
+                    "data", marcas
             ));
         } catch (Exception e) {
             log.error("Error al cargar datos para DataTables", e);
-            return createInternalErrorResponse("Error al cargar datos para la tabla");
+            return ApiResponses.error("Error al cargar datos para la tabla");
         }
     }
 
@@ -80,141 +85,84 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerMarca(@PathVariable Long id) {
         try {
-            Optional<Brand> marca = brandService.obtenerMarcaPorId(id);
-
-            if (marca.isPresent()) {
-                return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "data", marca.get()
-                ));
-            }
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                "success", false,
-                "message", "Marca no encontrada"
-            ));
+            return brandService.obtenerMarcaPorId(id)
+                    .map(marca -> ResponseEntity.ok(Map.of(
+                            "success", true,
+                            "data", BrandResponse.from(marca)
+                    )))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                            "success", false,
+                            "message", "Marca no encontrada"
+                    )));
         } catch (Exception e) {
             log.error("Error al obtener marca con ID: {}", id, e);
-            return createInternalErrorResponse("Error al obtener la marca");
+            return ApiResponses.error("Error al obtener la marca");
         }
     }
 
     @PostMapping("/api/crear")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> crearMarca(
-            @RequestParam("nombre") String nombre,
-            @RequestParam(value = "imagenUrl", required = false) String imagenUrl
-    ) {
+            @Valid @RequestBody BrandRequest request, BindingResult result) {
+        if (result.hasErrors()) {
+            return ApiResponses.validationError(result);
+        }
+
         try {
-            // Validar nombre
-            ValidationResult validacion = validarNombre(nombre);
-            if (!validacion.isValid()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", validacion.getMessage()
-                ));
+            if (brandService.existeMarca(request.getNombre().trim())) {
+                return ApiResponses.error("Ya existe una marca con ese nombre", HttpStatus.CONFLICT);
             }
 
-            // Verificar duplicados
-            if (brandService.existeMarca(nombre.trim())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                    "success", false,
-                    "message", "Ya existe una marca con ese nombre"
-                ));
-            }
-
-            // Crear marca
-            Brand nuevaMarca = new Brand();
-            nuevaMarca.setNombre(nombre.trim());
-            nuevaMarca.setEstado(1);
-
-            // Asignar URL de imagen si se proporcionó
-            if (imagenUrl != null && !imagenUrl.trim().isEmpty()) {
-                nuevaMarca.setImagen(imagenUrl.trim());
-            }
-
-            Brand guardada = brandService.guardarMarca(nuevaMarca);
+            Brand guardada = brandService.guardarMarca(request.toEntity());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "success", true,
-                "message", "Marca creada exitosamente",
-                "data", guardada
+                    "success", true,
+                    "message", "Marca creada exitosamente",
+                    "data", BrandResponse.from(guardada)
             ));
 
         } catch (BrandService.MarcaException e) {
             log.warn("Error de negocio al crear marca: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al crear marca", e);
-            return createInternalErrorResponse("Error al crear la marca");
+            return ApiResponses.error("Error al crear la marca");
         }
     }
 
     @PutMapping("/api/actualizar/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarMarca(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> datos  // ✅ CAMBIO AQUÍ
-    ) {
+            @PathVariable Long id, @Valid @RequestBody BrandRequest request, BindingResult result) {
+        if (result.hasErrors()) {
+            return ApiResponses.validationError(result);
+        }
+
         try {
-            String nombre = datos.get("nombre");  // ✅ OBTENER DE MAP
-            String imagenUrl = datos.get("imagenUrl");  // ✅ OBTENER DE MAP
-
-            // Validar nombre
-            ValidationResult validacion = validarNombre(nombre);
-            if (!validacion.isValid()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", validacion.getMessage()
-                ));
+            if (brandService.obtenerMarcaPorId(id).isEmpty()) {
+                return ApiResponses.error("Marca no encontrada", HttpStatus.NOT_FOUND);
             }
 
-            // Verificar existencia
-            Optional<Brand> optionalBrand = brandService.obtenerMarcaPorId(id);
-            if (!optionalBrand.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                    "success", false,
-                    "message", "Marca no encontrada"
-                ));
+            if (brandService.existeMarcaParaActualizar(request.getNombre().trim(), id)) {
+                return ApiResponses.error("Ya existe otra marca con ese nombre", HttpStatus.CONFLICT);
             }
 
-            // Verificar duplicados
-            if (brandService.existeMarcaParaActualizar(nombre.trim(), id)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                    "success", false,
-                    "message", "Ya existe otra marca con ese nombre"
-                ));
-            }
-
-            // Actualizar marca
-            Brand marca = optionalBrand.get();
-            marca.setNombre(nombre.trim());
-
-            // Actualizar URL de imagen si se proporcionó
-            if (imagenUrl != null && !imagenUrl.trim().isEmpty()) {
-                marca.setImagen(imagenUrl.trim());
-            }
-
+            Brand marca = request.toEntity();
+            marca.setId(id);
             Brand actualizada = brandService.guardarMarca(marca);
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Marca actualizada exitosamente",
-                "data", actualizada
+                    "success", true,
+                    "message", "Marca actualizada exitosamente",
+                    "data", BrandResponse.from(actualizada)
             ));
 
         } catch (BrandService.MarcaException e) {
             log.warn("Error de negocio al actualizar marca {}: {}", id, e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al actualizar marca {}", id, e);
-            return createInternalErrorResponse("Error al actualizar la marca");
+            return ApiResponses.error("Error al actualizar la marca");
         }
     }
 
@@ -224,18 +172,15 @@ public class BrandController {
         try {
             brandService.eliminarMarca(id);
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Marca eliminada exitosamente"
+                    "success", true,
+                    "message", "Marca eliminada exitosamente"
             ));
         } catch (BrandService.MarcaException e) {
             log.warn("Error de negocio al eliminar marca {}: {}", id, e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al eliminar marca {}", id, e);
-            return createInternalErrorResponse("Error al eliminar la marca");
+            return ApiResponses.error("Error al eliminar la marca");
         }
     }
 
@@ -243,23 +188,19 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarEstado(@PathVariable Long id) {
         try {
-            Optional<Brand> marca = brandService.cambiarEstadoMarca(id);
-
-            if (marca.isPresent()) {
-                return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Estado cambiado exitosamente",
-                    "data", marca.get()
-                ));
-            }
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                "success", false,
-                "message", "Marca no encontrada"
-            ));
+            return brandService.cambiarEstadoMarca(id)
+                    .map(marca -> ResponseEntity.ok(Map.of(
+                            "success", true,
+                            "message", "Estado cambiado exitosamente",
+                            "data", BrandResponse.from(marca)
+                    )))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                            "success", false,
+                            "message", "Marca no encontrada"
+                    )));
         } catch (Exception e) {
             log.error("Error al cambiar estado de marca {}", id, e);
-            return createInternalErrorResponse("Error al cambiar el estado");
+            return ApiResponses.error("Error al cambiar el estado");
         }
     }
 
@@ -276,29 +217,23 @@ public class BrandController {
             @RequestParam("imagenUrl") String imagenUrl) {
         try {
             if (imagenUrl == null || imagenUrl.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "La URL de la imagen es requerida"
-                ));
+                return ApiResponses.error("La URL de la imagen es requerida", HttpStatus.BAD_REQUEST);
             }
 
             Brand actualizada = brandService.actualizarImagen(id, imagenUrl.trim());
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Imagen actualizada exitosamente",
-                "data", actualizada
+                    "success", true,
+                    "message", "Imagen actualizada exitosamente",
+                    "data", BrandResponse.from(actualizada)
             ));
 
         } catch (BrandService.MarcaException e) {
             log.warn("Error al actualizar imagen de marca {}: {}", id, e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al actualizar imagen de marca {}", id, e);
-            return createInternalErrorResponse("Error al actualizar la imagen");
+            return ApiResponses.error("Error al actualizar la imagen");
         }
     }
 
@@ -312,20 +247,17 @@ public class BrandController {
             Brand actualizada = brandService.eliminarImagen(id);
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Imagen eliminada exitosamente",
-                "data", actualizada
+                    "success", true,
+                    "message", "Imagen eliminada exitosamente",
+                    "data", BrandResponse.from(actualizada)
             ));
 
         } catch (BrandService.MarcaException e) {
             log.warn("Error al eliminar imagen de marca {}: {}", id, e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al eliminar imagen de marca {}", id, e);
-            return createInternalErrorResponse("Error al eliminar la imagen");
+            return ApiResponses.error("Error al eliminar la imagen");
         }
     }
 
@@ -336,21 +268,20 @@ public class BrandController {
     public ResponseEntity<Map<String, Object>> buscarMarcas(@RequestParam String q) {
         try {
             if (q == null || q.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Parámetro de búsqueda requerido"
-                ));
+                return ApiResponses.error("Parámetro de búsqueda requerido", HttpStatus.BAD_REQUEST);
             }
 
-            List<Brand> marcas = brandService.buscarMarcas(q.trim());
+            List<BrandResponse> marcas = brandService.buscarMarcas(q.trim()).stream()
+                    .map(BrandResponse::from)
+                    .toList();
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", marcas,
-                "total", marcas.size()
+                    "success", true,
+                    "data", marcas,
+                    "total", marcas.size()
             ));
         } catch (Exception e) {
             log.error("Error en búsqueda con query: {}", q, e);
-            return createInternalErrorResponse("Error en la búsqueda");
+            return ApiResponses.error("Error en la búsqueda");
         }
     }
 
@@ -358,14 +289,16 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasActivas() {
         try {
-            List<Brand> marcas = brandService.listarMarcas();
+            List<BrandResponse> marcas = brandService.listarMarcas().stream()
+                    .map(BrandResponse::from)
+                    .toList();
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", marcas
+                    "success", true,
+                    "data", marcas
             ));
         } catch (Exception e) {
             log.error("Error al obtener marcas activas", e);
-            return createInternalErrorResponse("Error al obtener marcas activas");
+            return ApiResponses.error("Error al obtener marcas activas");
         }
     }
 
@@ -373,15 +306,17 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasConImagen() {
         try {
-            List<Brand> marcas = brandService.listarMarcasConImagen();
+            List<BrandResponse> marcas = brandService.listarMarcasConImagen().stream()
+                    .map(BrandResponse::from)
+                    .toList();
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", marcas,
-                "total", marcas.size()
+                    "success", true,
+                    "data", marcas,
+                    "total", marcas.size()
             ));
         } catch (Exception e) {
             log.error("Error al obtener marcas con imagen", e);
-            return createInternalErrorResponse("Error al obtener marcas con imagen");
+            return ApiResponses.error("Error al obtener marcas con imagen");
         }
     }
 
@@ -389,71 +324,17 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasSinImagen() {
         try {
-            List<Brand> marcas = brandService.listarMarcasSinImagen();
+            List<BrandResponse> marcas = brandService.listarMarcasSinImagen().stream()
+                    .map(BrandResponse::from)
+                    .toList();
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", marcas,
-                "total", marcas.size()
+                    "success", true,
+                    "data", marcas,
+                    "total", marcas.size()
             ));
         } catch (Exception e) {
             log.error("Error al obtener marcas sin imagen", e);
-            return createInternalErrorResponse("Error al obtener marcas sin imagen");
-        }
-    }
-
-    // ===================== Métodos de Validación =====================
-
-    private ValidationResult validarNombre(String nombre) {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            return ValidationResult.invalid("El nombre es requerido");
-        }
-
-        String nombreTrim = nombre.trim();
-
-        if (nombreTrim.length() < 2) {
-            return ValidationResult.invalid("El nombre debe tener al menos 2 caracteres");
-        }
-
-        if (nombreTrim.length() > 100) {
-            return ValidationResult.invalid("El nombre no puede exceder 100 caracteres");
-        }
-
-        return ValidationResult.valid();
-    }
-
-    // ===================== Métodos de Utilidad =====================
-
-    private ResponseEntity<Map<String, Object>> createInternalErrorResponse(String message) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-            "success", false,
-            "message", message
-        ));
-    }
-
-    // Clase interna para resultados de validación
-    private static class ValidationResult {
-        private final boolean valid;
-        private final String message;
-
-        private ValidationResult(boolean valid, String message) {
-            this.valid = valid;
-            this.message = message;
-        }
-
-        public static ValidationResult valid() {
-            return new ValidationResult(true, null);
-        }
-
-        public static ValidationResult invalid(String message) {
-            return new ValidationResult(false, message);
-        }
-
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getMessage() {
-            return message;
+            return ApiResponses.error("Error al obtener marcas sin imagen");
         }
     }
 }

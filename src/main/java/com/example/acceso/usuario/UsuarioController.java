@@ -1,18 +1,20 @@
 package com.example.acceso.usuario;
 
-import com.example.acceso.usuario.Usuario;
+import com.example.acceso.common.ApiResponses;
 import com.example.acceso.perfil.Perfil;
+import com.example.acceso.perfil.PerfilResponse;
 import com.example.acceso.perfil.PerfilService;
-import com.example.acceso.usuario.UsuarioService;
-import org.springframework.stereotype.Controller;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,9 @@ import java.util.Map;
 @Controller
 @RequestMapping("/usuarios")
 public class UsuarioController {
+
+    private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);
+    private static final String PERFIL_ADMINISTRADOR = "Administrador";
 
     private final UsuarioService usuarioService;
     private final PerfilService perfilService;
@@ -43,44 +48,27 @@ public class UsuarioController {
     @GetMapping("/api/listar")
     @ResponseBody
     public ResponseEntity<?> listarUsuariosApi(HttpSession session) {
-        Map<String, Object> response = new HashMap<>();
-        
         try {
             List<Usuario> usuarios = usuarioService.listarUsuarios();
+
+            Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", usuarios);
-            
-            // ⚡ SEGURIDAD: Enviar información del usuario logueado
-            // ⚡ CORREGIDO: Usar "usuarioLogueado" en lugar de "usuario"
+            response.put("data", usuarios.stream().map(UsuarioResponse::from).toList());
+
             Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
             if (usuarioLogueado != null) {
                 response.put("currentUserId", usuarioLogueado.getId());
-                response.put("currentUserPerfilId", usuarioLogueado.getPerfil() != null 
-                    ? usuarioLogueado.getPerfil().getId() 
-                    : null);
-                
-                // ⚡ Contar admins activos (para validación de "último admin")
-                long totalAdmins = usuarios.stream()
-                    .filter(u -> u.getEstado() == 1) // Solo activos
-                    .filter(u -> u.getPerfil() != null && "Administrador".equalsIgnoreCase(u.getPerfil().getNombre()))
-                    .count();
-                
-                response.put("totalAdmins", totalAdmins);
-                
-                System.out.println("👤 Usuario logueado: ID=" + usuarioLogueado.getId() + 
-                                   ", Perfil=" + (usuarioLogueado.getPerfil() != null ? usuarioLogueado.getPerfil().getNombre() : "null"));
-                System.out.println("🔑 Perfil ID:" + (usuarioLogueado.getPerfil() != null ? usuarioLogueado.getPerfil().getId() : "null"));
-                System.out.println("👥 Total Admins activos: " + totalAdmins);
-            } else {
-                System.out.println("⚠️ NO HAY USUARIO EN SESIÓN");
+                response.put("currentUserPerfilId", usuarioLogueado.getPerfil() != null
+                        ? usuarioLogueado.getPerfil().getId()
+                        : null);
+
+                response.put("totalAdmins", contarAdministradoresActivos());
             }
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "Error al listar usuarios: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            log.error("Error al listar usuarios", e);
+            return ApiResponses.error("Error al listar usuarios: " + e.getMessage());
         }
     }
 
@@ -89,7 +77,9 @@ public class UsuarioController {
     public ResponseEntity<?> listarPerfilesActivosApi() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", perfilService.listarPerfilesActivos());
+        response.put("data", perfilService.listarPerfilesActivos().stream()
+                .map(PerfilResponse::from)
+                .toList());
         return ResponseEntity.ok(response);
     }
 
@@ -99,80 +89,66 @@ public class UsuarioController {
     @PostMapping("/api/guardar")
     @ResponseBody
     public ResponseEntity<?> guardarUsuarioAjax(
-            @Valid @RequestBody Usuario usuario, 
+            @Valid @RequestBody UsuarioRequest request,
             BindingResult bindingResult,
             HttpSession session) {
-        
-        Map<String, Object> response = new HashMap<>();
 
         if (bindingResult.hasErrors()) {
-            Map<String, String> errores = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(error -> 
-                errores.put(error.getField(), error.getDefaultMessage())
-            );
-            response.put("success", false);
-            response.put("message", "Datos inválidos");
-            response.put("errors", errores);
-            return ResponseEntity.badRequest().body(response);
+            return ApiResponses.validationError(bindingResult);
         }
 
         try {
-            // ⚡ CORREGIDO: Usar "usuarioLogueado"
             Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
-            
-            // ⚡ VALIDACIÓN 1: No puedes cambiar tu propio perfil a uno inferior
-            if (usuario.getId() != null && usuarioLogueado != null 
-                && usuario.getId().equals(usuarioLogueado.getId())) {
-                
+            Perfil perfilNuevo = request.getPerfilId() != null
+                    ? perfilService.obtenerPerfilPorId(request.getPerfilId()).orElse(null)
+                    : null;
+
+            // VALIDACIÓN 1: No puedes cambiar tu propio perfil a uno inferior
+            if (request.getId() != null && usuarioLogueado != null
+                    && request.getId().equals(usuarioLogueado.getId())) {
+
                 Perfil perfilActual = usuarioLogueado.getPerfil();
-                Perfil perfilNuevo = usuario.getPerfil();
-                
-                if (perfilActual != null && perfilNuevo != null) {
-                    // Si eres admin y intentas cambiar a otro perfil
-                    if ("Administrador".equalsIgnoreCase(perfilActual.getNombre()) 
+
+                if (perfilActual != null && perfilNuevo != null
+                        && PERFIL_ADMINISTRADOR.equalsIgnoreCase(perfilActual.getNombre())
                         && !perfilActual.getId().equals(perfilNuevo.getId())) {
-                        
-                        response.put("success", false);
-                        response.put("message", "⛔ ACCIÓN DENEGADA: No puedes cambiar tu propio perfil de Administrador.");
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-                    }
+
+                    return ApiResponses.error(
+                            "⛔ ACCIÓN DENEGADA: No puedes cambiar tu propio perfil de Administrador.",
+                            HttpStatus.FORBIDDEN);
                 }
             }
-            
-            // ⚡ VALIDACIÓN 2: Si estás cambiando el perfil de alguien de Admin a otro
-            // y es el último admin, no permitirlo
-            if (usuario.getId() != null) {
-                Usuario usuarioExistente = usuarioService.obtenerUsuarioPorId(usuario.getId()).orElse(null);
+
+            // VALIDACIÓN 2: No puedes bajar de Admin al último administrador
+            if (request.getId() != null) {
+                Usuario usuarioExistente = usuarioService.obtenerUsuarioPorId(request.getId()).orElse(null);
                 if (usuarioExistente != null && usuarioExistente.getPerfil() != null) {
-                    boolean eraAdmin = "Administrador".equalsIgnoreCase(usuarioExistente.getPerfil().getNombre());
-                    boolean seraAdmin = usuario.getPerfil() != null 
-                        && "Administrador".equalsIgnoreCase(usuario.getPerfil().getNombre());
-                    
-                    if (eraAdmin && !seraAdmin) {
-                        long totalAdmins = contarAdministradoresActivos();
-                        if (totalAdmins <= 1) {
-                            response.put("success", false);
-                            response.put("message", "⛔ No puedes cambiar el perfil del único administrador del sistema.");
-                            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-                        }
+                    boolean eraAdmin = PERFIL_ADMINISTRADOR.equalsIgnoreCase(usuarioExistente.getPerfil().getNombre());
+                    boolean seraAdmin = perfilNuevo != null
+                            && PERFIL_ADMINISTRADOR.equalsIgnoreCase(perfilNuevo.getNombre());
+
+                    if (eraAdmin && !seraAdmin && contarAdministradoresActivos() <= 1) {
+                        return ApiResponses.error(
+                                "⛔ No puedes cambiar el perfil del único administrador del sistema.",
+                                HttpStatus.FORBIDDEN);
                     }
                 }
             }
 
-            Usuario usuarioGuardado = usuarioService.guardarUsuario(usuario);
+            Usuario usuarioGuardado = usuarioService.guardarUsuario(request);
+
+            Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("usuario", usuarioGuardado);
-            response.put("message", usuario.getId() != null 
-                ? "Usuario actualizado correctamente" 
-                : "Usuario creado correctamente");
-            
+            response.put("usuario", UsuarioResponse.from(usuarioGuardado));
+            response.put("message", request.getId() != null
+                    ? "Usuario actualizado correctamente"
+                    : "Usuario creado correctamente");
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
-            e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "Error interno del servidor: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            log.error("Error al guardar usuario", e);
+            return ApiResponses.error("Error interno del servidor: " + e.getMessage());
         }
     }
 
@@ -180,17 +156,17 @@ public class UsuarioController {
     @ResponseBody
     public ResponseEntity<?> obtenerUsuario(@PathVariable Long id) {
         try {
-            return usuarioService.obtenerUsuarioPorId(id).map(usuario -> {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("data", usuario);
-                return ResponseEntity.ok(response);
-            }).orElse(ResponseEntity.notFound().build());
+            return usuarioService.obtenerUsuarioPorId(id)
+                    .map(usuario -> {
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("success", true);
+                        response.put("data", UsuarioResponse.from(usuario));
+                        return ResponseEntity.ok(response);
+                    })
+                    .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error al obtener usuario: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            log.error("Error al obtener usuario {}", id, e);
+            return ApiResponses.error("Error al obtener usuario: " + e.getMessage());
         }
     }
 
@@ -200,50 +176,37 @@ public class UsuarioController {
     @DeleteMapping("/api/eliminar/{id}")
     @ResponseBody
     public ResponseEntity<?> eliminarUsuarioAjax(@PathVariable Long id, HttpSession session) {
-        Map<String, Object> response = new HashMap<>();
-
         try {
-            // 🛡️ VALIDACIÓN 1: No puedes eliminarte a ti mismo
-            // ⚡ CORREGIDO: Usar "usuarioLogueado"
             Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
             if (usuarioLogueado != null && usuarioLogueado.getId().equals(id)) {
-                response.put("success", false);
-                response.put("message", "⛔ ACCIÓN DENEGADA: No puedes eliminar tu propia cuenta.");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+                return ApiResponses.error(
+                        "⛔ ACCIÓN DENEGADA: No puedes eliminar tu propia cuenta.", HttpStatus.FORBIDDEN);
             }
 
-            // 🛡️ VALIDACIÓN 2: Verificar si el usuario existe
             Usuario usuarioAEliminar = usuarioService.obtenerUsuarioPorId(id).orElse(null);
             if (usuarioAEliminar == null) {
-                response.put("success", false);
-                response.put("message", "Usuario no encontrado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ApiResponses.error("Usuario no encontrado", HttpStatus.NOT_FOUND);
             }
 
-            // 🛡️ VALIDACIÓN 3: No puedes eliminar al último administrador activo
-            if (usuarioAEliminar.getPerfil() != null 
-                && "Administrador".equalsIgnoreCase(usuarioAEliminar.getPerfil().getNombre())
-                && usuarioAEliminar.getEstado() == 1) {
-                
-                long totalAdmins = contarAdministradoresActivos();
-                if (totalAdmins <= 1) {
-                    response.put("success", false);
-                    response.put("message", "⛔ ACCIÓN DENEGADA: No puedes eliminar al único administrador activo del sistema.");
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-                }
+            if (usuarioAEliminar.getPerfil() != null
+                    && PERFIL_ADMINISTRADOR.equalsIgnoreCase(usuarioAEliminar.getPerfil().getNombre())
+                    && usuarioAEliminar.getEstado() == 1
+                    && contarAdministradoresActivos() <= 1) {
+
+                return ApiResponses.error(
+                        "⛔ ACCIÓN DENEGADA: No puedes eliminar al único administrador activo del sistema.",
+                        HttpStatus.FORBIDDEN);
             }
 
-            // Todo OK, proceder con la eliminación
             usuarioService.eliminarUsuario(id);
-            response.put("success", true);
-            response.put("message", "✅ Usuario eliminado correctamente");
-            return ResponseEntity.ok(response);
-            
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "✅ Usuario eliminado correctamente"
+            ));
+
         } catch (Exception e) {
-            e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "Error al eliminar usuario: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            log.error("Error al eliminar usuario {}", id, e);
+            return ApiResponses.error("Error al eliminar usuario: " + e.getMessage());
         }
     }
 
@@ -253,60 +216,43 @@ public class UsuarioController {
     @PostMapping("/api/cambiar-estado/{id}")
     @ResponseBody
     public ResponseEntity<?> cambiarEstadoUsuarioAjax(@PathVariable Long id, HttpSession session) {
-        Map<String, Object> response = new HashMap<>();
-
         try {
-            // 🛡️ VALIDACIÓN 1: No puedes desactivarte a ti mismo
-            // ⚡ CORREGIDO: Usar "usuarioLogueado"
             Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
             if (usuarioLogueado != null && usuarioLogueado.getId().equals(id)) {
-                response.put("success", false);
-                response.put("message", "⛔ ACCIÓN DENEGADA: No puedes desactivar tu propia cuenta.");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+                return ApiResponses.error(
+                        "⛔ ACCIÓN DENEGADA: No puedes desactivar tu propia cuenta.", HttpStatus.FORBIDDEN);
             }
 
-            // 🛡️ VALIDACIÓN 2: Verificar si existe el usuario
             Usuario usuarioACambiar = usuarioService.obtenerUsuarioPorId(id).orElse(null);
             if (usuarioACambiar == null) {
-                response.put("success", false);
-                response.put("message", "Usuario no encontrado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ApiResponses.error("Usuario no encontrado", HttpStatus.NOT_FOUND);
             }
 
-            // 🛡️ VALIDACIÓN 3: No puedes desactivar al último admin activo
-            if (usuarioACambiar.getEstado() == 1 
-                && usuarioACambiar.getPerfil() != null
-                && "Administrador".equalsIgnoreCase(usuarioACambiar.getPerfil().getNombre())) {
-                
-                long totalAdmins = contarAdministradoresActivos();
-                if (totalAdmins <= 1) {
-                    response.put("success", false);
-                    response.put("message", "⛔ ACCIÓN DENEGADA: No puedes desactivar al único administrador activo del sistema.");
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-                }
+            if (usuarioACambiar.getEstado() == 1
+                    && usuarioACambiar.getPerfil() != null
+                    && PERFIL_ADMINISTRADOR.equalsIgnoreCase(usuarioACambiar.getPerfil().getNombre())
+                    && contarAdministradoresActivos() <= 1) {
+
+                return ApiResponses.error(
+                        "⛔ ACCIÓN DENEGADA: No puedes desactivar al único administrador activo del sistema.",
+                        HttpStatus.FORBIDDEN);
             }
 
-            // Todo OK, proceder con el cambio de estado
             return usuarioService.cambiarEstadoUsuario(id)
                     .map(usuario -> {
+                        Map<String, Object> response = new HashMap<>();
                         response.put("success", true);
-                        response.put("usuario", usuario);
-                        response.put("message", usuario.getEstado() == 1 
-                            ? "✅ Usuario activado correctamente" 
-                            : "✅ Usuario desactivado correctamente");
+                        response.put("usuario", UsuarioResponse.from(usuario));
+                        response.put("message", usuario.getEstado() == 1
+                                ? "✅ Usuario activado correctamente"
+                                : "✅ Usuario desactivado correctamente");
                         return ResponseEntity.ok(response);
                     })
-                    .orElseGet(() -> {
-                        response.put("success", false);
-                        response.put("message", "Error al cambiar estado del usuario");
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-                    });
-                    
+                    .orElseGet(() -> ApiResponses.error("Error al cambiar estado del usuario"));
+
         } catch (Exception e) {
-            e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "Error al cambiar estado: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            log.error("Error al cambiar estado de usuario {}", id, e);
+            return ApiResponses.error("Error al cambiar estado: " + e.getMessage());
         }
     }
 
@@ -314,10 +260,9 @@ public class UsuarioController {
      * Método auxiliar para contar administradores activos
      */
     private long contarAdministradoresActivos() {
-        List<Usuario> usuarios = usuarioService.listarUsuarios();
-        return usuarios.stream()
-                .filter(u -> u.getEstado() == 1) // Solo activos
-                .filter(u -> u.getPerfil() != null && "Administrador".equalsIgnoreCase(u.getPerfil().getNombre()))
+        return usuarioService.listarUsuarios().stream()
+                .filter(u -> u.getEstado() == 1)
+                .filter(u -> u.getPerfil() != null && PERFIL_ADMINISTRADOR.equalsIgnoreCase(u.getPerfil().getNombre()))
                 .count();
     }
 }

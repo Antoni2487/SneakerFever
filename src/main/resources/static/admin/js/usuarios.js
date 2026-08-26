@@ -229,14 +229,12 @@ $(document).ready(function() {
             usuario: $('#usuario').val().trim(),
             clave: $('#clave').val(),
             correo: $('#correo').val().trim(),
-            perfil: {
-                id: $('#id_perfil').val()
-            }
+            perfilId: $('#id_perfil').val() ? parseInt($('#id_perfil').val()) : null
         };
 
         // ⚡ VALIDACIÓN CRÍTICA: No puedes cambiar tu propio perfil a uno inferior
         if (isEditing && formData.id == currentUserId) {
-            const newPerfilId = parseInt(formData.perfil.id);
+            const newPerfilId = formData.perfilId;
             if (currentUserPerfilId === 1 && newPerfilId !== 1) {
                 showNotification('⛔ No puedes cambiar tu propio perfil de Administrador', 'error');
                 showFieldError('id_perfil', 'No puedes reducir tu propio nivel de acceso');
@@ -474,7 +472,7 @@ $(document).ready(function() {
             hasErrors = true;
         }
 
-        if (!formData.perfil.id) {
+        if (!formData.perfilId) {
             showFieldError('id_perfil', 'Debe seleccionar un perfil');
             hasErrors = true;
         }
