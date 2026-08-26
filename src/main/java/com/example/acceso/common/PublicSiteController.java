@@ -6,8 +6,10 @@ import com.example.acceso.category.CategoryResponse;
 import com.example.acceso.category.CategoryService;
 import com.example.acceso.product.ProductResponse;
 import com.example.acceso.product.ProductService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,6 +55,15 @@ public class PublicSiteController {
     @GetMapping("/productos")
     public ResponseEntity<Map<String, Object>> listarProductos() {
         return ResponseEntity.ok(Map.of("success", true, "data", mapear(productService.listarProductos())));
+    }
+
+    @GetMapping("/productos/{id}")
+    public ResponseEntity<Map<String, Object>> obtenerProducto(@PathVariable Long id) {
+        return productService.obtenerProductoPorId(id)
+                .filter(p -> p.getEstado() == 1)
+                .map(p -> ResponseEntity.ok(Map.<String, Object>of("success", true, "data", ProductResponse.from(p))))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("success", false, "message", "Producto no encontrado")));
     }
 
     @GetMapping("/productos/destacados")

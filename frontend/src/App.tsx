@@ -17,6 +17,7 @@ import Personalizacion from './pages/Personalizacion'
 import Placeholder from './pages/Placeholder'
 import Landing from './pages/public/Landing'
 import Catalogo from './pages/public/Catalogo'
+import ProductoDetalle from './pages/public/ProductoDetalle'
 import PublicPlaceholder from './pages/public/PublicPlaceholder'
 
 export default function App() {
@@ -29,7 +30,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Landing />} />
           <Route path="/catalogo" element={<Catalogo />} />
-          <Route path="/producto/:id" element={<PublicPlaceholder />} />
+          <Route path="/producto/:id" element={<ProductoDetalle />} />
           <Route path="/contacto" element={<PublicPlaceholder />} />
           <Route path="/carrito" element={<PublicPlaceholder />} />
         </Route>
