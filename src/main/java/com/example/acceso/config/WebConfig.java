@@ -92,6 +92,11 @@ public class WebConfig implements WebMvcConfigurer {
                     "/login",
                     "/logout",
                     "/api/auth/**",
+                    // Endpoints ya pensados como públicos por su propio nombre (usados por el
+                    // sitio público: logo/slides del carrusel principal) — quedaron atrapados
+                    // por el "/personalizacion/api/**" de arriba al cerrar el hueco de seguridad
+                    // original, que no distinguía sub-rutas públicas.
+                    "/personalizacion/api/public/**",
                     "/css/**",
                     "/js/**",
                     "/images/**",

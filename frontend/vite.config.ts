@@ -22,6 +22,9 @@ const PROXIED_PATHS = [
   '/carrito',
   '/api',
   '/uploads',
+  // Assets estáticos del sitio público (imágenes usadas por el landing/navbar), servidos
+  // directo desde classpath:/static/web/** por el backend.
+  '/web',
 ]
 
 // https://vite.dev/config/

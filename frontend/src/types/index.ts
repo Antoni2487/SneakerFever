@@ -352,3 +352,10 @@ export interface PersonalizacionSlot {
   fechaCreacion: string
   fechaActualizacion: string
 }
+
+// Endpoints públicos (sin sesión) para el sitio público, ver PublicSiteController.
+export interface ProductosDestacados {
+  zapatillas: Product[]
+  ropa: Product[]
+  accesorios: Product[]
+}

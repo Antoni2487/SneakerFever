@@ -392,11 +392,13 @@ public class PersonalizacionController {
                 ));
             }
 
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "url", null,
-                "message", "No hay logo configurado"
-            ));
+            // Map.of() no acepta valores null (lanza NPE) - se usa HashMap para el caso
+            // "sin logo configurado", que es un estado válido, no un error.
+            Map<String, Object> sinLogo = new HashMap<>();
+            sinLogo.put("success", true);
+            sinLogo.put("url", null);
+            sinLogo.put("message", "No hay logo configurado");
+            return ResponseEntity.ok(sinLogo);
         } catch (Exception e) {
             log.error("Error al obtener logo público", e);
             return createInternalErrorResponse("Error al obtener el logo");

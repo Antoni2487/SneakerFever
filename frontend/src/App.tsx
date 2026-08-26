@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './routes/ProtectedRoute'
 import AdminLayout from './components/layout/AdminLayout'
+import PublicLayout from './components/public/PublicLayout'
 import Login from './pages/Login'
 import Categorias from './pages/Categorias'
 import Marcas from './pages/Marcas'
@@ -14,15 +15,27 @@ import Dashboard from './pages/Dashboard'
 import Inventario from './pages/Inventario'
 import Personalizacion from './pages/Personalizacion'
 import Placeholder from './pages/Placeholder'
+import Landing from './pages/public/Landing'
+import PublicPlaceholder from './pages/public/PublicPlaceholder'
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
+
+        {/* Sitio público - sin autenticación */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Landing />} />
+          <Route path="/catalogo" element={<PublicPlaceholder />} />
+          <Route path="/producto/:id" element={<PublicPlaceholder />} />
+          <Route path="/contacto" element={<PublicPlaceholder />} />
+          <Route path="/carrito" element={<PublicPlaceholder />} />
+        </Route>
+
+        {/* Panel admin - requiere sesión */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/marcas" element={<Marcas />} />
