@@ -91,35 +91,10 @@ public class ClienteController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
         try {
-            List<Cliente> todosClientes = clienteService.listarTodosClientes();
-
-            // Contar por estado
-            long activos = todosClientes.stream()
-                .filter(c -> c.getEstado() == 1)
-                .count();
-
-            long inactivos = todosClientes.stream()
-                .filter(c -> c.getEstado() == 0)
-                .count();
-
-            long eliminados = todosClientes.stream()
-                .filter(c -> c.getEstado() == 2)
-                .count();
-
-            // Preparar datos de estadísticas
-            Map<String, Object> stats = new HashMap<>();
-            stats.put("activos", activos);
-            stats.put("inactivos", inactivos);
-            stats.put("eliminados", eliminados);
-            stats.put("total", todosClientes.size());
-
-            // Respuesta exitosa
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", stats);
-
+            response.put("data", clienteService.obtenerEstadisticas());
             return ResponseEntity.ok(response);
-
         } catch (Exception e) {
             return ApiResponses.error("Error al obtener estadísticas: " + e.getMessage());
         }

@@ -104,35 +104,10 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
         try {
-            List<Product> todosProductos = productService.listarTodosProductos();
-
-            // Contar por estado
-            long activos = todosProductos.stream()
-                .filter(p -> p.getEstado() == 1)
-                .count();
-
-            long inactivos = todosProductos.stream()
-                .filter(p -> p.getEstado() == 0)
-                .count();
-
-            long eliminados = todosProductos.stream()
-                .filter(p -> p.getEstado() == 2)
-                .count();
-
-            // Preparar datos de estadísticas
-            Map<String, Object> stats = new HashMap<>();
-            stats.put("activos", activos);
-            stats.put("inactivos", inactivos);
-            stats.put("eliminados", eliminados);
-            stats.put("total", todosProductos.size());
-
-            // Respuesta exitosa
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", stats);
-
+            response.put("data", productService.obtenerEstadisticas());
             return ResponseEntity.ok(response);
-
         } catch (Exception e) {
             return ApiResponses.error("Error al obtener estadísticas: " + e.getMessage());
         }

@@ -1,12 +1,11 @@
 package com.example.acceso.venta;
 
-import com.example.acceso.venta.TipoComprobante;
-import com.example.acceso.venta.ComprobanteSecuencia;
-import com.example.acceso.venta.ComprobanteSecuenciaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -42,5 +41,10 @@ public class ComprobanteSecuenciaService {
                 .orElseThrow(() -> new RuntimeException(
                         "No existe secuencia para el tipo " + tipoComprobante + " y serie " + serie
                 ));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ComprobanteSecuencia> obtenerSerieActiva(TipoComprobante tipoComprobante) {
+        return comprobanteSecuenciaRepository.findFirstByActivoTrueAndTipoComprobante(tipoComprobante);
     }
 }
