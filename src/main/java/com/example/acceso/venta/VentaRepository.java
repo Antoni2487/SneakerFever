@@ -19,10 +19,12 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
 
     // ===================== BÚSQUEDAS POR CLIENTE =====================
 
+    @EntityGraph(attributePaths = {"cliente", "detalles", "detalles.producto"})
     List<Venta> findByClienteIdOrderByFechaCreacionDesc(Long clienteId);
 
     // ===================== BÚSQUEDAS POR ESTADO =====================
 
+    @EntityGraph(attributePaths = {"cliente", "detalles", "detalles.producto"})
     List<Venta> findByEstadoOrderByFechaCreacionDesc(EstadoVenta estado);
 
     Long countByEstadoNot(EstadoVenta estado);
@@ -30,12 +32,14 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
 
     // ===================== BÚSQUEDAS POR FORMA DE PAGO =====================
 
+    @EntityGraph(attributePaths = {"cliente", "detalles", "detalles.producto"})
     @Query("SELECT v FROM Venta v WHERE v.formaPago = 'CREDITO' " +
            "ORDER BY v.fechaCreacion DESC")
     List<Venta> findVentasConCredito();
 
     // ===================== BÚSQUEDAS POR FECHA =====================
 
+    @EntityGraph(attributePaths = {"cliente", "detalles", "detalles.producto"})
     List<Venta> findByFechaCreacionBetweenOrderByFechaCreacionDesc(
         LocalDateTime fechaInicio,
         LocalDateTime fechaFin

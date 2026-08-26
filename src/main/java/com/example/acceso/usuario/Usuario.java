@@ -46,7 +46,7 @@ public class Usuario {
     @Column(nullable = false)
     private Integer estado = 1; // 1: Activo, 0: Inactivo, 2: Eliminado
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_perfil")
     private Perfil perfil;
 
