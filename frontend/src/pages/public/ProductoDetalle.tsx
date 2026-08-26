@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { apiClient, ApiError } from '../../lib/apiClient'
+import { useCart } from '../../context/CartContext'
 import type { Product } from '../../types'
 
 const TALLAS = ['US 7', 'US 8', 'US 9', 'US 10', 'US 11']
@@ -11,26 +12,39 @@ function precioFinal(precio: number, descuento: number | null) {
   return precio * (1 - descuento / 100)
 }
 
-function agregarAlCarrito() {
+function notify(title: string, icon: 'success' | 'error') {
   Swal.fire({
-    title: 'Carrito próximamente',
-    text: 'Todavía estamos construyendo el carrito de compras.',
-    icon: 'info',
+    title,
+    icon,
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
-    timer: 3000,
+    timer: 2500,
     timerProgressBar: true,
   })
 }
 
 export default function ProductoDetalle() {
   const { id } = useParams<{ id: string }>()
+  const { agregar } = useCart()
   const [producto, setProducto] = useState<Product | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [cargando, setCargando] = useState(true)
   const [imagenActiva, setImagenActiva] = useState<string | null>(null)
   const [tallaActiva, setTallaActiva] = useState<string | null>(null)
+  const [agregando, setAgregando] = useState(false)
+
+  async function handleAgregar() {
+    setAgregando(true)
+    try {
+      await agregar(Number(id))
+      notify('Agregado al carrito', 'success')
+    } catch (err) {
+      notify(err instanceof ApiError ? err.message : 'No se pudo agregar', 'error')
+    } finally {
+      setAgregando(false)
+    }
+  }
 
   useEffect(() => {
     setCargando(true)
@@ -152,8 +166,8 @@ export default function ProductoDetalle() {
           </div>
 
           <button
-            onClick={agregarAlCarrito}
-            disabled={agotado}
+            onClick={handleAgregar}
+            disabled={agotado || agregando}
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-black py-3.5 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             {agotado ? (

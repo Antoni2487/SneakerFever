@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../lib/apiClient'
+import { useCart } from '../../context/CartContext'
 import type { Brand } from '../../types'
 
 const GENERO_MENU = [
@@ -13,6 +14,7 @@ const SUBCATEGORIAS = ['Zapatillas', 'Ropa', 'Accesorios']
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const { count } = useCart()
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [marcas, setMarcas] = useState<Brand[]>([])
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -121,7 +123,11 @@ export default function Navbar() {
 
             <Link to="/carrito" className="relative text-lg text-slate-700 hover:text-black" aria-label="Carrito">
               <i className="bi bi-bag" />
-              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-black text-[10px] font-bold text-white">0</span>
+              {count > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-black text-[10px] font-bold text-white">
+                  {count}
+                </span>
+              )}
             </Link>
 
             <button onClick={() => setMobileOpen(true)} className="text-2xl text-slate-800 lg:hidden" aria-label="Abrir menú">
