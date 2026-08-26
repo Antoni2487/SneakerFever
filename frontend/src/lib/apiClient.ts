@@ -49,3 +49,23 @@ export const apiClient = {
     request<T>(path, { method: 'PUT', body: data !== undefined ? JSON.stringify(data) : undefined }),
   delete: <T = unknown>(path: string) => request<T>(path, { method: 'DELETE' }),
 }
+
+export async function uploadFile(path: string, file: File, fieldName = 'file'): Promise<ApiEnvelope> {
+  const formData = new FormData()
+  formData.append(fieldName, file)
+
+  const response = await fetch(path, { method: 'POST', credentials: 'include', body: formData })
+
+  let body: ApiEnvelope
+  try {
+    body = await response.json()
+  } catch {
+    throw new ApiError('Error de conexión con el servidor', response.status)
+  }
+
+  if (!response.ok || body.success === false) {
+    throw new ApiError(body.message ?? 'Error de conexión con el servidor', response.status, body.errors)
+  }
+
+  return body
+}

@@ -35,3 +35,19 @@ export interface CategoryFormData {
   nombre: string
   descripcion: string
 }
+
+export interface Brand {
+  id: number
+  nombre: string
+  descripcion: string | null
+  estado: number
+  imagen: string | null
+  imagenes: string[]
+  fechaCreacion: string
+  fechaActualizacion: string
+}
+
+export interface BrandFormData {
+  nombre: string
+  imagen: string
+}
