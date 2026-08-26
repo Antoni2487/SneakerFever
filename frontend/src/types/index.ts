@@ -339,3 +339,16 @@ export interface RegistrarMovimientoFormData {
   motivo: MotivoMovimiento | ''
   observaciones: string
 }
+
+// La entidad Personalizacion se serializa directamente (sin DTO ni @JsonProperty) - camelCase.
+// `marca` tiene @JsonIgnoreProperties({"imagenes","descripcion"}) en el backend, por eso no
+// reusa el tipo Brand completo.
+export interface PersonalizacionSlot {
+  id: number
+  tipo: 'LOGO' | 'SLIDE'
+  imagenUrl: string | null
+  orden: number | null
+  marca: { id: number; nombre: string; estado: number } | null
+  fechaCreacion: string
+  fechaActualizacion: string
+}

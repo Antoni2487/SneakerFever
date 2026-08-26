@@ -12,6 +12,7 @@ import Perfiles from './pages/Perfiles'
 import Ventas from './pages/Ventas'
 import Dashboard from './pages/Dashboard'
 import Inventario from './pages/Inventario'
+import Personalizacion from './pages/Personalizacion'
 import Placeholder from './pages/Placeholder'
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/perfiles/listar" element={<Perfiles />} />
             <Route path="/ventas" element={<Ventas />} />
             <Route path="/inventario" element={<Inventario />} />
+            <Route path="/personalizacion" element={<Personalizacion />} />
             <Route path="*" element={<Placeholder />} />
           </Route>
         </Route>
