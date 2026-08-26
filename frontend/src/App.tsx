@@ -9,6 +9,7 @@ import Productos from './pages/Productos'
 import Usuarios from './pages/Usuarios'
 import Clientes from './pages/Clientes'
 import Perfiles from './pages/Perfiles'
+import Ventas from './pages/Ventas'
 import Placeholder from './pages/Placeholder'
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/perfiles" element={<Navigate to="/perfiles/listar" replace />} />
             <Route path="/perfiles/listar" element={<Perfiles />} />
+            <Route path="/ventas" element={<Ventas />} />
             <Route path="*" element={<Placeholder />} />
           </Route>
         </Route>
