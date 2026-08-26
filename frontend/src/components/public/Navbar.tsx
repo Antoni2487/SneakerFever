@@ -54,12 +54,19 @@ export default function Navbar() {
           <div className="hidden flex-1 items-center gap-6 lg:flex">
             {GENERO_MENU.map((genero) => (
               <div key={genero.key} className="group relative">
-                <button className="flex items-center gap-1 py-2 text-sm font-semibold uppercase tracking-wide text-slate-800 hover:text-black">
+                <Link
+                  to={`/catalogo?genero=${genero.key.toUpperCase()}`}
+                  className="flex items-center gap-1 py-2 text-sm font-semibold uppercase tracking-wide text-slate-800 hover:text-black"
+                >
                   {genero.label} <i className="bi bi-chevron-down text-xs" />
-                </button>
+                </Link>
                 <div className="invisible absolute left-0 top-full z-10 min-w-[180px] rounded-lg border border-black/10 bg-white py-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
                   {SUBCATEGORIAS.map((sub) => (
-                    <Link key={sub} to="/catalogo" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                    <Link
+                      key={sub}
+                      to={`/catalogo?genero=${genero.key.toUpperCase()}&subcategoria=${sub}`}
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
                       {sub}
                     </Link>
                   ))}
@@ -68,13 +75,16 @@ export default function Navbar() {
             ))}
 
             <div className="group relative">
-              <button className="flex items-center gap-1 py-2 text-sm font-semibold uppercase tracking-wide text-slate-800 hover:text-black">
+              <Link
+                to="/catalogo"
+                className="flex items-center gap-1 py-2 text-sm font-semibold uppercase tracking-wide text-slate-800 hover:text-black"
+              >
                 Marcas <i className="bi bi-chevron-down text-xs" />
-              </button>
+              </Link>
               {marcas.length > 0 && (
                 <div className="invisible absolute left-0 top-full z-10 flex min-w-[280px] flex-wrap gap-4 rounded-lg border border-black/10 bg-white p-4 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
                   {marcas.map((m) => (
-                    <Link key={m.id} to="/catalogo" title={m.nombre} className="grayscale transition hover:grayscale-0">
+                    <Link key={m.id} to={`/catalogo?marca=${encodeURIComponent(m.nombre)}`} title={m.nombre} className="grayscale transition hover:grayscale-0">
                       <img src={m.imagen ?? undefined} alt={m.nombre} className="h-8 w-auto object-contain" />
                     </Link>
                   ))}
@@ -82,7 +92,7 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link to="/catalogo" className="py-2 text-sm font-semibold uppercase tracking-wide text-brand-danger hover:text-red-700">
+            <Link to="/catalogo?sale=true" className="py-2 text-sm font-semibold uppercase tracking-wide text-brand-danger hover:text-red-700">
               Ofertas
             </Link>
           </div>
@@ -157,7 +167,12 @@ export default function Navbar() {
                 {mobileSection === genero.key && (
                   <div className="pb-2 pl-3">
                     {SUBCATEGORIAS.map((sub) => (
-                      <Link key={sub} to="/catalogo" onClick={() => setMobileOpen(false)} className="block py-1.5 text-sm text-slate-600">
+                      <Link
+                        key={sub}
+                        to={`/catalogo?genero=${genero.key.toUpperCase()}&subcategoria=${sub}`}
+                        onClick={() => setMobileOpen(false)}
+                        className="block py-1.5 text-sm text-slate-600"
+                      >
                         {sub}
                       </Link>
                     ))}
@@ -177,7 +192,7 @@ export default function Navbar() {
               {mobileSection === 'marcas' && (
                 <div className="flex flex-wrap gap-3 pb-2 pl-3">
                   {marcas.map((m) => (
-                    <Link key={m.id} to="/catalogo" onClick={() => setMobileOpen(false)} title={m.nombre}>
+                    <Link key={m.id} to={`/catalogo?marca=${encodeURIComponent(m.nombre)}`} onClick={() => setMobileOpen(false)} title={m.nombre}>
                       <img src={m.imagen ?? undefined} alt={m.nombre} className="h-7 w-auto object-contain" />
                     </Link>
                   ))}
@@ -185,7 +200,7 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link to="/catalogo" onClick={() => setMobileOpen(false)} className="block py-3 text-sm font-semibold uppercase text-brand-danger">
+            <Link to="/catalogo?sale=true" onClick={() => setMobileOpen(false)} className="block py-3 text-sm font-semibold uppercase text-brand-danger">
               Ofertas
             </Link>
           </div>
