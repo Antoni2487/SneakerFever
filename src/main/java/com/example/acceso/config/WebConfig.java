@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.file.Path;
@@ -19,14 +18,8 @@ import java.nio.file.Paths;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final SessionInterceptor sessionInterceptor;
-
     @Value("${upload.path:src/main/resources/static/uploads}")
     private String uploadPath;
-
-    public WebConfig(SessionInterceptor sessionInterceptor) {
-        this.sessionInterceptor = sessionInterceptor;
-    }
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
@@ -67,44 +60,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .setCachePeriod(3600); // Cache de 1 hora para imágenes de productos
     }
 
-    @Override
-    public void addInterceptors(@NonNull InterceptorRegistry registry) {
-        // Registra nuestro SessionInterceptor
-        // Cubre tanto las páginas Thymeleaf (/admin/**) como los endpoints JSON
-        // administrativos (/*/api/**) — antes solo las páginas estaban protegidas,
-        // dejando esos endpoints alcanzables sin sesión por cualquier cliente.
-        registry.addInterceptor(sessionInterceptor)
-                .addPathPatterns(
-                    "/admin/**",
-                    "/marcas/api/**",
-                    "/categorias/api/**",
-                    "/clientes/api/**",
-                    "/productos/api/**",
-                    "/usuarios/api/**",
-                    "/perfiles/api/**",
-                    "/ventas/api/**",
-                    "/creditos/api/**",
-                    "/inventario/api/**",
-                    "/personalizacion/api/**",
-                    "/api/upload/**"
-                )
-                .excludePathPatterns(
-                    "/login",
-                    "/logout",
-                    "/api/auth/**",
-                    // Endpoints ya pensados como públicos por su propio nombre (usados por el
-                    // sitio público: logo/slides del carrusel principal) — quedaron atrapados
-                    // por el "/personalizacion/api/**" de arriba al cerrar el hueco de seguridad
-                    // original, que no distinguía sub-rutas públicas.
-                    "/personalizacion/api/public/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/uploads/**",  // NUEVO: Excluir uploads del interceptor
-                    "/error",
-                    "/favicon.ico"
-                );
-    }
+    // La protección de rutas (antes SessionInterceptor) ahora vive en
+    // SecurityConfig.securityFilterChain(), con la misma lista exacta de
+    // rutas — ver AUDITORIA_INTEGRAL.md sección 9 (Bloque A: migración a JWT).
 
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {

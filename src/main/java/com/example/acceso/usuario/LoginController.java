@@ -11,6 +11,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Comparator;
 import java.util.Optional;
 
+// TODO(auth-jwt-migration): flujo de login por formulario Thymeleaf, DEPRECADO.
+// Desde la migración a JWT (AUDITORIA_INTEGRAL.md sección 9, Bloque A),
+// SecurityConfig protege /admin/** y las rutas /*/api/** exigiendo un JWT por
+// header Authorization — un login hecho aquí (que solo escribe
+// HttpSession.setAttribute("usuarioLogueado", ...)) YA NO da acceso a esas
+// rutas. Se deja sin borrar solo porque CheckoutController todavía lee este
+// mismo atributo de sesión para el checkout público (fuera del alcance de
+// esta migración). Se retira junto con el resto de Thymeleaf legacy en el
+// Bloque E del plan de la auditoría.
 @Controller
 public class LoginController {
     // Inyección de dependencia del servicio de usuario.
