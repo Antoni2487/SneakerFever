@@ -46,7 +46,10 @@ public class LoginController {
     public String procesarLogin(@RequestParam String usuario, @RequestParam String clave, HttpSession session,
             RedirectAttributes redirectAttributes) {
         
-        Optional<Usuario> usuarioOpt = usuarioService.findByUsuario(usuario);
+        // Con perfil+opciones: más abajo se recorre getPerfil().getOpciones()
+        // para armar el menú y el Usuario se guarda en HttpSession, donde queda
+        // detached para las peticiones siguientes.
+        Optional<Usuario> usuarioOpt = usuarioService.findByUsuarioConPerfil(usuario);
 
         if (usuarioOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Usuario no encontrado.");
