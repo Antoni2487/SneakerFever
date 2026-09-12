@@ -93,16 +93,4 @@ public class CreditoVentaResponse {
 
     @JsonProperty("dias_restantes")
     private Long diasRestantes;
-
-    public BigDecimal calcularPorcentajePagado() {
-        if (montoConInteres.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return montoPagado.multiply(BigDecimal.valueOf(100))
-                .divide(montoConInteres, 2, java.math.RoundingMode.HALF_UP);
-    }
-
-    public Long calcularDiasRestantes() {
-        return java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), fechaFin);
-    }
 }

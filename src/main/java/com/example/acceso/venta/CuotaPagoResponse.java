@@ -51,27 +51,4 @@ public class CuotaPagoResponse {
 
     @JsonProperty("porcentaje_pagado")
     private BigDecimal porcentajePagado;
-
-    public Long calcularDiasParaVencer() {
-        if (estado == EstadoCuota.PAGADA) {
-            return 0L;
-        }
-        long dias = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), fechaVencimiento);
-        return dias > 0 ? dias : 0L;
-    }
-
-    public Long calcularDiasVencida() {
-        if (estado == EstadoCuota.PAGADA || LocalDate.now().isBefore(fechaVencimiento)) {
-            return 0L;
-        }
-        return java.time.temporal.ChronoUnit.DAYS.between(fechaVencimiento, LocalDate.now());
-    }
-
-    public BigDecimal calcularPorcentajePagado() {
-        if (montoCuota.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return montoPagado.multiply(BigDecimal.valueOf(100))
-                .divide(montoCuota, 2, java.math.RoundingMode.HALF_UP);
-    }
 }
