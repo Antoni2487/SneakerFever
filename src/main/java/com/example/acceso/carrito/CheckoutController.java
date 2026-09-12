@@ -8,6 +8,7 @@ import com.example.acceso.venta.TipoComprobante;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.cliente.ClienteRepository;
 import com.example.acceso.venta.VentaService;
+import com.example.acceso.venta.ComprobanteSecuenciaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,10 +29,13 @@ public class CheckoutController {
 
     private final VentaService ventaService;
     private final ClienteRepository clienteRepository;
+    private final ComprobanteSecuenciaService comprobanteSecuenciaService;
 
-    public CheckoutController(VentaService ventaService, ClienteRepository clienteRepository) {
+    public CheckoutController(VentaService ventaService, ClienteRepository clienteRepository,
+            ComprobanteSecuenciaService comprobanteSecuenciaService) {
         this.ventaService = ventaService;
         this.clienteRepository = clienteRepository;
+        this.comprobanteSecuenciaService = comprobanteSecuenciaService;
     }
 
     @GetMapping("/checkout")
@@ -92,8 +96,15 @@ public class CheckoutController {
             // pero por ahora enviamos el documento que es lo crítico.
             
             // Datos de Venta
-            request.setTipoComprobante(TipoComprobante.valueOf(tipoComprobanteStr));
-            request.setSerie(tipoComprobanteStr.equals("FACTURA") ? "F001" : "B001");
+            TipoComprobante tipoComprobante = TipoComprobante.valueOf(tipoComprobanteStr);
+            request.setTipoComprobante(tipoComprobante);
+            // Serie resuelta desde la misma fuente de verdad que usa el POS admin
+            // (ComprobanteSecuenciaService), no hardcodeada - ver VentaController.obtenerSerieActiva().
+            String serie = comprobanteSecuenciaService.obtenerSerieActiva(tipoComprobante)
+                    .orElseThrow(() -> new RuntimeException(
+                            "No hay una serie activa configurada para " + tipoComprobante))
+                    .getSerie();
+            request.setSerie(serie);
             request.setFormaPago(FormaPago.CONTADO); // Por defecto Contado en web
             request.setObservaciones("Compra Web - Usuario: " + usuario.getUsuario());
             

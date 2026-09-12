@@ -8,6 +8,7 @@ import com.example.acceso.venta.CrearVentaRequest.DetalleVentaRequest;
 import com.example.acceso.venta.FormaPago;
 import com.example.acceso.venta.TipoComprobante;
 import com.example.acceso.venta.VentaService;
+import com.example.acceso.venta.ComprobanteSecuenciaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -24,10 +25,13 @@ public class CartController {
 
     private final ProductService productService;
     private final VentaService ventaService;
+    private final ComprobanteSecuenciaService comprobanteSecuenciaService;
 
-    public CartController(ProductService productService, VentaService ventaService) {
+    public CartController(ProductService productService, VentaService ventaService,
+            ComprobanteSecuenciaService comprobanteSecuenciaService) {
         this.productService = productService;
         this.ventaService = ventaService;
+        this.comprobanteSecuenciaService = comprobanteSecuenciaService;
     }
 
     // 1. Obtener el carrito actual (JSON para el sidebar)
@@ -113,8 +117,15 @@ public class CartController {
         try {
             CrearVentaRequest ventaRequest = new CrearVentaRequest();
             ventaRequest.setDocumento(request.documento());
-            ventaRequest.setTipoComprobante(TipoComprobante.valueOf(request.tipoComprobante()));
-            ventaRequest.setSerie(request.tipoComprobante().equals("FACTURA") ? "F001" : "B001");
+            TipoComprobante tipoComprobante = TipoComprobante.valueOf(request.tipoComprobante());
+            ventaRequest.setTipoComprobante(tipoComprobante);
+            // Serie resuelta desde la misma fuente de verdad que usa el POS admin
+            // (ComprobanteSecuenciaService), no hardcodeada - ver VentaController.obtenerSerieActiva().
+            String serie = comprobanteSecuenciaService.obtenerSerieActiva(tipoComprobante)
+                    .orElseThrow(() -> new RuntimeException(
+                            "No hay una serie activa configurada para " + tipoComprobante))
+                    .getSerie();
+            ventaRequest.setSerie(serie);
             ventaRequest.setFormaPago(FormaPago.CONTADO);
             ventaRequest.setObservaciones("Compra Web - Usuario: " + usuario.getUsuario());
 
