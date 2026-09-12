@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -446,7 +447,7 @@ public class CreditoVentaService {
 
         // Calcular campos adicionales
         response.setPorcentajePagado(credito.getPorcentajePagado());
-        response.setDiasRestantes(response.calcularDiasRestantes());
+        response.setDiasRestantes(calcularDiasRestantes(credito.getFechaFin()));
 
         return response;
     }
@@ -468,10 +469,48 @@ public class CreditoVentaService {
                 .build();
 
         // Calcular campos adicionales
-        response.setDiasParaVencer(response.calcularDiasParaVencer());
-        response.setDiasVencida(response.calcularDiasVencida());
-        response.setPorcentajePagado(response.calcularPorcentajePagado());
+        response.setDiasParaVencer(calcularDiasParaVencer(cuota));
+        response.setDiasVencida(calcularDiasVencida(cuota));
+        response.setPorcentajePagado(calcularPorcentajePagado(cuota));
 
         return response;
+    }
+
+    // ===================== CÁLCULOS DE NEGOCIO (antes vivían en los DTOs) =====================
+
+    /**
+     * Días que faltan para el vencimiento de una cuota (0 si ya está pagada o
+     * si la fecha de vencimiento ya pasó).
+     */
+    private Long calcularDiasParaVencer(CuotaPago cuota) {
+        if (cuota.getEstado() == EstadoCuota.PAGADA) {
+            return 0L;
+        }
+        long dias = ChronoUnit.DAYS.between(LocalDate.now(), cuota.getFechaVencimiento());
+        return dias > 0 ? dias : 0L;
+    }
+
+    /**
+     * Días de atraso de una cuota (0 si está pagada o si todavía no vence).
+     */
+    private Long calcularDiasVencida(CuotaPago cuota) {
+        if (cuota.getEstado() == EstadoCuota.PAGADA || LocalDate.now().isBefore(cuota.getFechaVencimiento())) {
+            return 0L;
+        }
+        return ChronoUnit.DAYS.between(cuota.getFechaVencimiento(), LocalDate.now());
+    }
+
+    /** Porcentaje del monto de la cuota que ya se pagó. */
+    private BigDecimal calcularPorcentajePagado(CuotaPago cuota) {
+        if (cuota.getMontoCuota().compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return cuota.getMontoPagado().multiply(BigDecimal.valueOf(100))
+                .divide(cuota.getMontoCuota(), 2, RoundingMode.HALF_UP);
+    }
+
+    /** Días restantes hasta la fecha de fin de un crédito (puede ser negativo si ya venció). */
+    private Long calcularDiasRestantes(LocalDate fechaFin) {
+        return ChronoUnit.DAYS.between(LocalDate.now(), fechaFin);
     }
 }
