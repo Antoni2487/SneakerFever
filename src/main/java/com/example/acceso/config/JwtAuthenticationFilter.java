@@ -1,5 +1,7 @@
 package com.example.acceso.config;
 
+import com.example.acceso.perfil.Opcion;
+import com.example.acceso.perfil.Perfil;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.usuario.UsuarioService;
 import io.jsonwebtoken.Claims;
@@ -11,12 +13,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,9 +30,14 @@ import java.util.Optional;
  * emitirse el token — propiedad que la sesión anterior no tenía (el Usuario
  * quedaba cacheado en HttpSession hasta el logout o la expiración de sesión).
  *
- * Sin autorización por rol todavía (RBAC queda para una fase separada del
- * plan de AUDITORIA_INTEGRAL.md): cualquier token válido de un usuario activo
- * autentica, sin distinguir permisos.
+ * RBAC (Fase A del plan de AUDITORIA_TECNICA_2026-09-10.md): las
+ * {@link GrantedAuthority} del usuario se derivan del primer segmento de
+ * {@link Opcion#getRuta()} de cada opción asignada a su {@link Perfil} (p.
+ * ej. "/productos" o "/usuarios/listar" → autoridad "productos"/"usuarios").
+ * Ese segmento coincide por construcción con la ruta base de cada dominio
+ * (el link del sidebar en React usa exactamente ese mismo "ruta", así que ya
+ * tiene que coincidir con la ruta real del frontend para funcionar hoy). Ver
+ * {@link SecurityConfig} para el {@code hasAuthority(...)} por endpoint.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -52,11 +61,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtService.parseAndValidate(token, JwtService.TOKEN_TYPE_ACCESS);
                 String username = claims.getSubject();
 
-                Optional<Usuario> usuarioOpt = usuarioService.findByUsuario(username);
+                // Con el Perfil y sus Opciones ya inicializados: este filtro corre
+                // antes de que open-in-view abra el EntityManager de la petición,
+                // así que el Usuario llega detached al controlador y serializar su
+                // perfil con fetch lazy reventaba en /api/auth/me.
+                Optional<Usuario> usuarioOpt = usuarioService.findByUsuarioConPerfil(username);
                 if (usuarioOpt.isPresent() && usuarioOpt.get().getEstado() == 1) {
                     Usuario usuario = usuarioOpt.get();
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
-                            usuario, null, Collections.emptyList());
+                            usuario, null, authoridadesDe(usuario));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
                 // Si el usuario no existe o está inactivo, se deja sin
@@ -73,5 +86,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private List<GrantedAuthority> authoridadesDe(Usuario usuario) {
+        Perfil perfil = usuario.getPerfil();
+        if (perfil == null) {
+            return List.of();
+        }
+        return perfil.getOpciones().stream()
+                .map(Opcion::getRuta)
+                .map(this::primerSegmento)
+                .filter(segmento -> !segmento.isEmpty())
+                .distinct()
+                .<GrantedAuthority>map(SimpleGrantedAuthority::new)
+                .toList();
+    }
+
+    /** "/productos" -&gt; "productos", "/usuarios/listar" -&gt; "usuarios", "/" o null/"" -&gt; "". */
+    private String primerSegmento(String ruta) {
+        if (ruta == null) {
+            return "";
+        }
+        for (String parte : ruta.split("/")) {
+            if (!parte.isBlank()) {
+                return parte.toLowerCase();
+            }
+        }
+        return "";
     }
 }

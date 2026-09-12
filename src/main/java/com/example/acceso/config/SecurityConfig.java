@@ -19,10 +19,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * Alcance deliberado de ESTA fase (no toca lo que sigue — son fases
  * separadas del plan de la auditoría):
  * <ul>
- *   <li><b>Sin autorización por rol/permiso todavía</b>: cualquier usuario
- *       autenticado puede llamar cualquier endpoint protegido, exactamente
- *       igual que con SessionInterceptor. El hueco de RBAC de la auditoría
- *       (hallazgo #1) sigue abierto — se cierra en la fase siguiente.</li>
+ *   <li><b>RBAC por Opción (Fase A de AUDITORIA_TECNICA_2026-09-10.md)</b>:
+ *       cada grupo de endpoints de dominio exige la autoridad derivada de la
+ *       {@code Opcion} correspondiente (ver
+ *       {@link JwtAuthenticationFilter#doFilterInternal}) en vez de solo
+ *       {@code authenticated()}. {@code /admin/**} (dashboard) y
+ *       {@code /api/upload/**} (compartido entre varios dominios) quedan
+ *       deliberadamente solo en {@code authenticated()} — no hay una Opción
+ *       1:1 razonable para ninguno de los dos todavía.</li>
  *   <li><b>CSRF sigue deshabilitado</b>: los endpoints de negocio ya no
  *       dependen de una cookie de sesión ambiental (van con
  *       {@code Authorization: Bearer}), lo que reduce la superficie CSRF real
@@ -74,26 +78,27 @@ public class SecurityConfig {
                                 "/error",
                                 "/favicon.ico")
                         .permitAll()
-                        .requestMatchers(
-                                "/admin/**",
-                                "/marcas/api/**",
-                                "/categorias/api/**",
-                                "/clientes/api/**",
-                                "/productos/api/**",
-                                "/usuarios/api/**",
-                                "/perfiles/api/**",
-                                "/ventas/api/**",
-                                "/creditos/api/**",
-                                "/inventario/api/**",
-                                "/personalizacion/api/**",
-                                "/api/upload/**")
-                        .authenticated()
+                        .requestMatchers("/admin/**", "/api/upload/**").authenticated()
+                        .requestMatchers("/marcas/api/**").hasAuthority("marcas")
+                        .requestMatchers("/categorias/api/**").hasAuthority("categorias")
+                        .requestMatchers("/clientes/api/**").hasAuthority("clientes")
+                        .requestMatchers("/productos/api/**").hasAuthority("productos")
+                        .requestMatchers("/usuarios/api/**").hasAuthority("usuarios")
+                        .requestMatchers("/perfiles/api/**").hasAuthority("perfiles")
+                        // Créditos vive como pestaña dentro de la misma pantalla de
+                        // Ventas (una sola Opcion "Ventas" en BD) — misma autoridad.
+                        .requestMatchers("/ventas/api/**", "/creditos/api/**").hasAuthority("ventas")
+                        .requestMatchers("/inventario/api/**").hasAuthority("inventario")
+                        .requestMatchers("/personalizacion/api/**").hasAuthority("personalizacion")
                         // Todo lo demás (sitio público servido por WebController,
                         // CheckoutController, etc.) queda igual que antes: nunca
                         // estuvo cubierto por SessionInterceptor.
                         .anyRequest().permitAll())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(
-                        (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(
+                                (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler(
+                                (request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN)))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
