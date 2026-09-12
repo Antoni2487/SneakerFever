@@ -77,38 +77,40 @@ class UsuarioServiceTest {
     }
 
     /**
-     * HALLAZGO REAL (bug), no un comportamiento documentado a propósito:
-     * {@code guardarUsuario(UsuarioRequest)} obtiene la entidad a editar con
-     * {@code obtenerUsuarioPorId(request.getId())} y le hace
-     * {@code setClave(request.getClave())} (null si no se manda clave nueva) EN
-     * EL MISMO OBJETO. Ese objeto sigue siendo la entidad gestionada por JPA
-     * dentro de la misma transacción (ambos métodos son {@code @Transactional}
-     * pero se invocan como "self-invocation" dentro de la misma llamada, así que
-     * comparten un único contexto de persistencia). Cuando
-     * {@code guardarUsuario(Usuario)} vuelve a llamar
-     * {@code obtenerUsuarioPorId(usuario.getId())} para "recuperar la clave
-     * anterior si no llegó una nueva", Hibernate devuelve EXACTAMENTE la misma
-     * instancia ya mutada (identity map de primer nivel) — por lo que
-     * "usuarioExistente.get().getClave()" ya es null, y la clave del usuario NO
-     * se preserva: en producción, esto intentaría persistir {@code clave=NULL}
-     * en una columna {@code NOT NULL}, así que editar el nombre/correo de un
-     * usuario sin reenviar su contraseña rompe el guardado con un error de
-     * integridad en vez de conservar la clave, como el comentario del código
-     * ("Si no se proporciona nueva contraseña, mantener la actual") promete.
-     * Mockito reproduce fielmente este comportamiento porque, igual que
-     * Hibernate, devuelve la MISMA instancia mockeada en ambas llamadas a
-     * {@code findById}. Este test documenta el bug, no lo esconde.
+     * Regresión del bug real que existía antes de este fix:
+     * {@code guardarUsuario(UsuarioRequest)} hacía {@code setClave(request.getClave())}
+     * (null si no se manda clave nueva) directamente sobre la entidad gestionada
+     * por JPA, y {@code guardarUsuario(Usuario)} intentaba "recuperar la clave
+     * anterior" con un segundo {@code findById} dentro de la MISMA transacción —
+     * que Hibernate resuelve devolviendo la misma instancia ya mutada (identity
+     * map), así que terminaba copiando null sobre null. Ahora el hash real se
+     * captura en una variable local (`claveActual`, un String inmutable) ANTES
+     * de tocar la entidad, así que sobrevive a la mutación posterior.
      */
     @Test
-    @DisplayName("HALLAZGO: actualizar sin nueva clave en realidad la borra (misma instancia gestionada)")
-    void actualizarSinNuevaClave_laClaveTerminaEnNull_hallazgoDeBug() {
+    @DisplayName("Actualizar sin nueva clave: conserva el hash real existente (regresión del bug)")
+    void actualizarSinNuevaClave_conservaElHashExistente() {
         Usuario existente = usuarioExistente(5L, 1, perfil(2L, "Editor"), "$2a$hashOriginal");
         when(usuarioRepository.findById(5L)).thenReturn(Optional.of(existente));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Usuario resultado = usuarioService.guardarUsuario(request(5L, null, null));
 
-        assertThat(resultado.getClave()).isNull();
+        assertThat(resultado.getClave()).isEqualTo("$2a$hashOriginal");
+    }
+
+    @Test
+    @DisplayName("Actualizar con nueva clave: la encripta y reemplaza el hash anterior")
+    void actualizarConNuevaClave_laEncriptaYReemplazaElHashAnterior() {
+        Usuario existente = usuarioExistente(5L, 1, perfil(2L, "Editor"), "$2a$hashOriginal");
+        when(usuarioRepository.findById(5L)).thenReturn(Optional.of(existente));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Usuario resultado = usuarioService.guardarUsuario(request(5L, "nuevaClave123", null));
+
+        assertThat(resultado.getClave()).isNotEqualTo("nuevaClave123");
+        assertThat(resultado.getClave()).isNotEqualTo("$2a$hashOriginal");
+        assertThat(usuarioService.verificarContrasena("nuevaClave123", resultado.getClave())).isTrue();
     }
 
     @Test

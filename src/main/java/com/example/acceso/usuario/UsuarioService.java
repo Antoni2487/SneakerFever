@@ -56,18 +56,18 @@ public class UsuarioService {
 
             // Manejo de contraseñas
             if (usuario.getId() != null) {
-                // Usuario existente - actualización
-                Optional<Usuario> usuarioExistente = obtenerUsuarioPorId(usuario.getId());
-                if (usuarioExistente.isPresent()) {
-                    // Si no se proporciona nueva contraseña, mantener la actual
-                    if (usuario.getClave() == null || usuario.getClave().trim().isEmpty()) {
-                        usuario.setClave(usuarioExistente.get().getClave());
-                    } else {
-                        // Encriptar nueva contraseña
-                        usuario.setClave(passwordEncoder.encode(usuario.getClave().trim()));
-                    }
-                } else {
-                    throw new IllegalArgumentException("Usuario no encontrado para actualizar");
+                // Usuario existente - actualización. La decisión de mantener
+                // el hash actual o cifrar una clave nueva se resuelve en
+                // guardarUsuario(UsuarioRequest) — el único punto que sabe si
+                // el valor viene en texto plano desde el formulario o ya es
+                // el hash real leído de BD. No se repite acá con un
+                // findById: dentro de la misma transacción (self-invocation
+                // desde el otro overload), Hibernate devolvería la MISMA
+                // instancia ya mutada, no una copia fresca para comparar —
+                // así se rompía antes la contraseña en cada edición que no
+                // mandaba una nueva (ver UsuarioServiceTest).
+                if (usuario.getClave() == null || usuario.getClave().trim().isEmpty()) {
+                    throw new IllegalArgumentException("La contraseña no puede quedar vacía");
                 }
             } else {
                 // Nuevo usuario
@@ -99,15 +99,41 @@ public class UsuarioService {
 
     @Transactional
     public Usuario guardarUsuario(UsuarioRequest request) {
-        Usuario usuario = request.getId() != null
-                ? obtenerUsuarioPorId(request.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado para actualizar"))
-                : new Usuario();
+        boolean esNuevo = request.getId() == null;
+        Usuario usuario;
+        String claveActual = null;
+
+        if (esNuevo) {
+            usuario = new Usuario();
+        } else {
+            usuario = obtenerUsuarioPorId(request.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado para actualizar"));
+            // Capturado ANTES de mutar `usuario`: es un String (inmutable),
+            // no la referencia a la entidad gestionada por JPA, así que no le
+            // afecta lo que se le haga a `usuario` después (ver el porqué en
+            // guardarUsuario(Usuario)).
+            claveActual = usuario.getClave();
+        }
 
         usuario.setNombre(request.getNombre());
         usuario.setUsuario(request.getUsuario());
         usuario.setCorreo(request.getCorreo());
-        usuario.setClave(request.getClave());
+
+        boolean hayClaveNueva = request.getClave() != null && !request.getClave().isBlank();
+        if (esNuevo) {
+            // Usuario nuevo: guardarUsuario(Usuario) exige y cifra la clave
+            // él mismo (esa rama no tiene el problema de instancia
+            // compartida, siempre es una entidad nueva).
+            usuario.setClave(request.getClave());
+        } else if (hayClaveNueva) {
+            // Clave nueva en texto plano: se cifra acá mismo, es el único
+            // lugar que sabe que este valor viene del formulario y no ya
+            // está hasheado en BD.
+            usuario.setClave(passwordEncoder.encode(request.getClave().trim()));
+        } else {
+            // Sin clave nueva: se conserva el hash real ya capturado.
+            usuario.setClave(claveActual);
+        }
 
         if (request.getEstado() != null) {
             usuario.setEstado(request.getEstado() ? 1 : 0);
