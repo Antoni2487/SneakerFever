@@ -18,25 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Login/logout/sesión en JSON para el frontend React, ahora vía JWT (access +
- * refresh token) en vez de HttpSession — ver AUDITORIA_INTEGRAL.md, sección 9
- * (Bloque A).
- *
- * <p>El refresh token viaja SOLO en una cookie httpOnly con {@code path=/api/auth}
- * (nunca en el body JSON, para que no quede accesible desde JavaScript); el
- * access token viaja en el body de /login y /refresh, y el cliente lo manda en
- * cada petición como header {@code Authorization: Bearer <token>}.
- *
- * <p><b>Limitación conocida (documentada, no un descuido):</b> no hay
- * whitelist/blacklist de refresh tokens en el servidor. /logout borra la
- * cookie del navegador que hizo logout, pero un refresh token que ya se haya
- * copiado/filtrado fuera de esa cookie sigue siendo válido hasta su
- * expiración natural. Implementar revocación real requeriría una tabla/cache
- * de tokens emitidos — se deja fuera de esta fase a propósito (ver plan de la
- * auditoría, RBAC/CSRF/rate-limiting van en fases separadas y esto es del
- * mismo tamaño de esfuerzo).
- */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -61,7 +42,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request,
             HttpServletResponse response) {
-        Optional<Usuario> usuarioOpt = usuarioService.findByUsuario(request.usuario());
+        Optional<Usuario> usuarioOpt = usuarioService.findByUsuarioConPerfil(request.usuario());
 
         if (usuarioOpt.isEmpty()) {
             return ApiResponses.error("Usuario no encontrado", HttpStatus.UNAUTHORIZED);

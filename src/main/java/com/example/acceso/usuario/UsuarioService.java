@@ -141,6 +141,18 @@ public class UsuarioService {
         return usuarioRepository.findByUsuario(usuario.trim().toLowerCase());
     }
 
+    /**
+     * Igual que {@link #findByUsuario(String)} pero con el Perfil y sus Opciones
+     * ya inicializados. Es la que deben usar los puntos que serializan el perfil
+     * o lo recorren fuera de la transacción (autenticación por token, login y
+     * armado del menú); ver el javadoc de
+     * {@code UsuarioRepository#findWithPerfilByUsuario}.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Usuario> findByUsuarioConPerfil(String usuario) {
+        return usuarioRepository.findWithPerfilByUsuario(usuario.trim().toLowerCase());
+    }
+
     @Transactional
     public void eliminarUsuario(Long id) {
         if (id == null || id <= 0) {
