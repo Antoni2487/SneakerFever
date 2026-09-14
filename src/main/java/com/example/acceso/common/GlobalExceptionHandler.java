@@ -7,6 +7,8 @@ import com.example.acceso.categoria.CategoriaService.CategoriaException;
 import com.example.acceso.cliente.ClienteService.ClienteException;
 import com.example.acceso.personalizacion.PersonalizacionService.PersonalizacionException;
 import com.example.acceso.producto.ProductoService.ProductoException;
+import com.example.acceso.usuario.UsuarioService.AccesoDenegadoException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
@@ -32,15 +34,19 @@ public class GlobalExceptionHandler {
     // Esto ocurre, por ejemplo, si alguien intenta acceder a /usuarios/api/abc en
     // lugar de /usuarios/api/123.
     @ExceptionHandler(TypeMismatchException.class)
-    public String handleTypeMismatchException(TypeMismatchException ex) {
+    public Object handleTypeMismatchException(TypeMismatchException ex, HttpServletRequest request) {
         // Registra una advertencia en la consola con detalles sobre el error.
         // Es una buena práctica para saber qué tipo de errores están ocurriendo.
         logger.warn("Se detectó un intento de acceder a una URL con un tipo de dato incorrecto. " +
-                "Valor: '{}', Tipo requerido: '{}'. Redirigiendo a la página de inicio.",
-                ex.getValue(), ex.getRequiredType());
-        // En lugar de mostrar una página de error genérica, redirige al usuario a la
-        // página
-        // de inicio, lo cual es una experiencia de usuario más amigable.
+                "Valor: '{}', Tipo requerido: '{}'.", ex.getValue(), ex.getRequiredType());
+
+        // Las rutas /api/** las consume el frontend por fetch/JSON -- devolver
+        // una vista Thymeleaf ahí rompía el parseo (ver AUDITORIA_TECNICA,
+        // hallazgo #6). Las vistas legacy (admin/*.html) siguen redirigiendo
+        // a inicio, comportamiento sin cambios.
+        if (request.getRequestURI().contains("/api/")) {
+            return ApiResponses.error("Parámetro inválido en la URL", HttpStatus.BAD_REQUEST);
+        }
         return "redirect:/";
     }
 
@@ -58,6 +64,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBusinessException(RuntimeException ex) {
         logger.warn("Excepción de negocio no controlada localmente: {}", ex.getMessage());
         return ApiResponses.error(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    // Reglas de "último administrador" (UsuarioService): antes se atrapaba
+    // este mismo tipo con try/catch repetido en cada método de
+    // UsuarioController; centralizado acá como el resto de las excepciones
+    // de negocio, solo que con 403 en vez de 400 porque es una denegación de
+    // acceso, no un dato inválido.
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<Map<String, Object>> handleAccesoDenegadoException(AccesoDenegadoException ex) {
+        logger.warn("Acceso denegado: {}", ex.getMessage());
+        return ApiResponses.error(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     // Red de seguridad para cualquier excepción no controlada que llegue hasta
