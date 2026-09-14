@@ -1,7 +1,7 @@
-package com.example.acceso.product;
+package com.example.acceso.producto;
 
-import com.example.acceso.brand.BrandService;
-import com.example.acceso.category.CategoryService;
+import com.example.acceso.marca.MarcaService;
+import com.example.acceso.categoria.CategoriaService;
 import com.example.acceso.common.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +16,15 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/productos")
-public class ProductController {
+public class ProductoController {
 
-    private final ProductService productService;
-    private final CategoryService categoryService;
-    private final BrandService brandService;
+    private final ProductoService productService;
+    private final CategoriaService categoryService;
+    private final MarcaService brandService;
 
-    public ProductController(ProductService productService,
-                            CategoryService categoryService,
-                            BrandService brandService) {
+    public ProductoController(ProductoService productService,
+                            CategoriaService categoryService,
+                            MarcaService brandService) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.brandService = brandService;
@@ -42,7 +42,7 @@ public class ProductController {
         model.addAttribute("totalTodosProductos", productService.contarTodosProductos());
         model.addAttribute("categorias", categoryService.listarCategorias());
         model.addAttribute("marcas", brandService.listarMarcas());
-        model.addAttribute("generos", com.example.acceso.product.Genero.values());
+        model.addAttribute("generos", com.example.acceso.producto.Genero.values());
         return "admin/productos";
     }
 
@@ -61,9 +61,9 @@ public class ProductController {
     public ResponseEntity<Map<String, Object>> listarProductosJson(
             @RequestParam(required = false, defaultValue = "false") Boolean ordenado) {
         try {
-            List<ProductResponse> productos = (ordenado
+            List<ProductoResponse> productos = (ordenado
                 ? productService.listarProductosOrdenados()
-                : productService.listarProductos()).stream().map(ProductResponse::from).toList();
+                : productService.listarProductos()).stream().map(ProductoResponse::from).toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -82,8 +82,8 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
-            List<ProductResponse> productos = productService.listarTodosProductos().stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.listarTodosProductos().stream()
+                    .map(ProductoResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -119,7 +119,7 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> listarProductosDisponibles() {
         try {
-            List<Product> productos = productService.listarProductos().stream()
+            List<Producto> productos = productService.listarProductos().stream()
                     .filter(p -> p.getStock() > 0 && p.getEstado() == 1)
                     .collect(Collectors.toList());
 
@@ -160,7 +160,7 @@ public class ProductController {
     public ResponseEntity<Map<String, Object>> productosDestacados(
             @RequestParam(required = false) String genero) {
         try {
-            List<Product> productosEntidad;
+            List<Producto> productosEntidad;
 
             if (genero != null && !genero.isEmpty()) {
                 Genero generoEnum = Genero.valueOf(genero.toUpperCase());
@@ -168,7 +168,7 @@ public class ProductController {
             } else {
                 productosEntidad = productService.listarDestacados();
             }
-            List<ProductResponse> productos = productosEntidad.stream().map(ProductResponse::from).toList();
+            List<ProductoResponse> productos = productosEntidad.stream().map(ProductoResponse::from).toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -192,9 +192,9 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "false") Boolean todos) {
         try {
             Genero generoEnum = Genero.valueOf(genero.toUpperCase());
-            List<ProductResponse> productos = (todos
+            List<ProductoResponse> productos = (todos
                 ? productService.listarTodosPorGenero(generoEnum)
-                : productService.listarPorGenero(generoEnum)).stream().map(ProductResponse::from).toList();
+                : productService.listarPorGenero(generoEnum)).stream().map(ProductoResponse::from).toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -216,7 +216,7 @@ public class ProductController {
     public ResponseEntity<Map<String, Object>> productosEnRebaja(
             @RequestParam(required = false) String genero) {
         try {
-            List<Product> productosEntidad;
+            List<Producto> productosEntidad;
 
             if (genero != null && !genero.isEmpty()) {
                 Genero generoEnum = Genero.valueOf(genero.toUpperCase());
@@ -224,7 +224,7 @@ public class ProductController {
             } else {
                 productosEntidad = productService.listarEnRebaja();
             }
-            List<ProductResponse> productos = productosEntidad.stream().map(ProductResponse::from).toList();
+            List<ProductoResponse> productos = productosEntidad.stream().map(ProductoResponse::from).toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -247,8 +247,8 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> productosPorCategoria(@PathVariable Long id) {
         try {
-            List<ProductResponse> productos = productService.listarPorCategoria(id).stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.listarPorCategoria(id).stream()
+                    .map(ProductoResponse::from)
                     .toList();
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -267,8 +267,8 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> productosPorMarca(@PathVariable Long id) {
         try {
-            List<ProductResponse> productos = productService.listarPorMarca(id).stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.listarPorMarca(id).stream()
+                    .map(ProductoResponse::from)
                     .toList();
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -289,12 +289,12 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerProducto(@PathVariable Long id) {
         try {
-            Optional<Product> producto = productService.obtenerProductoPorId(id);
+            Optional<Producto> producto = productService.obtenerProductoPorId(id);
 
             Map<String, Object> response = new HashMap<>();
             if (producto.isPresent()) {
                 response.put("success", true);
-                response.put("data", ProductResponse.from(producto.get()));
+                response.put("data", ProductoResponse.from(producto.get()));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
@@ -311,7 +311,7 @@ public class ProductController {
      */
     @PostMapping("/api/crear")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> crearProducto(@Valid @RequestBody ProductRequest request, BindingResult result) {
+    public ResponseEntity<Map<String, Object>> crearProducto(@Valid @RequestBody ProductoRequest request, BindingResult result) {
         if (result.hasErrors()) {
             return ApiResponses.validationError(result);
         }
@@ -321,16 +321,16 @@ public class ProductController {
                 return ApiResponses.error("Ya existe un producto con ese nombre");
             }
 
-            Product nuevoProducto = productService.guardarProducto(request);
+            Producto nuevoProducto = productService.guardarProducto(request);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Producto creado exitosamente");
-            response.put("data", ProductResponse.from(nuevoProducto));
+            response.put("data", ProductoResponse.from(nuevoProducto));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-        } catch (ProductService.ProductoException e) {
+        } catch (ProductoService.ProductoException e) {
             return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
             return ApiResponses.error("Error al crear el producto: " + e.getMessage());
@@ -344,7 +344,7 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarProducto(
             @PathVariable Long id,
-            @Valid @RequestBody ProductRequest request,
+            @Valid @RequestBody ProductoRequest request,
             BindingResult result) {
 
         if (result.hasErrors()) {
@@ -361,16 +361,16 @@ public class ProductController {
             }
 
             request.setId(id);
-            Product productoActualizado = productService.guardarProducto(request);
+            Producto productoActualizado = productService.guardarProducto(request);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Producto actualizado exitosamente");
-            response.put("data", ProductResponse.from(productoActualizado));
+            response.put("data", ProductoResponse.from(productoActualizado));
 
             return ResponseEntity.ok(response);
 
-        } catch (ProductService.ProductoException e) {
+        } catch (ProductoService.ProductoException e) {
             return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
             return ApiResponses.error("Error al actualizar el producto: " + e.getMessage());
@@ -392,7 +392,7 @@ public class ProductController {
 
             return ResponseEntity.ok(response);
 
-        } catch (ProductService.ProductoException e) {
+        } catch (ProductoService.ProductoException e) {
             return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
             return ApiResponses.error("Error al eliminar el producto: " + e.getMessage());
@@ -406,13 +406,13 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarEstado(@PathVariable Long id) {
         try {
-            Optional<Product> producto = productService.cambiarEstadoProducto(id);
+            Optional<Producto> producto = productService.cambiarEstadoProducto(id);
 
             Map<String, Object> response = new HashMap<>();
             if (producto.isPresent()) {
                 response.put("success", true);
                 response.put("message", "Estado cambiado exitosamente");
-                response.put("data", ProductResponse.from(producto.get()));
+                response.put("data", ProductoResponse.from(producto.get()));
                 return ResponseEntity.ok(response);
             } else {
                 return ApiResponses.error("Producto no encontrado");
@@ -430,13 +430,13 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarDestacado(@PathVariable Long id) {
         try {
-            Optional<Product> producto = productService.cambiarEstadoDestacado(id);
+            Optional<Producto> producto = productService.cambiarEstadoDestacado(id);
 
             Map<String, Object> response = new HashMap<>();
             if (producto.isPresent()) {
                 response.put("success", true);
                 response.put("message", "Estado destacado cambiado exitosamente");
-                response.put("data", ProductResponse.from(producto.get()));
+                response.put("data", ProductoResponse.from(producto.get()));
                 return ResponseEntity.ok(response);
             } else {
                 return ApiResponses.error("Producto no encontrado");
@@ -458,9 +458,9 @@ public class ProductController {
             @RequestParam String q,
             @RequestParam(required = false, defaultValue = "false") Boolean todos) {
         try {
-            List<ProductResponse> productos = (todos
+            List<ProductoResponse> productos = (todos
                 ? productService.buscarProductosTodos(q)
-                : productService.buscarProductos(q)).stream().map(ProductResponse::from).toList();
+                : productService.buscarProductos(q)).stream().map(ProductoResponse::from).toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -482,8 +482,8 @@ public class ProductController {
             @RequestParam BigDecimal min,
             @RequestParam BigDecimal max) {
         try {
-            List<ProductResponse> productos = productService.buscarPorRangoPrecio(min, max).stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.buscarPorRangoPrecio(min, max).stream()
+                    .map(ProductoResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -504,8 +504,8 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> productosRecientes() {
         try {
-            List<ProductResponse> productos = productService.obtenerProductosRecientes().stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.obtenerProductosRecientes().stream()
+                    .map(ProductoResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -525,8 +525,8 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> destacadosRecientes() {
         try {
-            List<ProductResponse> productos = productService.obtenerDestacadosRecientes().stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.obtenerDestacadosRecientes().stream()
+                    .map(ProductoResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -549,8 +549,8 @@ public class ProductController {
     public ResponseEntity<Map<String, Object>> productosStockBajo(
             @RequestParam(required = false, defaultValue = "10") Integer limite) {
         try {
-            List<ProductResponse> productos = productService.listarStockBajo(limite).stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.listarStockBajo(limite).stream()
+                    .map(ProductoResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -571,8 +571,8 @@ public class ProductController {
     public ResponseEntity<Map<String, Object>> productosStockDisponible(
             @RequestParam(required = false, defaultValue = "0") Integer minimo) {
         try {
-            List<ProductResponse> productos = productService.listarConStockDisponible(minimo).stream()
-                    .map(ProductResponse::from)
+            List<ProductoResponse> productos = productService.listarConStockDisponible(minimo).stream()
+                    .map(ProductoResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -595,13 +595,13 @@ public class ProductController {
             @PathVariable Long id,
             @RequestParam Integer stock) {
         try {
-            Optional<Product> producto = productService.actualizarStock(id, stock);
+            Optional<Producto> producto = productService.actualizarStock(id, stock);
 
             Map<String, Object> response = new HashMap<>();
             if (producto.isPresent()) {
                 response.put("success", true);
                 response.put("message", "Stock actualizado exitosamente");
-                response.put("data", ProductResponse.from(producto.get()));
+                response.put("data", ProductoResponse.from(producto.get()));
                 return ResponseEntity.ok(response);
             } else {
                 return ApiResponses.error("No se pudo actualizar el stock");

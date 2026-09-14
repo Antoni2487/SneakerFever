@@ -1,6 +1,6 @@
 package com.example.acceso.personalizacion;
 
-import com.example.acceso.brand.Brand;
+import com.example.acceso.marca.Marca;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -46,7 +46,7 @@ public class Personalizacion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "marca_id")
     @JsonIgnoreProperties({"imagenes", "descripcion"}) // Evita traer data innecesaria
-    private Brand marca;
+    private Marca marca;
 
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)

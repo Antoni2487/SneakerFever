@@ -1,4 +1,4 @@
-package com.example.acceso.product;
+package com.example.acceso.producto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

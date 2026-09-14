@@ -1,6 +1,6 @@
 package com.example.acceso.inventario;
 
-import com.example.acceso.product.Product;
+import com.example.acceso.producto.Producto;
 import com.example.acceso.usuario.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -31,7 +31,7 @@ public class MovimientoInventario {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     @NotNull(message = "El producto es obligatorio")
-    private Product producto;
+    private Producto producto;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_movimiento", nullable = false, length = 20)

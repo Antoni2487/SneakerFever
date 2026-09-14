@@ -1,4 +1,4 @@
-package com.example.acceso.brand;
+package com.example.acceso.marca;
 
 import com.example.acceso.common.ApiResponses;
 import jakarta.validation.Valid;
@@ -15,13 +15,13 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/marcas")
-public class BrandController {
+public class MarcaController {
 
-    private static final Logger log = LoggerFactory.getLogger(BrandController.class);
+    private static final Logger log = LoggerFactory.getLogger(MarcaController.class);
 
-    private final BrandService brandService;
+    private final MarcaService brandService;
 
-    public BrandController(BrandService brandService) {
+    public MarcaController(MarcaService brandService) {
         this.brandService = brandService;
     }
 
@@ -46,8 +46,8 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarMarcasJson() {
         try {
-            List<BrandResponse> marcas = brandService.listarMarcas().stream()
-                    .map(BrandResponse::from)
+            List<MarcaResponse> marcas = brandService.listarMarcas().stream()
+                    .map(MarcaResponse::from)
                     .toList();
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -64,8 +64,8 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
-            List<BrandResponse> marcas = brandService.listarTodasMarcas().stream()
-                    .map(BrandResponse::from)
+            List<MarcaResponse> marcas = brandService.listarTodasMarcas().stream()
+                    .map(MarcaResponse::from)
                     .toList();
             return ResponseEntity.ok(Map.of(
                     "draw", 1,
@@ -88,7 +88,7 @@ public class BrandController {
             return brandService.obtenerMarcaPorId(id)
                     .map(marca -> ResponseEntity.ok(Map.of(
                             "success", true,
-                            "data", BrandResponse.from(marca)
+                            "data", MarcaResponse.from(marca)
                     )))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                             "success", false,
@@ -103,7 +103,7 @@ public class BrandController {
     @PostMapping("/api/crear")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> crearMarca(
-            @Valid @RequestBody BrandRequest request, BindingResult result) {
+            @Valid @RequestBody MarcaRequest request, BindingResult result) {
         if (result.hasErrors()) {
             return ApiResponses.validationError(result);
         }
@@ -113,15 +113,15 @@ public class BrandController {
                 return ApiResponses.error("Ya existe una marca con ese nombre", HttpStatus.CONFLICT);
             }
 
-            Brand guardada = brandService.guardarMarca(request.toEntity());
+            Marca guardada = brandService.guardarMarca(request.toEntity());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "success", true,
                     "message", "Marca creada exitosamente",
-                    "data", BrandResponse.from(guardada)
+                    "data", MarcaResponse.from(guardada)
             ));
 
-        } catch (BrandService.MarcaException e) {
+        } catch (MarcaService.MarcaException e) {
             log.warn("Error de negocio al crear marca: {}", e.getMessage());
             return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -133,7 +133,7 @@ public class BrandController {
     @PutMapping("/api/actualizar/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarMarca(
-            @PathVariable Long id, @Valid @RequestBody BrandRequest request, BindingResult result) {
+            @PathVariable Long id, @Valid @RequestBody MarcaRequest request, BindingResult result) {
         if (result.hasErrors()) {
             return ApiResponses.validationError(result);
         }
@@ -147,17 +147,17 @@ public class BrandController {
                 return ApiResponses.error("Ya existe otra marca con ese nombre", HttpStatus.CONFLICT);
             }
 
-            Brand marca = request.toEntity();
+            Marca marca = request.toEntity();
             marca.setId(id);
-            Brand actualizada = brandService.guardarMarca(marca);
+            Marca actualizada = brandService.guardarMarca(marca);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Marca actualizada exitosamente",
-                    "data", BrandResponse.from(actualizada)
+                    "data", MarcaResponse.from(actualizada)
             ));
 
-        } catch (BrandService.MarcaException e) {
+        } catch (MarcaService.MarcaException e) {
             log.warn("Error de negocio al actualizar marca {}: {}", id, e.getMessage());
             return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -175,7 +175,7 @@ public class BrandController {
                     "success", true,
                     "message", "Marca eliminada exitosamente"
             ));
-        } catch (BrandService.MarcaException e) {
+        } catch (MarcaService.MarcaException e) {
             log.warn("Error de negocio al eliminar marca {}: {}", id, e.getMessage());
             return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -192,7 +192,7 @@ public class BrandController {
                     .map(marca -> ResponseEntity.ok(Map.of(
                             "success", true,
                             "message", "Estado cambiado exitosamente",
-                            "data", BrandResponse.from(marca)
+                            "data", MarcaResponse.from(marca)
                     )))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                             "success", false,
@@ -220,15 +220,15 @@ public class BrandController {
                 return ApiResponses.error("La URL de la imagen es requerida", HttpStatus.BAD_REQUEST);
             }
 
-            Brand actualizada = brandService.actualizarImagen(id, imagenUrl.trim());
+            Marca actualizada = brandService.actualizarImagen(id, imagenUrl.trim());
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Imagen actualizada exitosamente",
-                    "data", BrandResponse.from(actualizada)
+                    "data", MarcaResponse.from(actualizada)
             ));
 
-        } catch (BrandService.MarcaException e) {
+        } catch (MarcaService.MarcaException e) {
             log.warn("Error al actualizar imagen de marca {}: {}", id, e.getMessage());
             return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -244,15 +244,15 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarImagenMarca(@PathVariable Long id) {
         try {
-            Brand actualizada = brandService.eliminarImagen(id);
+            Marca actualizada = brandService.eliminarImagen(id);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Imagen eliminada exitosamente",
-                    "data", BrandResponse.from(actualizada)
+                    "data", MarcaResponse.from(actualizada)
             ));
 
-        } catch (BrandService.MarcaException e) {
+        } catch (MarcaService.MarcaException e) {
             log.warn("Error al eliminar imagen de marca {}: {}", id, e.getMessage());
             return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -271,8 +271,8 @@ public class BrandController {
                 return ApiResponses.error("Parámetro de búsqueda requerido", HttpStatus.BAD_REQUEST);
             }
 
-            List<BrandResponse> marcas = brandService.buscarMarcas(q.trim()).stream()
-                    .map(BrandResponse::from)
+            List<MarcaResponse> marcas = brandService.buscarMarcas(q.trim()).stream()
+                    .map(MarcaResponse::from)
                     .toList();
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -289,8 +289,8 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasActivas() {
         try {
-            List<BrandResponse> marcas = brandService.listarMarcas().stream()
-                    .map(BrandResponse::from)
+            List<MarcaResponse> marcas = brandService.listarMarcas().stream()
+                    .map(MarcaResponse::from)
                     .toList();
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -306,8 +306,8 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasConImagen() {
         try {
-            List<BrandResponse> marcas = brandService.listarMarcasConImagen().stream()
-                    .map(BrandResponse::from)
+            List<MarcaResponse> marcas = brandService.listarMarcasConImagen().stream()
+                    .map(MarcaResponse::from)
                     .toList();
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -324,8 +324,8 @@ public class BrandController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasSinImagen() {
         try {
-            List<BrandResponse> marcas = brandService.listarMarcasSinImagen().stream()
-                    .map(BrandResponse::from)
+            List<MarcaResponse> marcas = brandService.listarMarcasSinImagen().stream()
+                    .map(MarcaResponse::from)
                     .toList();
             return ResponseEntity.ok(Map.of(
                     "success", true,

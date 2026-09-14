@@ -1,6 +1,6 @@
 package com.example.acceso.venta;
 
-import com.example.acceso.product.Product;
+import com.example.acceso.producto.Producto;
 import com.fasterxml.jackson.annotation.JsonIgnore; // ✅ IMPORTAR
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -35,7 +35,7 @@ public class DetalleVenta {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
-    private Product producto;
+    private Producto producto;
 
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 1, message = "La cantidad debe ser al menos 1")

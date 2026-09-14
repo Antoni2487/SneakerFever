@@ -1,6 +1,8 @@
-package com.example.acceso.usuario;
+package com.example.acceso.seguridad;
 
 import com.example.acceso.perfil.Opcion;
+import com.example.acceso.usuario.Usuario;
+import com.example.acceso.usuario.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

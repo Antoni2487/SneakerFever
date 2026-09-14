@@ -1,9 +1,9 @@
-package com.example.acceso.product;
+package com.example.acceso.producto;
 
-import com.example.acceso.brand.Brand;
-import com.example.acceso.brand.BrandRepository;
-import com.example.acceso.category.Category;
-import com.example.acceso.category.CategoryRepository;
+import com.example.acceso.marca.Marca;
+import com.example.acceso.marca.MarcaRepository;
+import com.example.acceso.categoria.Categoria;
+import com.example.acceso.categoria.CategoriaRepository;
 import com.example.acceso.venta.DetalleVentaRepository;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,17 +19,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductService {
+public class ProductoService {
 
-    private final ProductRepository productRepository;
+    private final ProductoRepository productRepository;
     private final DetalleVentaRepository detalleVentaRepository;
-    private final CategoryRepository categoryRepository;
-    private final BrandRepository brandRepository;
+    private final CategoriaRepository categoryRepository;
+    private final MarcaRepository brandRepository;
 
-    public ProductService(ProductRepository productRepository,
+    public ProductoService(ProductoRepository productRepository,
                            DetalleVentaRepository detalleVentaRepository,
-                           CategoryRepository categoryRepository,
-                           BrandRepository brandRepository) {
+                           CategoriaRepository categoryRepository,
+                           MarcaRepository brandRepository) {
         this.productRepository = productRepository;
         this.detalleVentaRepository = detalleVentaRepository;
         this.categoryRepository = categoryRepository;
@@ -38,97 +38,97 @@ public class ProductService {
 
     // ===================== Listados =====================
     @Transactional(readOnly = true)
-    public List<Product> listarProductos() {
+    public List<Producto> listarProductos() {
         return productRepository.findAllByEstado(1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarTodosProductos() {
+    public List<Producto> listarTodosProductos() {
         return productRepository.findAllWithRelations();
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarProductosOrdenados() {
+    public List<Producto> listarProductosOrdenados() {
         return productRepository.findAllByEstadoOrderByNombreAsc(1);
     }
 
     // ===================== Filtros para Navbar =====================
 
     @Transactional(readOnly = true)
-    public List<Product> listarDestacados() {
+    public List<Producto> listarDestacados() {
         return productRepository.findByDestacadoTrueAndEstado(1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> obtenerDestacadosPorCategoria(String nombreCategoria) {
+    public List<Producto> obtenerDestacadosPorCategoria(String nombreCategoria) {
         return productRepository.findByDestacadoTrueAndEstadoAndCategory_NombreIgnoreCase(1, nombreCategoria);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarTodosDestacados() {
+    public List<Producto> listarTodosDestacados() {
         return productRepository.findByDestacadoTrue();
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarPorGenero(Genero genero) {
+    public List<Producto> listarPorGenero(Genero genero) {
         return productRepository.findByGeneroAndEstado(genero, 1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarTodosPorGenero(Genero genero) {
+    public List<Producto> listarTodosPorGenero(Genero genero) {
         return productRepository.findByGenero(genero);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarEnRebaja() {
+    public List<Producto> listarEnRebaja() {
         return productRepository.findByDescuentoGreaterThanAndEstado(BigDecimal.ZERO, 1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarTodosEnRebaja() {
+    public List<Producto> listarTodosEnRebaja() {
         return productRepository.findByDescuentoGreaterThan(BigDecimal.ZERO);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarPorCategoria(Long categoryId) {
+    public List<Producto> listarPorCategoria(Long categoryId) {
         return productRepository.findByCategory_IdAndEstado(categoryId, 1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarPorMarca(Long brandId) {
+    public List<Producto> listarPorMarca(Long brandId) {
         return productRepository.findByBrand_IdAndEstado(brandId, 1);
     }
 
     // ===================== Filtros combinados =====================
 
     @Transactional(readOnly = true)
-    public List<Product> listarDestacadosPorGenero(Genero genero) {
+    public List<Producto> listarDestacadosPorGenero(Genero genero) {
         return productRepository.findByGeneroAndDestacadoTrueAndEstado(genero, 1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarEnRebajaPorGenero(Genero genero) {
+    public List<Producto> listarEnRebajaPorGenero(Genero genero) {
         return productRepository.findByGeneroAndDescuentoGreaterThanAndEstado(genero, BigDecimal.ZERO, 1);
     }
     // Agregar este método al final de la clase (antes del cierre):
     @Transactional(readOnly = true)
-    public List<Product> obtenerZapatillasMasVendidas() {
+    public List<Producto> obtenerZapatillasMasVendidas() {
         List<Object[]> resultados = detalleVentaRepository
             .findTop5ProductosMasVendidosPorCategoria("Zapatillas");
         
-        // Convertir resultados a List<Product>
-        List<Product> zapatillasMasVendidas = new ArrayList<>();
+        // Convertir resultados a List<Producto>
+        List<Producto> zapatillasMasVendidas = new ArrayList<>();
         for (int i = 0; i < Math.min(5, resultados.size()); i++) {
-            Product producto = (Product) resultados.get(i)[0];
+            Producto producto = (Producto) resultados.get(i)[0];
             zapatillasMasVendidas.add(producto);
         }
         
         // Si no hay suficientes ventas, completar con destacadas
         if (zapatillasMasVendidas.size() < 3) {
-            List<Product> destacadas = productRepository
+            List<Producto> destacadas = productRepository
                 .findByDestacadoTrueAndEstadoAndCategory_NombreIgnoreCase(1, "Zapatillas");
             
-            for (Product destacada : destacadas) {
+            for (Producto destacada : destacadas) {
                 if (zapatillasMasVendidas.size() >= 5) break;
                 if (!zapatillasMasVendidas.contains(destacada)) {
                     zapatillasMasVendidas.add(destacada);
@@ -141,7 +141,7 @@ public class ProductService {
 
     // ===================== Guardar / Actualizar =====================
     @Transactional
-    public Product guardarProducto(Product producto) {
+    public Producto guardarProducto(Producto producto) {
         validarProducto(producto);
 
         try {
@@ -177,7 +177,7 @@ public class ProductService {
 
             if (producto.getId() != null) {
                 // Actualización
-                Optional<Product> existente = obtenerProductoPorId(producto.getId());
+                Optional<Producto> existente = obtenerProductoPorId(producto.getId());
                 if (existente.isPresent()) {
                     if (producto.getEstado() == null) {
                         producto.setEstado(existente.get().getEstado());
@@ -212,16 +212,16 @@ public class ProductService {
     }
 
     @Transactional
-    public Product guardarProducto(ProductRequest request) {
-        Category category = categoryRepository.findById(request.getCategoryId())
+    public Producto guardarProducto(ProductoRequest request) {
+        Categoria category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ProductoException("Categoría no encontrada"));
-        Brand brand = brandRepository.findById(request.getBrandId())
+        Marca brand = brandRepository.findById(request.getBrandId())
                 .orElseThrow(() -> new ProductoException("Marca no encontrada"));
 
-        Product producto = request.getId() != null
+        Producto producto = request.getId() != null
                 ? obtenerProductoPorId(request.getId())
                         .orElseThrow(() -> new ProductoException("Producto no encontrado para actualizar"))
-                : new Product();
+                : new Producto();
 
         producto.setNombre(request.getNombre());
         producto.setDescripcion(request.getDescripcion());
@@ -282,28 +282,28 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public long contarPorCategoria(Category category) {
+    public long contarPorCategoria(Categoria category) {
         return productRepository.countByCategory(category);
     }
 
     @Transactional(readOnly = true)
-    public long contarPorMarca(Brand brand) {
+    public long contarPorMarca(Marca brand) {
         return productRepository.countByBrand(brand);
     }
 
-    public List<Product> findAll() {
+    public List<Producto> findAll() {
     return productRepository.findAll();
    }
 
     // ===================== Obtención =====================
     @Transactional(readOnly = true)
-    public Optional<Product> obtenerProductoPorId(Long id) {
+    public Optional<Producto> obtenerProductoPorId(Long id) {
         if (id == null || id <= 0) return Optional.empty();
         return productRepository.findById(id);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Product> findByNombre(String nombre) {
+    public Optional<Producto> findByNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) return Optional.empty();
         return productRepository.findByNombre(nombre.trim());
     }
@@ -313,14 +313,14 @@ public class ProductService {
     // ===================== Eliminación / Estado =====================
     @Transactional
     public void eliminarProducto(Long id) {
-        Product producto = obtenerProductoPorId(id)
+        Producto producto = obtenerProductoPorId(id)
                 .orElseThrow(() -> new ProductoException("Producto no encontrado"));
         producto.setEstado(2);
         productRepository.save(producto);
     }
 
     @Transactional
-    public Optional<Product> cambiarEstadoProducto(Long id) {
+    public Optional<Producto> cambiarEstadoProducto(Long id) {
         if (id == null || id <= 0) return Optional.empty();
         return obtenerProductoPorId(id).map(p -> {
             p.setEstado(p.getEstado() == 1 ? 0 : 1);
@@ -329,7 +329,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Optional<Product> cambiarEstadoDestacado(Long id) {
+    public Optional<Producto> cambiarEstadoDestacado(Long id) {
         if (id == null || id <= 0) return Optional.empty();
         return obtenerProductoPorId(id).map(p -> {
             p.setDestacado(!p.getDestacado());
@@ -352,7 +352,7 @@ public class ProductService {
 
     // ===================== Búsquedas =====================
     @Transactional(readOnly = true)
-    public List<Product> buscarProductos(String texto) {
+    public List<Producto> buscarProductos(String texto) {
         if (texto == null || texto.trim().isEmpty()) return listarProductos();
         return productRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCaseAndEstado(
                 texto.trim(), texto.trim(), 1
@@ -360,44 +360,44 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<Product> buscarProductosTodos(String texto) {
+    public List<Producto> buscarProductosTodos(String texto) {
         if (texto == null || texto.trim().isEmpty()) return listarTodosProductos();
         return productRepository.findByNombreContainingIgnoreCase(texto.trim());
     }
 
     @Transactional(readOnly = true)
-    public List<Product> buscarPorRangoPrecio(BigDecimal precioMin, BigDecimal precioMax) {
+    public List<Producto> buscarPorRangoPrecio(BigDecimal precioMin, BigDecimal precioMax) {
         return productRepository.findByPrecioBetweenAndEstado(precioMin, precioMax, 1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> obtenerProductosRecientes() {
+    public List<Producto> obtenerProductosRecientes() {
         return productRepository.findTop10ByEstadoOrderByFechaCreacionDesc(1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> obtenerDestacadosRecientes() {
+    public List<Producto> obtenerDestacadosRecientes() {
         return productRepository.findTop10ByDestacadoTrueAndEstadoOrderByFechaCreacionDesc(1);
     }
 
     // ===================== Gestión de Stock =====================
     @Transactional(readOnly = true)
-    public List<Product> listarPorStock(Integer stock) {
+    public List<Producto> listarPorStock(Integer stock) {
         return productRepository.findByStockAndEstado(stock, 1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarConStockDisponible(Integer stockMinimo) {
+    public List<Producto> listarConStockDisponible(Integer stockMinimo) {
         return productRepository.findByStockGreaterThanAndEstado(stockMinimo, 1);
     }
 
     @Transactional(readOnly = true)
-    public List<Product> listarStockBajo(Integer stockMaximo) {
+    public List<Producto> listarStockBajo(Integer stockMaximo) {
         return productRepository.findByStockLessThanEqualAndEstado(stockMaximo,  1);
     }
 
     @Transactional
-    public Optional<Product> actualizarStock(Long id, Integer nuevoStock) {
+    public Optional<Producto> actualizarStock(Long id, Integer nuevoStock) {
         if (id == null || id <= 0 || nuevoStock == null || nuevoStock < 0) {
             return Optional.empty();
         }
@@ -407,8 +407,8 @@ public class ProductService {
         });
     }
     @Transactional(readOnly = true)
-    public List<Product> obtenerTopProductos() {
-        List<Product> productosConDescuento = productRepository
+    public List<Producto> obtenerTopProductos() {
+        List<Producto> productosConDescuento = productRepository
                 .findByDescuentoGreaterThanAndEstado(BigDecimal.ZERO, 1);
 
         if (productosConDescuento == null || productosConDescuento.isEmpty()) {
@@ -428,7 +428,7 @@ public class ProductService {
      * Actualiza la URL de la imagen de un producto
      */
     @Transactional
-    public Product actualizarImagen(Long id, String imagenUrl) {
+    public Producto actualizarImagen(Long id, String imagenUrl) {
         if (id == null || id <= 0) {
             throw new ProductoException("ID de producto inválido");
         }
@@ -437,7 +437,7 @@ public class ProductService {
             throw new ProductoException("La URL de la imagen no puede estar vacía");
         }
 
-        Product producto = obtenerProductoPorId(id)
+        Producto producto = obtenerProductoPorId(id)
                 .orElseThrow(() -> new ProductoException("Producto no encontrado con ID: " + id));
 
         producto.setImagen(imagenUrl.trim());  // ← CAMBIO AQUÍ
@@ -448,12 +448,12 @@ public class ProductService {
      * Elimina la imagen de un producto
      */
     @Transactional
-    public Product eliminarImagen(Long id) {
+    public Producto eliminarImagen(Long id) {
         if (id == null || id <= 0) {
             throw new ProductoException("ID de producto inválido");
         }
 
-        Product producto = obtenerProductoPorId(id)
+        Producto producto = obtenerProductoPorId(id)
                 .orElseThrow(() -> new ProductoException("Producto no encontrado con ID: " + id));
 
         producto.setImagen(null);  // ← CAMBIO AQUÍ
@@ -468,7 +468,7 @@ public class ProductService {
         if (id == null || id <= 0) return Optional.empty();
 
         return obtenerProductoPorId(id)
-                .map(Product::getImagen)  // ← CAMBIO AQUÍ
+                .map(Producto::getImagen)  // ← CAMBIO AQUÍ
                 .filter(url -> url != null && !url.trim().isEmpty());
     }
 
@@ -476,7 +476,7 @@ public class ProductService {
      * Lista productos que tienen imagen
      */
     @Transactional(readOnly = true)
-    public List<Product> listarProductosConImagen() {
+    public List<Producto> listarProductosConImagen() {
         return productRepository.findByImagenIsNotNullAndEstado(1);
     }
 
@@ -484,12 +484,12 @@ public class ProductService {
      * Lista productos sin imagen
      */
     @Transactional(readOnly = true)
-    public List<Product> listarProductosSinImagen() {
+    public List<Producto> listarProductosSinImagen() {
         return productRepository.findByImagenIsNullAndEstado(1);
     }
 
     // ===================== Validaciones =====================
-    private void validarProducto(Product producto) {
+    private void validarProducto(Producto producto) {
         if (producto == null) {
             throw new ProductoException("Producto no puede ser nulo");
         }

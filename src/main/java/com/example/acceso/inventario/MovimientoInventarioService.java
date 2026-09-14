@@ -3,11 +3,11 @@ package com.example.acceso.inventario;
 import com.example.acceso.inventario.MovimientoInventarioResponse;
 import com.example.acceso.inventario.RegistrarMovimientoRequest;
 import com.example.acceso.inventario.MovimientoInventario;
-import com.example.acceso.product.Product;
+import com.example.acceso.producto.Producto;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.inventario.TipoMovimiento;
 import com.example.acceso.inventario.MovimientoInventarioRepository;
-import com.example.acceso.product.ProductRepository;
+import com.example.acceso.producto.ProductoRepository;
 import com.example.acceso.usuario.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class MovimientoInventarioService {
 
     private final MovimientoInventarioRepository movimientoRepository;
-    private final ProductRepository productRepository;
+    private final ProductoRepository productRepository;
     private final UsuarioRepository usuarioRepository;
 
     /**
@@ -36,7 +36,7 @@ public class MovimientoInventarioService {
                 request.getProductoId(), request.getTipoMovimiento(), request.getCantidad());
 
         // 1. Validar producto
-        Product producto = productRepository.findById(request.getProductoId())
+        Producto producto = productRepository.findById(request.getProductoId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + request.getProductoId()));
 
         // 2. Validar usuario

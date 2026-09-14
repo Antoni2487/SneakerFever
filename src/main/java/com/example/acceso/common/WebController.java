@@ -1,8 +1,8 @@
 package com.example.acceso.common;
 
-import com.example.acceso.brand.Brand;
-import com.example.acceso.brand.BrandService;
-import com.example.acceso.product.ProductService;
+import com.example.acceso.marca.Marca;
+import com.example.acceso.marca.MarcaService;
+import com.example.acceso.producto.ProductoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,12 +14,12 @@ import java.util.Map;
 @Controller
 public class WebController {
 
-    private final BrandService brandService;
-    private final ProductService productService;
+    private final MarcaService brandService;
+    private final ProductoService productService;
     private final RestTemplate restTemplate; // ⚠️ Inyección para llamar a Node
 
     // Constructor con inyección de dependencias
-    public WebController(BrandService brandService, ProductService productService, RestTemplate restTemplate) {
+    public WebController(MarcaService brandService, ProductoService productService, RestTemplate restTemplate) {
         this.brandService = brandService;
         this.productService = productService;
         this.restTemplate = restTemplate;
@@ -67,7 +67,7 @@ public class WebController {
     // Método auxiliar para cargar datos globales
     private void cargarDatosComunes(Model model) {
         // 1. Cargar Marcas (Lo que ya tenías)
-        List<Brand> marcas = brandService.listarMarcasConImagen();
+        List<Marca> marcas = brandService.listarMarcasConImagen();
         marcas.forEach(marca -> {
             if (marca.getImagen() != null && !marca.getImagen().startsWith("/")) {
                 marca.setImagen("/" + marca.getImagen());
@@ -141,7 +141,7 @@ public class WebController {
     public String verDetalleProducto(@org.springframework.web.bind.annotation.PathVariable Long id, Model model) {
         cargarDatosComunes(model); 
         
-        com.example.acceso.product.Product producto = productService.obtenerProductoPorId(id)
+        com.example.acceso.producto.Producto producto = productService.obtenerProductoPorId(id)
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
             
         model.addAttribute("producto", producto);

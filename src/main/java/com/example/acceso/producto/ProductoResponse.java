@@ -1,7 +1,7 @@
-package com.example.acceso.product;
+package com.example.acceso.producto;
 
-import com.example.acceso.brand.BrandResponse;
-import com.example.acceso.category.CategoryResponse;
+import com.example.acceso.marca.MarcaResponse;
+import com.example.acceso.categoria.CategoriaResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductResponse {
+public class ProductoResponse {
 
     private Long id;
     private String nombre;
@@ -28,14 +28,14 @@ public class ProductResponse {
     private Integer stock;
     private Integer stockMinimo;
     private Genero genero;
-    private CategoryResponse category;
-    private BrandResponse brand;
+    private CategoriaResponse category;
+    private MarcaResponse brand;
     private Integer estado;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
 
-    public static ProductResponse from(Product producto) {
-        return ProductResponse.builder()
+    public static ProductoResponse from(Producto producto) {
+        return ProductoResponse.builder()
                 .id(producto.getId())
                 .nombre(producto.getNombre())
                 .descripcion(producto.getDescripcion())
@@ -47,8 +47,8 @@ public class ProductResponse {
                 .stock(producto.getStock())
                 .stockMinimo(producto.getStockMinimo())
                 .genero(producto.getGenero())
-                .category(producto.getCategory() != null ? CategoryResponse.from(producto.getCategory()) : null)
-                .brand(producto.getBrand() != null ? BrandResponse.from(producto.getBrand()) : null)
+                .category(producto.getCategory() != null ? CategoriaResponse.from(producto.getCategory()) : null)
+                .brand(producto.getBrand() != null ? MarcaResponse.from(producto.getBrand()) : null)
                 .estado(producto.getEstado())
                 .fechaCreacion(producto.getFechaCreacion())
                 .fechaActualizacion(producto.getFechaActualizacion())

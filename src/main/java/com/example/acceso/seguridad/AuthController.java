@@ -1,7 +1,9 @@
-package com.example.acceso.usuario;
+package com.example.acceso.seguridad;
 
 import com.example.acceso.common.ApiResponses;
-import com.example.acceso.config.JwtService;
+import com.example.acceso.usuario.Usuario;
+import com.example.acceso.usuario.UsuarioResponse;
+import com.example.acceso.usuario.UsuarioService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;

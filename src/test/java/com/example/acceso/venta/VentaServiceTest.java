@@ -4,8 +4,8 @@ import com.example.acceso.cliente.Cliente;
 import com.example.acceso.cliente.ClienteRepository;
 import com.example.acceso.cliente.ClienteService;
 import com.example.acceso.inventario.MovimientoInventarioService;
-import com.example.acceso.product.Product;
-import com.example.acceso.product.ProductRepository;
+import com.example.acceso.producto.Producto;
+import com.example.acceso.producto.ProductoRepository;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.usuario.UsuarioRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +49,7 @@ class VentaServiceTest {
     private UsuarioRepository usuarioRepository;
 
     @Mock
-    private ProductRepository productRepository;
+    private ProductoRepository productRepository;
 
     @Mock
     private ClienteService clienteService;
@@ -69,8 +69,8 @@ class VentaServiceTest {
         return Cliente.builder().id(id).nombre("Juan Pérez").documento(documento).estado(1).build();
     }
 
-    private Product producto(Long id, String nombre, BigDecimal precio, int stock) {
-        return Product.builder().id(id).nombre(nombre).precio(precio).stock(stock).estado(1).build();
+    private Producto producto(Long id, String nombre, BigDecimal precio, int stock) {
+        return Producto.builder().id(id).nombre(nombre).precio(precio).stock(stock).estado(1).build();
     }
 
     private CrearVentaRequest.DetalleVentaRequest detalleRequest(Long productoId, int cantidad, BigDecimal precio) {
@@ -116,7 +116,7 @@ class VentaServiceTest {
     @DisplayName("Crear venta CONTADO: queda PAGADA, descuenta stock y no crea crédito")
     void crearVentaContado_quedaPagadaYDescuentaStock() {
         Cliente cliente = clienteActivo(1L, "12345678");
-        Product producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 5);
+        Producto producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 5);
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
         when(productRepository.findById(10L)).thenReturn(Optional.of(producto));
         mockComprobante("B001", "000123");
@@ -144,7 +144,7 @@ class VentaServiceTest {
     @DisplayName("Crear venta CREDITO: queda PENDIENTE y delega la creación del crédito")
     void crearVentaCredito_quedaPendienteYCreaCredito() {
         Cliente cliente = clienteActivo(1L, "12345678");
-        Product producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 5);
+        Producto producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 5);
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
         when(productRepository.findById(10L)).thenReturn(Optional.of(producto));
         mockComprobante("B001", "000124");
@@ -182,7 +182,7 @@ class VentaServiceTest {
     @DisplayName("Crear venta con stock insuficiente: lanza excepción y no guarda la venta")
     void crearVentaConStockInsuficiente_lanzaExcepcionYNoGuardaVenta() {
         Cliente cliente = clienteActivo(1L, "12345678");
-        Product producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 1);
+        Producto producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 1);
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
         when(productRepository.findById(10L)).thenReturn(Optional.of(producto));
         mockComprobante("B001", "000125");
@@ -220,7 +220,7 @@ class VentaServiceTest {
     @DisplayName("Cliente por documento (sin clienteId): delega en ClienteService en vez del repositorio")
     void crearVentaPorDocumento_delegaEnClienteService() {
         Cliente cliente = clienteActivo(2L, "87654321");
-        Product producto = producto(10L, "Zapatilla X", new BigDecimal("50.00"), 5);
+        Producto producto = producto(10L, "Zapatilla X", new BigDecimal("50.00"), 5);
         when(clienteService.obtenerOCrearCliente("87654321")).thenReturn(cliente);
         when(productRepository.findById(10L)).thenReturn(Optional.of(producto));
         mockComprobante("B001", "000126");
@@ -299,7 +299,7 @@ class VentaServiceTest {
     @Test
     @DisplayName("Anular venta: devuelve el stock de cada producto y marca ANULADA")
     void anularVenta_devuelveStockYMarcaAnulada() {
-        Product producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 3);
+        Producto producto = producto(10L, "Zapatilla X", new BigDecimal("100.00"), 3);
         DetalleVenta detalle = DetalleVenta.builder().producto(producto).cantidad(2)
                 .precioUnitario(new BigDecimal("100.00")).descuentoPorcentaje(BigDecimal.ZERO)
                 .subtotal(new BigDecimal("200.00")).build();

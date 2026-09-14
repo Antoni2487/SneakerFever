@@ -1,4 +1,4 @@
-package com.example.acceso.brand;
+package com.example.acceso.marca;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,24 +9,24 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BrandRepository extends JpaRepository<Brand, Long> {
+public interface MarcaRepository extends JpaRepository<Marca, Long> {
 
-    Optional<Brand> findByNombre(String nombre);
+    Optional<Marca> findByNombre(String nombre);
     @EntityGraph(attributePaths = {"imagenes"})
-    List<Brand> findAllByEstado(Integer estado);
+    List<Marca> findAllByEstado(Integer estado);
     @EntityGraph(attributePaths = {"imagenes"})
-    List<Brand> findAllByEstadoOrderByNombreAsc(Integer estado);
+    List<Marca> findAllByEstadoOrderByNombreAsc(Integer estado);
     long countByEstado(Integer estado);
     @EntityGraph(attributePaths = {"imagenes"})
-    List<Brand> findByNombreContainingIgnoreCaseAndEstado(String nombre, Integer estado);
+    List<Marca> findByNombreContainingIgnoreCaseAndEstado(String nombre, Integer estado);
     @EntityGraph(attributePaths = {"imagenes"})
-    List<Brand> findByNombreContainingIgnoreCase(String nombre);
+    List<Marca> findByNombreContainingIgnoreCase(String nombre);
     @EntityGraph(attributePaths = {"imagenes"})
-    List<Brand> findByImagenIsNotNullAndEstado(Integer estado);
+    List<Marca> findByImagenIsNotNullAndEstado(Integer estado);
     @EntityGraph(attributePaths = {"imagenes"})
-    List<Brand> findByImagenIsNullAndEstado(Integer estado);
-    @Query("SELECT DISTINCT b FROM Brand b LEFT JOIN FETCH b.imagenes")
-    List<Brand> findAllWithImages();
+    List<Marca> findByImagenIsNullAndEstado(Integer estado);
+    @Query("SELECT DISTINCT b FROM Marca b LEFT JOIN FETCH b.imagenes")
+    List<Marca> findAllWithImages();
 
     boolean existsByNombreAndEstadoNot(String nombre, Integer estado);
     boolean existsByNombreAndIdNotAndEstadoNot(String nombre, Long id, Integer estado);
