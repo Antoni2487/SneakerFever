@@ -1,4 +1,4 @@
-package com.example.acceso.product;
+package com.example.acceso.producto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class ProductRequest {
+public class ProductoRequest {
 
     private Long id;
 
@@ -52,8 +52,8 @@ public class ProductRequest {
 
     private Integer estado;
 
-    public Product toEntity() {
-        return Product.builder()
+    public Producto toEntity() {
+        return Producto.builder()
                 .nombre(nombre)
                 .descripcion(descripcion)
                 .imagen(imagen)

@@ -1,4 +1,4 @@
-package com.example.acceso.config;
+package com.example.acceso.seguridad;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;

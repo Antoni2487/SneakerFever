@@ -1,7 +1,7 @@
 package com.example.acceso.personalizacion;
 
-import com.example.acceso.brand.Brand;
-import com.example.acceso.brand.BrandService;
+import com.example.acceso.marca.Marca;
+import com.example.acceso.marca.MarcaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,14 +12,14 @@ import java.util.Optional;
 public class PersonalizacionService {
 
     private final PersonalizacionRepository personalizacionRepository;
-    private final BrandService brandService;
+    private final MarcaService brandService;
 
     private static final String TIPO_LOGO = "LOGO";
     private static final String TIPO_SLIDE = "SLIDE";
     private static final int MAX_SLIDES = 5;
 
     public PersonalizacionService(PersonalizacionRepository personalizacionRepository,
-                                   BrandService brandService) {
+                                   MarcaService brandService) {
         this.personalizacionRepository = personalizacionRepository;
         this.brandService = brandService;
         inicializarPersonalizacion();
@@ -120,7 +120,7 @@ public class PersonalizacionService {
 
         // Asignar marca si se proporciona
         if (marcaId != null) {
-            Brand marca = brandService.obtenerMarcaPorId(marcaId)
+            Marca marca = brandService.obtenerMarcaPorId(marcaId)
                     .orElseThrow(() -> new PersonalizacionException("Marca no encontrada con ID: " + marcaId));
             slide.setMarca(marca);
         } else {
@@ -141,7 +141,7 @@ public class PersonalizacionService {
                 .orElseThrow(() -> new PersonalizacionException("Slide no encontrado en orden: " + orden));
 
         if (marcaId != null) {
-            Brand marca = brandService.obtenerMarcaPorId(marcaId)
+            Marca marca = brandService.obtenerMarcaPorId(marcaId)
                     .orElseThrow(() -> new PersonalizacionException("Marca no encontrada con ID: " + marcaId));
             slide.setMarca(marca);
         } else {

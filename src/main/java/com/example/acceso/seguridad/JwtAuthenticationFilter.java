@@ -1,4 +1,4 @@
-package com.example.acceso.config;
+package com.example.acceso.seguridad;
 
 import com.example.acceso.perfil.Opcion;
 import com.example.acceso.perfil.Perfil;

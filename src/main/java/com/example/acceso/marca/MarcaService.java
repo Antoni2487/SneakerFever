@@ -1,7 +1,7 @@
-package com.example.acceso.brand;
+package com.example.acceso.marca;
 
-import com.example.acceso.brand.Brand;
-import com.example.acceso.brand.BrandRepository;
+import com.example.acceso.marca.Marca;
+import com.example.acceso.marca.MarcaRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,28 +10,28 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class BrandService {
+public class MarcaService {
 
-    private final BrandRepository brandRepository;
+    private final MarcaRepository brandRepository;
 
-    public BrandService(BrandRepository brandRepository) {
+    public MarcaService(MarcaRepository brandRepository) {
         this.brandRepository = brandRepository;
     }
 
     // ===================== Listados =====================
     @Transactional(readOnly = true)
-    public List<Brand> listarMarcas() {
+    public List<Marca> listarMarcas() {
         return brandRepository.findAllByEstado(1);
     }
 
     @Transactional(readOnly = true)
-    public List<Brand> listarTodasMarcas() {
+    public List<Marca> listarTodasMarcas() {
         return brandRepository.findAllWithImages();
     }
 
     // ===================== Guardar / Actualizar =====================
     @Transactional
-    public Brand guardarMarca(Brand marca) {
+    public Marca guardarMarca(Marca marca) {
         validarMarca(marca);
 
         try {
@@ -47,7 +47,7 @@ public class BrandService {
 
             if (marca.getId() != null) {
                 // Actualización
-                Brand existente = obtenerMarcaPorId(marca.getId())
+                Marca existente = obtenerMarcaPorId(marca.getId())
                         .orElseThrow(() -> new MarcaException("Marca no encontrada para actualizar"));
 
                 if (marca.getEstado() == null) {
@@ -89,13 +89,13 @@ public class BrandService {
 
     // ===================== Obtención =====================
     @Transactional(readOnly = true)
-    public Optional<Brand> obtenerMarcaPorId(Long id) {
+    public Optional<Marca> obtenerMarcaPorId(Long id) {
         if (id == null || id <= 0) return Optional.empty();
         return brandRepository.findById(id);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Brand> findByNombre(String nombre) {
+    public Optional<Marca> findByNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) return Optional.empty();
         return brandRepository.findByNombre(nombre.trim());
     }
@@ -103,14 +103,14 @@ public class BrandService {
     // ===================== Eliminación / Estado =====================
     @Transactional
     public void eliminarMarca(Long id) {
-        Brand marca = obtenerMarcaPorId(id)
+        Marca marca = obtenerMarcaPorId(id)
                 .orElseThrow(() -> new MarcaException("Marca no encontrada"));
         marca.setEstado(2);
         brandRepository.save(marca);
     }
 
     @Transactional
-    public Optional<Brand> cambiarEstadoMarca(Long id) {
+    public Optional<Marca> cambiarEstadoMarca(Long id) {
         if (id == null || id <= 0) return Optional.empty();
         return obtenerMarcaPorId(id).map(m -> {
             m.setEstado(m.getEstado() == 1 ? 0 : 1);
@@ -133,13 +133,13 @@ public class BrandService {
 
     // ===================== Búsquedas =====================
     @Transactional(readOnly = true)
-    public List<Brand> buscarMarcas(String texto) {
+    public List<Marca> buscarMarcas(String texto) {
         if (texto == null || texto.trim().isEmpty()) return listarMarcas();
         return brandRepository.findByNombreContainingIgnoreCase(texto.trim());
     }
 
     @Transactional(readOnly = true)
-    public List<Brand> buscarMarcasActivas(String texto) {
+    public List<Marca> buscarMarcasActivas(String texto) {
         if (texto == null || texto.trim().isEmpty()) return listarMarcas();
         return brandRepository.findByNombreContainingIgnoreCaseAndEstado(texto.trim(), 1);
     }
@@ -151,7 +151,7 @@ public class BrandService {
      * Se usa después de subir la imagen con FileUploadController
      */
     @Transactional
-    public Brand actualizarImagen(Long id, String imagenUrl) {
+    public Marca actualizarImagen(Long id, String imagenUrl) {
         if (id == null || id <= 0) {
             throw new MarcaException("ID de marca inválido");
         }
@@ -160,7 +160,7 @@ public class BrandService {
             throw new MarcaException("La URL de la imagen no puede estar vacía");
         }
 
-        Brand marca = obtenerMarcaPorId(id)
+        Marca marca = obtenerMarcaPorId(id)
                 .orElseThrow(() -> new MarcaException("Marca no encontrada con ID: " + id));
 
         marca.setImagen(imagenUrl.trim());
@@ -172,12 +172,12 @@ public class BrandService {
      * Nota: El archivo físico debe eliminarse usando FileUploadController
      */
     @Transactional
-    public Brand eliminarImagen(Long id) {
+    public Marca eliminarImagen(Long id) {
         if (id == null || id <= 0) {
             throw new MarcaException("ID de marca inválido");
         }
 
-        Brand marca = obtenerMarcaPorId(id)
+        Marca marca = obtenerMarcaPorId(id)
                 .orElseThrow(() -> new MarcaException("Marca no encontrada con ID: " + id));
 
         marca.setImagen(null);
@@ -192,7 +192,7 @@ public class BrandService {
         if (id == null || id <= 0) return Optional.empty();
 
         return obtenerMarcaPorId(id)
-                .map(Brand::getImagen)
+                .map(Marca::getImagen)
                 .filter(url -> url != null && !url.trim().isEmpty());
     }
 
@@ -200,7 +200,7 @@ public class BrandService {
      * Lista marcas que tienen imagen
      */
     @Transactional(readOnly = true)
-    public List<Brand> listarMarcasConImagen() {
+    public List<Marca> listarMarcasConImagen() {
         return brandRepository.findByImagenIsNotNullAndEstado(1);
     }
 
@@ -208,12 +208,12 @@ public class BrandService {
      * Lista marcas sin imagen
      */
     @Transactional(readOnly = true)
-    public List<Brand> listarMarcasSinImagen() {
+    public List<Marca> listarMarcasSinImagen() {
         return brandRepository.findByImagenIsNullAndEstado(1);
     }
 
     // ===================== Validaciones =====================
-    private void validarMarca(Brand marca) {
+    private void validarMarca(Marca marca) {
         if (marca == null) throw new MarcaException("Marca no puede ser nula");
         if (marca.getNombre() == null || marca.getNombre().trim().isEmpty()) {
             throw new MarcaException("El nombre de la marca es obligatorio");

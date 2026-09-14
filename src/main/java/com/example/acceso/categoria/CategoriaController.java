@@ -1,4 +1,4 @@
-package com.example.acceso.category;
+package com.example.acceso.categoria;
 
 import com.example.acceso.common.ApiResponses;
 import org.springframework.http.HttpStatus;
@@ -16,11 +16,11 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/categorias")
-public class CategoryController {
+public class CategoriaController {
 
-    private final CategoryService categoryService;
+    private final CategoriaService categoryService;
 
-    public CategoryController(CategoryService categoryService)
+    public CategoriaController(CategoriaService categoryService)
     {
         this.categoryService = categoryService;
     }
@@ -54,8 +54,8 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCategoriasJson() {
         try {
-            List<CategoryResponse> categorias = categoryService.listarCategorias().stream()
-                    .map(CategoryResponse::from)
+            List<CategoriaResponse> categorias = categoryService.listarCategorias().stream()
+                    .map(CategoriaResponse::from)
                     .toList();
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -74,8 +74,8 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
-            List<CategoryResponse> categorias = categoryService.listarTodasCategorias().stream()
-                    .map(CategoryResponse::from)
+            List<CategoriaResponse> categorias = categoryService.listarTodasCategorias().stream()
+                    .map(CategoriaResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -99,12 +99,12 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerCategoria(@PathVariable Long id) {
         try {
-            Optional<Category> categoria = categoryService.obtenerCategoriaPorId(id);
+            Optional<Categoria> categoria = categoryService.obtenerCategoriaPorId(id);
 
             Map<String, Object> response = new HashMap<>();
             if (categoria.isPresent()) {
                 response.put("success", true);
-                response.put("data", CategoryResponse.from(categoria.get()));
+                response.put("data", CategoriaResponse.from(categoria.get()));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
@@ -121,7 +121,7 @@ public class CategoryController {
      */
     @PostMapping("/api/crear")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> crearCategoria(@Valid @RequestBody CategoryRequest request, BindingResult result) {
+    public ResponseEntity<Map<String, Object>> crearCategoria(@Valid @RequestBody CategoriaRequest request, BindingResult result) {
         if (result.hasErrors()) {
             return ApiResponses.validationError(result);
         }
@@ -132,16 +132,16 @@ public class CategoryController {
                 return ApiResponses.error("Ya existe una categoría con ese nombre");
             }
 
-            Category nuevaCategoria = categoryService.guardarCategoria(request.toEntity());
+            Categoria nuevaCategoria = categoryService.guardarCategoria(request.toEntity());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Categoría creada exitosamente");
-            response.put("data", CategoryResponse.from(nuevaCategoria));
+            response.put("data", CategoriaResponse.from(nuevaCategoria));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-        } catch (CategoryService.CategoriaException e) {
+        } catch (CategoriaService.CategoriaException e) {
             return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
             return ApiResponses.error("Error al crear la categoría: " + e.getMessage());
@@ -155,7 +155,7 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarCategoria(
             @PathVariable Long id,
-            @Valid @RequestBody CategoryRequest request,
+            @Valid @RequestBody CategoriaRequest request,
             BindingResult result) {
 
         if (result.hasErrors()) {
@@ -173,18 +173,18 @@ public class CategoryController {
                 return ApiResponses.error("Ya existe otra categoría con ese nombre");
             }
 
-            Category categoria = request.toEntity();
+            Categoria categoria = request.toEntity();
             categoria.setId(id);
-            Category categoriaActualizada = categoryService.guardarCategoria(categoria);
+            Categoria categoriaActualizada = categoryService.guardarCategoria(categoria);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Categoría actualizada exitosamente");
-            response.put("data", CategoryResponse.from(categoriaActualizada));
+            response.put("data", CategoriaResponse.from(categoriaActualizada));
 
             return ResponseEntity.ok(response);
 
-        } catch (CategoryService.CategoriaException e) {
+        } catch (CategoriaService.CategoriaException e) {
             return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
             return ApiResponses.error("Error al actualizar la categoría: " + e.getMessage());
@@ -206,7 +206,7 @@ public class CategoryController {
 
             return ResponseEntity.ok(response);
 
-        } catch (CategoryService.CategoriaException e) {
+        } catch (CategoriaService.CategoriaException e) {
             return ApiResponses.error(e.getMessage());
         } catch (Exception e) {
             return ApiResponses.error("Error al eliminar la categoría: " + e.getMessage());
@@ -220,13 +220,13 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarEstado(@PathVariable Long id) {
         try {
-            Optional<Category> categoria = categoryService.cambiarEstadoCategoria(id);
+            Optional<Categoria> categoria = categoryService.cambiarEstadoCategoria(id);
 
             Map<String, Object> response = new HashMap<>();
             if (categoria.isPresent()) {
                 response.put("success", true);
                 response.put("message", "Estado cambiado exitosamente");
-                response.put("data", CategoryResponse.from(categoria.get()));
+                response.put("data", CategoriaResponse.from(categoria.get()));
                 return ResponseEntity.ok(response);
             } else {
                 return ApiResponses.error("Categoría no encontrada");
@@ -246,8 +246,8 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarCategorias(@RequestParam String q) {
         try {
-            List<CategoryResponse> categorias = categoryService.buscarCategorias(q).stream()
-                    .map(CategoryResponse::from)
+            List<CategoriaResponse> categorias = categoryService.buscarCategorias(q).stream()
+                    .map(CategoriaResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();
@@ -268,8 +268,8 @@ public class CategoryController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> categoriasActivas() {
         try {
-            List<CategoryResponse> categorias = categoryService.listarCategorias().stream()
-                    .map(CategoryResponse::from)
+            List<CategoriaResponse> categorias = categoryService.listarCategorias().stream()
+                    .map(CategoriaResponse::from)
                     .toList();
 
             Map<String, Object> response = new HashMap<>();

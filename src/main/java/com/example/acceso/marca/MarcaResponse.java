@@ -1,4 +1,4 @@
-package com.example.acceso.brand;
+package com.example.acceso.marca;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BrandResponse {
+public class MarcaResponse {
 
     private Long id;
     private String nombre;
@@ -23,8 +23,8 @@ public class BrandResponse {
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
 
-    public static BrandResponse from(Brand marca) {
-        return BrandResponse.builder()
+    public static MarcaResponse from(Marca marca) {
+        return MarcaResponse.builder()
                 .id(marca.getId())
                 .nombre(marca.getNombre())
                 .descripcion(marca.getDescripcion())

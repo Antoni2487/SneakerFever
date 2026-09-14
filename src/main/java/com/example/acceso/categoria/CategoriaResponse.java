@@ -1,6 +1,6 @@
-package com.example.acceso.category;
+package com.example.acceso.categoria;
 
-import com.example.acceso.category.Category;
+import com.example.acceso.categoria.Categoria;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryResponse {
+public class CategoriaResponse {
 
     private Long id;
     private String nombre;
@@ -21,8 +21,8 @@ public class CategoryResponse {
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
 
-    public static CategoryResponse from(Category categoria) {
-        return CategoryResponse.builder()
+    public static CategoriaResponse from(Categoria categoria) {
+        return CategoriaResponse.builder()
                 .id(categoria.getId())
                 .nombre(categoria.getNombre())
                 .descripcion(categoria.getDescripcion())

@@ -1,8 +1,8 @@
 package com.example.acceso.carrito;
 
-import com.example.acceso.product.Product;
+import com.example.acceso.producto.Producto;
 import com.example.acceso.usuario.Usuario;
-import com.example.acceso.product.ProductService;
+import com.example.acceso.producto.ProductoService;
 import com.example.acceso.venta.CrearVentaRequest;
 import com.example.acceso.venta.CrearVentaRequest.DetalleVentaRequest;
 import com.example.acceso.venta.FormaPago;
@@ -23,11 +23,11 @@ import java.util.Map;
 @RequestMapping("/carrito")
 public class CartController {
 
-    private final ProductService productService;
+    private final ProductoService productService;
     private final VentaService ventaService;
     private final ComprobanteSecuenciaService comprobanteSecuenciaService;
 
-    public CartController(ProductService productService, VentaService ventaService,
+    public CartController(ProductoService productService, VentaService ventaService,
             ComprobanteSecuenciaService comprobanteSecuenciaService) {
         this.productService = productService;
         this.ventaService = ventaService;
@@ -47,7 +47,7 @@ public class CartController {
     public ResponseEntity<?> agregarProducto(@PathVariable Long id, @RequestParam(defaultValue = "1") Integer cantidad, HttpSession session) {
         try {
             Carrito carrito = obtenerCarritoSession(session);
-            Product producto = productService.obtenerProductoPorId(id)
+            Producto producto = productService.obtenerProductoPorId(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado")); 
 
             if (producto.getStock() < cantidad) {

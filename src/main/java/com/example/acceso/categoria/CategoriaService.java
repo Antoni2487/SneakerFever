@@ -1,8 +1,5 @@
-package com.example.acceso.category;
+package com.example.acceso.categoria;
 
-
-import com.example.acceso.category.Category;
-import com.example.acceso.category.CategoryRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,28 +9,28 @@ import java.util.Optional;
 
 
 @Service
-public class CategoryService {
+public class CategoriaService {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoriaRepository categoryRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoriaService(CategoriaRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
     // ===================== Listados =====================
     @Transactional(readOnly = true)
-    public List<Category> listarCategorias() {
+    public List<Categoria> listarCategorias() {
         return categoryRepository.findAllByEstado(1);
     }
 
     @Transactional(readOnly = true)
-    public List<Category> listarTodasCategorias() {
+    public List<Categoria> listarTodasCategorias() {
         return categoryRepository.findAllByEstadoNot(2);
     }
 
     // ===================== Guardar / Actualizar =====================
     @Transactional
-    public Category guardarCategoria(Category categoria) {
+    public Categoria guardarCategoria(Categoria categoria) {
         validarCategoria(categoria);
 
         try {
@@ -49,7 +46,7 @@ public class CategoryService {
             // ===================== Crear o Actualizar =====================
             if (categoria.getId() != null) {
                 // Actualización
-                Optional<Category> existente = obtenerCategoriaPorId(categoria.getId());
+                Optional<Categoria> existente = obtenerCategoriaPorId(categoria.getId());
                 if (existente.isPresent()) {
                     // Si no se envía un estado, mantener el existente
                     if (categoria.getEstado() == null) {
@@ -94,13 +91,13 @@ public class CategoryService {
 
     // ===================== Obtención =====================
     @Transactional(readOnly = true)
-    public Optional<Category> obtenerCategoriaPorId(Long id) {
+    public Optional<Categoria> obtenerCategoriaPorId(Long id) {
         if (id == null || id <= 0) return Optional.empty();
         return categoryRepository.findById(id);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Category> findByNombre(String nombre) {
+    public Optional<Categoria> findByNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) return Optional.empty();
         return categoryRepository.findByNombre(nombre.trim());
     }
@@ -108,7 +105,7 @@ public class CategoryService {
     // ===================== Eliminación / Estado =====================
     @Transactional
     public void eliminarCategoria(Long id) {
-        Category categoria = obtenerCategoriaPorId(id)
+        Categoria categoria = obtenerCategoriaPorId(id)
                 .orElseThrow(() -> new CategoriaException("Categoría no encontrada"));
 
         categoria.setEstado(2); // 🔹 2 = Eliminado
@@ -116,7 +113,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Optional<Category> cambiarEstadoCategoria(Long id) {
+    public Optional<Categoria> cambiarEstadoCategoria(Long id) {
         if (id == null || id <= 0) return Optional.empty();
 
         return obtenerCategoriaPorId(id).map(c -> {
@@ -145,13 +142,13 @@ public class CategoryService {
 
     // ===================== Búsquedas =====================
     @Transactional(readOnly = true)
-    public List<Category> buscarCategorias(String texto) {
+    public List<Categoria> buscarCategorias(String texto) {
         if (texto == null || texto.trim().isEmpty()) return listarCategorias();
         return categoryRepository.findByNombreContainingIgnoreCase(texto.trim());
     }
 
     @Transactional(readOnly = true)
-    public List<Category> buscarCategoriasActivas(String texto) {
+    public List<Categoria> buscarCategoriasActivas(String texto) {
         if (texto == null || texto.trim().isEmpty()) {
             return categoryRepository.findAllByEstado(1);
         }
@@ -160,7 +157,7 @@ public class CategoryService {
 
 
     // ===================== Validaciones =====================
-    private void validarCategoria(Category categoria) {
+    private void validarCategoria(Categoria categoria) {
         if (categoria == null) throw new CategoriaException("Categoría no puede ser nula");
         if (categoria.getNombre() == null || categoria.getNombre().trim().isEmpty()) {
             throw new CategoriaException("El nombre de la categoría es obligatorio");

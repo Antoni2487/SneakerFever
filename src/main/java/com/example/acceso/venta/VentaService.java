@@ -1,7 +1,7 @@
 package com.example.acceso.venta;
 
-import com.example.acceso.product.Product;
-import com.example.acceso.product.ProductRepository;
+import com.example.acceso.producto.Producto;
+import com.example.acceso.producto.ProductoRepository;
 import com.example.acceso.cliente.Cliente;
 import com.example.acceso.cliente.ClienteService;
 import com.example.acceso.cliente.ClienteRepository;
@@ -41,7 +41,7 @@ public class VentaService {
     private final ComprobanteSecuenciaService comprobanteSecuenciaService;
     private final ClienteRepository clienteRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ProductRepository productRepository;
+    private final ProductoRepository productRepository;
     private final ClienteService clienteService;
     private final MovimientoInventarioService movimientoInventarioService;
     private final DetalleVentaRepository detalleVentaRepository;
@@ -222,7 +222,7 @@ public class VentaService {
 
         // Devolver stock
         for (DetalleVenta detalle : venta.getDetalles()) {
-            Product producto = detalle.getProducto();
+            Producto producto = detalle.getProducto();
             producto.incrementarStock(detalle.getCantidad());
             productRepository.save(producto);
         }
@@ -416,7 +416,7 @@ public class VentaService {
         for (int i = 0; i < detallesRequest.size(); i++) {
             CrearVentaRequest.DetalleVentaRequest detalleRequest = detallesRequest.get(i);
 
-            Product producto = productRepository.findById(detalleRequest.getProductoId())
+            Producto producto = productRepository.findById(detalleRequest.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalleRequest.getProductoId()));
 
             if (producto.getEstado() != 1) {

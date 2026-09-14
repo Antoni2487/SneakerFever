@@ -1,7 +1,7 @@
 package com.example.acceso.dashboard;
 
-import com.example.acceso.product.Product;
-import com.example.acceso.product.ProductService;
+import com.example.acceso.producto.Producto;
+import com.example.acceso.producto.ProductoService;
 import com.example.acceso.cliente.ClienteService;
 import com.example.acceso.usuario.UsuarioService;
 import com.example.acceso.venta.CreditoVentaService;
@@ -24,13 +24,13 @@ public class DashboardController {
     private final UsuarioService usuarioService;
     private final VentaService ventaService;
     private final ClienteService clienteService;
-    private final ProductService productService;
+    private final ProductoService productService;
     private final CreditoVentaService creditoVentaService;
 
     public DashboardController(UsuarioService usuarioService,
                                VentaService ventaService,
                                ClienteService clienteService,
-                               ProductService productService,
+                               ProductoService productService,
                                CreditoVentaService creditoVentaService) {
         this.usuarioService = usuarioService;
         this.ventaService = ventaService;
@@ -104,7 +104,7 @@ public class DashboardController {
     public ResponseEntity<Map<String, Object>> listarProductos() {
         Map<String, Object> response = new HashMap<>();
         try {
-            List<Product> productos = productService.listarProductos();
+            List<Producto> productos = productService.listarProductos();
             response.put("success", true);
             response.put("data", productos);
             response.put("total", productos.size());

@@ -2,11 +2,11 @@
 package com.example.acceso.common;
 
 // Importaciones para el manejo de logs y excepciones específicas.
-import com.example.acceso.brand.BrandService.MarcaException;
-import com.example.acceso.category.CategoryService.CategoriaException;
+import com.example.acceso.marca.MarcaService.MarcaException;
+import com.example.acceso.categoria.CategoriaService.CategoriaException;
 import com.example.acceso.cliente.ClienteService.ClienteException;
 import com.example.acceso.personalizacion.PersonalizacionService.PersonalizacionException;
-import com.example.acceso.product.ProductService.ProductoException;
+import com.example.acceso.producto.ProductoService.ProductoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;

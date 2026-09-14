@@ -1,8 +1,8 @@
 package com.example.acceso.personalizacion;
 
-import com.example.acceso.brand.Brand;
+import com.example.acceso.marca.Marca;
 import com.example.acceso.personalizacion.Personalizacion;
-import com.example.acceso.brand.BrandService;
+import com.example.acceso.marca.MarcaService;
 import com.example.acceso.personalizacion.PersonalizacionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +21,10 @@ public class PersonalizacionController {
     private static final Logger log = LoggerFactory.getLogger(PersonalizacionController.class);
 
     private final PersonalizacionService personalizacionService;
-    private final BrandService brandService;
+    private final MarcaService brandService;
 
     public PersonalizacionController(PersonalizacionService personalizacionService,
-                                      BrandService brandService) {
+                                      MarcaService brandService) {
         this.personalizacionService = personalizacionService;
         this.brandService = brandService;
     }
@@ -433,7 +433,7 @@ public class PersonalizacionController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerMarcasDisponibles() {
         try {
-            List<Brand> marcas = brandService.listarMarcas();
+            List<Marca> marcas = brandService.listarMarcas();
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", marcas,

@@ -1,11 +1,11 @@
 package com.example.acceso.common;
 
-import com.example.acceso.brand.BrandResponse;
-import com.example.acceso.brand.BrandService;
-import com.example.acceso.category.CategoryResponse;
-import com.example.acceso.category.CategoryService;
-import com.example.acceso.product.ProductResponse;
-import com.example.acceso.product.ProductService;
+import com.example.acceso.marca.MarcaResponse;
+import com.example.acceso.marca.MarcaService;
+import com.example.acceso.categoria.CategoriaResponse;
+import com.example.acceso.categoria.CategoriaService;
+import com.example.acceso.producto.ProductoResponse;
+import com.example.acceso.producto.ProductoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * Endpoints públicos (sin sesión) para el sitio público en React: landing, catálogo, etc.
- * Deliberadamente separado de los controllers de dominio (Brand/Product), que son admin-only,
+ * Deliberadamente separado de los controllers de dominio (Marca/Producto), que son admin-only,
  * para no mezclar la superficie pública con la de gestión.
  */
 @RestController
@@ -33,13 +33,13 @@ public class PublicSiteController {
 
     private static final Logger log = LoggerFactory.getLogger(PublicSiteController.class);
 
-    private final BrandService brandService;
-    private final ProductService productService;
-    private final CategoryService categoryService;
+    private final MarcaService brandService;
+    private final ProductoService productService;
+    private final CategoriaService categoryService;
     private final RestTemplate restTemplate;
 
-    public PublicSiteController(BrandService brandService, ProductService productService,
-                                 CategoryService categoryService, RestTemplate restTemplate) {
+    public PublicSiteController(MarcaService brandService, ProductoService productService,
+                                 CategoriaService categoryService, RestTemplate restTemplate) {
         this.brandService = brandService;
         this.productService = productService;
         this.categoryService = categoryService;
@@ -48,16 +48,16 @@ public class PublicSiteController {
 
     @GetMapping("/marcas")
     public ResponseEntity<Map<String, Object>> listarMarcas() {
-        List<BrandResponse> marcas = brandService.listarMarcasConImagen().stream()
-                .map(BrandResponse::from)
+        List<MarcaResponse> marcas = brandService.listarMarcasConImagen().stream()
+                .map(MarcaResponse::from)
                 .toList();
         return ResponseEntity.ok(Map.of("success", true, "data", marcas));
     }
 
     @GetMapping("/categorias")
     public ResponseEntity<Map<String, Object>> listarCategorias() {
-        List<CategoryResponse> categorias = categoryService.listarCategorias().stream()
-                .map(CategoryResponse::from)
+        List<CategoriaResponse> categorias = categoryService.listarCategorias().stream()
+                .map(CategoriaResponse::from)
                 .toList();
         return ResponseEntity.ok(Map.of("success", true, "data", categorias));
     }
@@ -71,7 +71,7 @@ public class PublicSiteController {
     public ResponseEntity<Map<String, Object>> obtenerProducto(@PathVariable Long id) {
         return productService.obtenerProductoPorId(id)
                 .filter(p -> p.getEstado() == 1)
-                .map(p -> ResponseEntity.ok(Map.<String, Object>of("success", true, "data", ProductResponse.from(p))))
+                .map(p -> ResponseEntity.ok(Map.<String, Object>of("success", true, "data", ProductoResponse.from(p))))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("success", false, "message", "Producto no encontrado")));
     }
@@ -108,8 +108,8 @@ public class PublicSiteController {
         }
     }
 
-    private List<ProductResponse> mapear(List<com.example.acceso.product.Product> productos) {
-        return productos.stream().map(ProductResponse::from).toList();
+    private List<ProductoResponse> mapear(List<com.example.acceso.producto.Producto> productos) {
+        return productos.stream().map(ProductoResponse::from).toList();
     }
 
     public record ContactoRequest(String nombre, String correo, String asunto, String mensaje) {}

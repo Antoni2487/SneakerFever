@@ -1,7 +1,7 @@
 package com.example.acceso.common;
 
-import com.example.acceso.brand.Brand;
-import com.example.acceso.brand.BrandService;
+import com.example.acceso.marca.Marca;
+import com.example.acceso.marca.MarcaService;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import java.util.List;
@@ -10,9 +10,9 @@ import java.util.Optional;
 @ControllerAdvice("brandAdvice")
 public class GlobalBrandAttributes {
 
-    private final BrandService brandService;
+    private final MarcaService brandService;
 
-    public GlobalBrandAttributes(BrandService brandService) {
+    public GlobalBrandAttributes(MarcaService brandService) {
         this.brandService = brandService;
     }
 
@@ -20,8 +20,8 @@ public class GlobalBrandAttributes {
      * Agrega las marcas a TODAS las vistas automáticamente
      */
     @ModelAttribute("marcas")
-    public List<Brand> getMarcas() {
-        List<Brand> marcas = Optional.ofNullable(
+    public List<Marca> getMarcas() {
+        List<Marca> marcas = Optional.ofNullable(
                 brandService.listarMarcasConImagen()
         ).orElse(List.of());
 

@@ -1,4 +1,4 @@
-package com.example.acceso.category;
+package com.example.acceso.marca;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -12,6 +12,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,16 +21,16 @@ import java.time.LocalDateTime;
 @Builder
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
-@Table(name = "categorias")
-public class Category {
+@Table(name = "marcas")
+public class Marca {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre de la categoría es obligatorio")
+    @NotBlank(message = "El nombre de la marca es obligatorio")
     @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
-    @Column(name = "nombre", nullable = false, unique = true, length = 100)
+    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
     @Size(max = 500, message = "La descripción no puede exceder los 500 caracteres")
@@ -36,7 +38,19 @@ public class Category {
     private String descripcion;
 
     @Column(nullable = false)
-    private Integer estado = 1; // 1: Activo, 0: Inactivo, 2: Eliminado
+    private Integer estado = 1;
+
+    @Size(max = 500, message = "La URL de la imagen no puede exceder los 500 caracteres")
+    @Column(name = "imagen", length = 500)
+    private String imagen;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+        name = "brand_imagenes",  // ← Cambiar a minúsculas (convención)
+        joinColumns = @JoinColumn(name = "marca_id")  // ← Cambiar de producto_id a marca_id
+    )
+    @Column(name = "url", length = 500)
+    @OrderColumn(name = "orden")
+    private List<String> imagenes = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
@@ -49,7 +63,7 @@ public class Category {
 
     @Override
     public String toString() {
-        return "Category{" +
+        return "Marca{" +
                 "id=" + id +
                 ", nombre='" + nombre + '\'' +
                 ", descripcion='" + descripcion + '\'' +
@@ -58,4 +72,13 @@ public class Category {
                 ", fechaActualizacion=" + fechaActualizacion +
                 '}';
     }
+
+
+       public void setImagenes(List<String> imagenes) {
+           this.imagenes = imagenes;
+           // Sincronizar imagen principal
+           if (imagenes != null && !imagenes.isEmpty()) {
+               this.imagen = imagenes.get(0);
+           }
+       }
 }

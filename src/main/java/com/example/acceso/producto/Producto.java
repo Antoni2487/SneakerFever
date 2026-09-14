@@ -1,8 +1,8 @@
-package com.example.acceso.product;
+package com.example.acceso.producto;
 
 import com.example.acceso.venta.DetalleVenta;
-import com.example.acceso.brand.Brand;
-import com.example.acceso.category.Category;
+import com.example.acceso.marca.Marca;
+import com.example.acceso.categoria.Categoria;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -25,7 +25,7 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "productos")
-public class Product {
+public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -86,13 +86,13 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Category category;
+    private Categoria category;
 
     @NotNull(message = "La marca es obligatoria")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_marca", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Brand brand;
+    private Marca brand;
 
     @Column(nullable = false)
     private Integer estado = 1;
@@ -137,7 +137,7 @@ public class Product {
 
     @Override
     public String toString() {
-        return "Product{" +
+        return "Producto{" +
                 "id=" + id +
                 ", nombre='" + nombre + '\'' +
                 ", precio=" + precio +
