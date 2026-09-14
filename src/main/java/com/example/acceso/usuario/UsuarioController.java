@@ -126,7 +126,10 @@ public class UsuarioController {
             return ResponseEntity.ok(response);
 
         } catch (UsuarioService.AccesoDenegadoException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.FORBIDDEN);
+            // Delegado a GlobalExceptionHandler, que lo traduce a 403 -- no
+            // se atrapa localmente para no repetir la misma traduccion en
+            // cada metodo (ver AUDITORIA_TECNICA, hallazgo #6).
+            throw e;
         } catch (Exception e) {
             log.error("Error al guardar usuario", e);
             return ApiResponses.error("Error interno del servidor: " + e.getMessage());
@@ -175,7 +178,10 @@ public class UsuarioController {
             ));
 
         } catch (UsuarioService.AccesoDenegadoException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.FORBIDDEN);
+            // Delegado a GlobalExceptionHandler, que lo traduce a 403 -- no
+            // se atrapa localmente para no repetir la misma traduccion en
+            // cada metodo (ver AUDITORIA_TECNICA, hallazgo #6).
+            throw e;
         } catch (Exception e) {
             log.error("Error al eliminar usuario {}", id, e);
             return ApiResponses.error("Error al eliminar usuario: " + e.getMessage());
@@ -212,7 +218,10 @@ public class UsuarioController {
                     .orElseGet(() -> ApiResponses.error("Error al cambiar estado del usuario"));
 
         } catch (UsuarioService.AccesoDenegadoException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.FORBIDDEN);
+            // Delegado a GlobalExceptionHandler, que lo traduce a 403 -- no
+            // se atrapa localmente para no repetir la misma traduccion en
+            // cada metodo (ver AUDITORIA_TECNICA, hallazgo #6).
+            throw e;
         } catch (Exception e) {
             log.error("Error al cambiar estado de usuario {}", id, e);
             return ApiResponses.error("Error al cambiar estado: " + e.getMessage());
