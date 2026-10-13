@@ -1,5 +1,6 @@
 package com.example.acceso.perfil;
 
+import com.example.acceso.common.ApiResponses;
 import com.example.acceso.perfil.OpcionResponse;
 import com.example.acceso.perfil.PerfilRequest;
 import com.example.acceso.perfil.PerfilResponse;
@@ -74,7 +75,7 @@ public class PerfilController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al guardar el perfil: " + e.getMessage());
+            response.put("message", "Error al guardar el perfil: " + ApiResponses.mensajeSeguro(e));
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -119,7 +120,7 @@ public class PerfilController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al eliminar el perfil: " + e.getMessage());
+            response.put("message", "Error al eliminar el perfil: " + ApiResponses.mensajeSeguro(e));
             return ResponseEntity.internalServerError().body(response);
         }
     }

@@ -63,7 +63,7 @@ public class CategoriaController {
             response.put("total", categorias.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar categorías: " + e.getMessage());
+            return ApiResponses.error("Error al listar categorías: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -86,7 +86,7 @@ public class CategoriaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al cargar datos para la tabla: " + e.getMessage());
+            return ApiResponses.error("Error al cargar datos para la tabla: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -112,7 +112,7 @@ public class CategoriaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al obtener la categoría: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -142,9 +142,9 @@ public class CategoriaController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (CategoriaService.CategoriaException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al crear la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al crear la categoría: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -185,9 +185,9 @@ public class CategoriaController {
             return ResponseEntity.ok(response);
 
         } catch (CategoriaService.CategoriaException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al actualizar la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar la categoría: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -207,9 +207,9 @@ public class CategoriaController {
             return ResponseEntity.ok(response);
 
         } catch (CategoriaService.CategoriaException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al eliminar la categoría: " + e.getMessage());
+            return ApiResponses.error("Error al eliminar la categoría: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -233,7 +233,7 @@ public class CategoriaController {
             }
 
         } catch (Exception e) {
-            return ApiResponses.error("Error al cambiar el estado: " + e.getMessage());
+            return ApiResponses.error("Error al cambiar el estado: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -257,7 +257,7 @@ public class CategoriaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error en la búsqueda: " + e.getMessage());
+            return ApiResponses.error("Error en la búsqueda: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -278,7 +278,7 @@ public class CategoriaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener categorías activas: " + e.getMessage());
+            return ApiResponses.error("Error al obtener categorías activas: " + ApiResponses.mensajeSeguro(e));
         }
     }
 

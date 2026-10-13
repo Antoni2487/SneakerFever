@@ -1,5 +1,6 @@
 package com.example.acceso.carrito;
 
+import com.example.acceso.common.ApiResponses;
 import com.example.acceso.producto.Producto;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.producto.ProductoService;
@@ -165,7 +166,7 @@ public class CartController {
 
             return ResponseEntity.ok(Map.of("success", true, "message", "¡Compra realizada con éxito! Tu pedido está siendo procesado."));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Error al procesar la compra: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Error al procesar la compra: " + ApiResponses.mensajeSeguro(e)));
         }
     }
 

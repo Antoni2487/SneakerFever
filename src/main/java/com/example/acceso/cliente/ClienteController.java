@@ -57,7 +57,7 @@ public class ClienteController {
             response.put("total", clientes.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar clientes: " + e.getMessage());
+            return ApiResponses.error("Error al listar clientes: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -80,7 +80,7 @@ public class ClienteController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al cargar datos para la tabla: " + e.getMessage());
+            return ApiResponses.error("Error al cargar datos para la tabla: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -96,7 +96,7 @@ public class ClienteController {
             response.put("data", clienteService.obtenerEstadisticas());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener estadísticas: " + e.getMessage());
+            return ApiResponses.error("Error al obtener estadísticas: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -117,7 +117,7 @@ public class ClienteController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
             }
         } catch (Exception e) {
-            return ApiResponses.error("Error al consultar documento: " + e.getMessage());
+            return ApiResponses.error("Error al consultar documento: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -143,7 +143,7 @@ public class ClienteController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al obtener el cliente: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -173,9 +173,9 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (ClienteService.ClienteException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al crear el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al crear el cliente: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -218,9 +218,9 @@ public class ClienteController {
             return ResponseEntity.ok(response);
 
         } catch (ClienteService.ClienteException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al actualizar el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar el cliente: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -240,9 +240,9 @@ public class ClienteController {
             return ResponseEntity.ok(response);
 
         } catch (ClienteService.ClienteException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al eliminar el cliente: " + e.getMessage());
+            return ApiResponses.error("Error al eliminar el cliente: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -266,7 +266,7 @@ public class ClienteController {
             }
 
         } catch (Exception e) {
-            return ApiResponses.error("Error al cambiar el estado: " + e.getMessage());
+            return ApiResponses.error("Error al cambiar el estado: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -290,7 +290,7 @@ public class ClienteController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error en la búsqueda: " + e.getMessage());
+            return ApiResponses.error("Error en la búsqueda: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -314,7 +314,7 @@ public class ClienteController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
-            return ApiResponses.error("Error al buscar cliente: " + e.getMessage());
+            return ApiResponses.error("Error al buscar cliente: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -335,7 +335,7 @@ public class ClienteController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al contar clientes: " + e.getMessage());
+            return ApiResponses.error("Error al contar clientes: " + ApiResponses.mensajeSeguro(e));
         }
     }
 

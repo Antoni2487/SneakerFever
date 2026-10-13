@@ -1,5 +1,6 @@
 package com.example.acceso.cliente;
 
+import com.example.acceso.common.ApiResponses;
 import com.example.acceso.cliente.DniResponseDTO;
 import com.example.acceso.cliente.RucResponseDTO;
 import com.example.acceso.cliente.Cliente;
@@ -113,7 +114,7 @@ public class ClienteService {
 
         } catch (Exception e) {
             resultado.put("success", false);
-            resultado.put("message", "Error al consultar la API: " + e.getMessage());
+            resultado.put("message", "Error al consultar la API: " + ApiResponses.mensajeSeguro(e));
             resultado.put("advertencia", "Puede continuar ingresando el nombre manualmente");
         }
 

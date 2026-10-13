@@ -213,7 +213,7 @@ public class VentaService {
      * Si tiene crédito, lo cancela también
      */
     @Transactional
-    public VentaResponse anularVenta(Long id) {
+    public VentaResponse anularVenta(Long id, String usuarioAnulacion) {
         Venta venta = ventaRepository.findByIdWithDetalles(id)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
 
@@ -221,11 +221,25 @@ public class VentaService {
             throw new RuntimeException("La venta ya está anulada");
         }
 
-        // Devolver stock
+        Usuario usuario = usuarioRepository.findByUsuario(usuarioAnulacion)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioAnulacion));
+
+        // Devolver stock y dejarlo en el kardex (antes se devolvía el stock sin
+        // registrar el movimiento, y el kardex no cuadraba con el stock real).
         for (DetalleVenta detalle : venta.getDetalles()) {
             Producto producto = detalle.getProducto();
             producto.incrementarStock(detalle.getCantidad());
             productRepository.save(producto);
+
+            movimientoInventarioService.registrarMovimientoYaAplicado(RegistrarMovimientoRequest.builder()
+                    .productoId(producto.getId())
+                    .tipoMovimiento(TipoMovimiento.DEVOLUCION)
+                    .cantidad(detalle.getCantidad())
+                    .motivo(MotivoMovimiento.DEVOLUCION_CLIENTE)
+                    .referenciaId(venta.getId())
+                    .referenciaTipo(TipoReferencia.VENTA)
+                    .observaciones("Devolución por anulación de venta #" + venta.getId())
+                    .build(), usuario.getId());
         }
 
         venta.setEstado(EstadoVenta.ANULADA);
@@ -401,7 +415,7 @@ public class VentaService {
             try {
                 return clienteService.obtenerOCrearCliente(request.getDocumento());
             } catch (ClienteService.ClienteException e) {
-                throw new RuntimeException("Error al procesar cliente: " + e.getMessage());
+                throw new RuntimeException("Error al procesar cliente: " + e.getMessage(), e);
             }
         } else {
             throw new RuntimeException("Debe proporcionar clienteId o documento del cliente");

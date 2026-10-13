@@ -1,5 +1,6 @@
 package com.example.acceso.carrito;
 
+import com.example.acceso.common.ApiResponses;
 import com.example.acceso.venta.CrearVentaRequest;
 import com.example.acceso.venta.CrearVentaRequest.DetalleVentaRequest;
 import com.example.acceso.cliente.Cliente;
@@ -130,7 +131,7 @@ public class CheckoutController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("mensajeError", "Error al procesar la compra: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al procesar la compra: " + ApiResponses.mensajeSeguro(e));
             return "redirect:/carrito/checkout";
         }
     }

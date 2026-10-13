@@ -104,11 +104,11 @@ public class FileUploadController {
 
         } catch (IOException e) {
             response.put("success", false);
-            response.put("message", "Error al guardar el archivo: " + e.getMessage());
+            response.put("message", "Error al guardar el archivo: " + ApiResponses.mensajeSeguro(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error inesperado: " + e.getMessage());
+            response.put("message", "Error inesperado: " + ApiResponses.mensajeSeguro(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -181,7 +181,7 @@ public class FileUploadController {
                     uploadedFiles.add(fileInfo);
 
                 } catch (IOException e) {
-                    errors.add("Archivo " + (i + 1) + ": Error al guardar - " + e.getMessage());
+                    errors.add("Archivo " + (i + 1) + ": Error al guardar - " + ApiResponses.mensajeSeguro(e));
                 }
             }
 
@@ -207,7 +207,7 @@ public class FileUploadController {
 
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error inesperado: " + e.getMessage());
+            response.put("message", "Error inesperado: " + ApiResponses.mensajeSeguro(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -253,7 +253,7 @@ public class FileUploadController {
 
         } catch (IOException e) {
             response.put("success", false);
-            response.put("message", "Error al eliminar el archivo: " + e.getMessage());
+            response.put("message", "Error al eliminar el archivo: " + ApiResponses.mensajeSeguro(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -302,7 +302,7 @@ public class FileUploadController {
                         errors.add(filename + ": Archivo no encontrado");
                     }
                 } catch (IOException e) {
-                    errors.add(filename + ": Error al eliminar - " + e.getMessage());
+                    errors.add(filename + ": Error al eliminar - " + ApiResponses.mensajeSeguro(e));
                 }
             }
 
@@ -319,7 +319,7 @@ public class FileUploadController {
 
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error inesperado: " + e.getMessage());
+            response.put("message", "Error inesperado: " + ApiResponses.mensajeSeguro(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

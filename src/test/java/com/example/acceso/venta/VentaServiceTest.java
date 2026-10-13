@@ -4,6 +4,8 @@ import com.example.acceso.cliente.Cliente;
 import com.example.acceso.cliente.ClienteRepository;
 import com.example.acceso.cliente.ClienteService;
 import com.example.acceso.inventario.MovimientoInventarioService;
+import com.example.acceso.inventario.RegistrarMovimientoRequest;
+import com.example.acceso.inventario.TipoMovimiento;
 import com.example.acceso.producto.Producto;
 import com.example.acceso.producto.ProductoRepository;
 import com.example.acceso.usuario.Usuario;
@@ -333,12 +335,19 @@ class VentaServiceTest {
 
         when(ventaRepository.findByIdWithDetalles(700L)).thenReturn(Optional.of(venta));
         when(ventaRepository.save(any(Venta.class))).thenAnswer(inv -> inv.getArgument(0));
+        mockUsuarioCreacion();
 
-        VentaResponse response = ventaService.anularVenta(700L);
+        VentaResponse response = ventaService.anularVenta(700L, "admin");
 
         assertThat(producto.getStock()).isEqualTo(5);
         assertThat(response.getEstado()).isEqualTo(EstadoVenta.ANULADA);
         verify(creditoVentaService, never()).cancelarCredito(any());
+        // La devolución queda en el kardex, sin volver a sumar stock.
+        ArgumentCaptor<RegistrarMovimientoRequest> mov = ArgumentCaptor.forClass(RegistrarMovimientoRequest.class);
+        verify(movimientoInventarioService).registrarMovimientoYaAplicado(mov.capture(), eq(1L));
+        assertThat(mov.getValue().getTipoMovimiento()).isEqualTo(TipoMovimiento.DEVOLUCION);
+        assertThat(mov.getValue().getCantidad()).isEqualTo(2);
+        assertThat(mov.getValue().getReferenciaId()).isEqualTo(700L);
     }
 
     @Test
@@ -350,7 +359,7 @@ class VentaServiceTest {
                 .estado(EstadoVenta.ANULADA).detalles(List.of()).build();
         when(ventaRepository.findByIdWithDetalles(701L)).thenReturn(Optional.of(anulada));
 
-        assertThatThrownBy(() -> ventaService.anularVenta(701L))
+        assertThatThrownBy(() -> ventaService.anularVenta(701L, "admin"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("ya está anulada");
 

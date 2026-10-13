@@ -2,12 +2,12 @@ package com.example.acceso.inventario;
 
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.common.ApiResponses;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,13 +39,12 @@ public class MovimientoInventarioController {
     public ResponseEntity<Map<String, Object>> registrarMovimiento(
             @Valid @RequestBody RegistrarMovimientoRequest request,
             BindingResult result,
-            HttpSession session) {
+            @AuthenticationPrincipal Usuario usuario) {
 
         if (result.hasErrors()) {
             return createValidationErrorResponse(result);
         }
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
             return ApiResponses.error("Usuario no autenticado", HttpStatus.UNAUTHORIZED);
         }
@@ -54,9 +53,9 @@ public class MovimientoInventarioController {
             MovimientoInventarioResponse movimiento = movimientoService.registrarMovimiento(request, usuario.getId());
             return createSuccessResponse("Movimiento registrado correctamente", movimiento);
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ApiResponses.error("Error al registrar movimiento: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al registrar movimiento: " + ApiResponses.mensajeSeguro(e), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -73,7 +72,7 @@ public class MovimientoInventarioController {
             response.put("total", movimientos.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar movimientos: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al listar movimientos: " + ApiResponses.mensajeSeguro(e), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     /**
@@ -86,7 +85,7 @@ public class MovimientoInventarioController {
             List<MovimientoInventarioResponse> kardex = movimientoService.obtenerKardex(productoId);
             return createSuccessListResponse(kardex);
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener kardex: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al obtener kardex: " + ApiResponses.mensajeSeguro(e), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -100,7 +99,7 @@ public class MovimientoInventarioController {
             List<MovimientoInventarioResponse> movimientos = movimientoService.listarPorTipo(tipo);
             return createSuccessListResponse(movimientos);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar por tipo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al listar por tipo: " + ApiResponses.mensajeSeguro(e), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -116,7 +115,7 @@ public class MovimientoInventarioController {
             List<MovimientoInventarioResponse> movimientos = movimientoService.listarPorFechas(fechaInicio, fechaFin);
             return createSuccessListResponse(movimientos);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar por fechas: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponses.error("Error al listar por fechas: " + ApiResponses.mensajeSeguro(e), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

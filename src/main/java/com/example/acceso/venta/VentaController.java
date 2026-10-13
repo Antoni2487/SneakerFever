@@ -3,10 +3,10 @@ package com.example.acceso.venta;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.dashboard.ReporteVentasDTO;
 import com.example.acceso.common.ApiResponses;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -71,7 +71,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar ventas: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -90,7 +90,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar ventas del cliente: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas del cliente: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -109,7 +109,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar ventas por estado: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas por estado: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -130,7 +130,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar ventas por rango de fechas: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas por rango de fechas: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -149,7 +149,7 @@ public class VentaController {
             response.put("total", ventas.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar ventas con crédito: " + e.getMessage());
+            return ApiResponses.error("Error al listar ventas con crédito: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -169,9 +169,9 @@ public class VentaController {
             response.put("data", venta);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener la venta: " + e.getMessage());
+            return ApiResponses.error("Error al obtener la venta: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -180,17 +180,16 @@ public class VentaController {
     public ResponseEntity<Map<String, Object>> crearVenta(
             @Valid @RequestBody CrearVentaRequest request,
             BindingResult result,
-            HttpSession session) {
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
 
         if (result.hasErrors()) {
             return createValidationErrorResponse(result);
         }
 
-        // Intentamos obtener el usuario logueado desde la sesión
-        Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
-        String nombreUsuario = (usuarioLogueado != null)
-                ? usuarioLogueado.getUsuario()
-                : "SYSTEM"; // fallback si no hay sesión activa
+        // Del JWT (antes HttpSession, que con el login de React siempre venía vacío
+        // y caía en "SYSTEM": la venta fallaba al buscar ese usuario). SecurityConfig
+        // exige autoridad en esta ruta, así que el principal siempre está presente.
+        String nombreUsuario = usuarioLogueado.getUsuario();
 
         try {
             VentaResponse nuevaVenta = ventaService.crearVenta(request, nombreUsuario);
@@ -203,9 +202,9 @@ public class VentaController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al crear la venta: " + e.getMessage());
+            return ApiResponses.error("Error al crear la venta: " + ApiResponses.mensajeSeguro(e));
         }
     }
     @GetMapping("/api/series/activas")
@@ -233,7 +232,7 @@ public class VentaController {
             ));
 
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener serie activa: " + e.getMessage());
+            return ApiResponses.error("Error al obtener serie activa: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -257,9 +256,9 @@ public class VentaController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al actualizar el estado: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar el estado: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -268,9 +267,10 @@ public class VentaController {
      */
     @PutMapping("/api/anular/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> anularVenta(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> anularVenta(@PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
-            VentaResponse ventaAnulada = ventaService.anularVenta(id);
+            VentaResponse ventaAnulada = ventaService.anularVenta(id, usuarioLogueado.getUsuario());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -280,9 +280,9 @@ public class VentaController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage());
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
         } catch (Exception e) {
-            return ApiResponses.error("Error al anular la venta: " + e.getMessage());
+            return ApiResponses.error("Error al anular la venta: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -305,7 +305,7 @@ public class VentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al generar reporte: " + e.getMessage());
+            return ApiResponses.error("Error al generar reporte: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -324,7 +324,7 @@ public class VentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener estadísticas: " + e.getMessage());
+            return ApiResponses.error("Error al obtener estadísticas: " + ApiResponses.mensajeSeguro(e));
         }
     }
 

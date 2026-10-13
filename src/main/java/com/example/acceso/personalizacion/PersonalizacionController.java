@@ -1,5 +1,6 @@
 package com.example.acceso.personalizacion;
 
+import com.example.acceso.common.ApiResponses;
 import com.example.acceso.marca.Marca;
 import com.example.acceso.personalizacion.Personalizacion;
 import com.example.acceso.marca.MarcaService;
@@ -88,7 +89,7 @@ public class PersonalizacionController {
             log.warn("Error al actualizar logo: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", e.getMessage()
+                "message", ApiResponses.mensajeSeguro(e)
             ));
         } catch (Exception e) {
             log.error("Error inesperado al actualizar logo", e);
@@ -112,7 +113,7 @@ public class PersonalizacionController {
             log.warn("Error al eliminar logo: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", e.getMessage()
+                "message", ApiResponses.mensajeSeguro(e)
             ));
         } catch (Exception e) {
             log.error("Error inesperado al eliminar logo", e);
@@ -241,7 +242,7 @@ public class PersonalizacionController {
             log.warn("Error al actualizar slide {}: {}", orden, e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", e.getMessage()
+                "message", ApiResponses.mensajeSeguro(e)
             ));
         } catch (Exception e) {
             log.error("Error inesperado al actualizar slide {}", orden, e);
@@ -279,7 +280,7 @@ public class PersonalizacionController {
             log.warn("Error al actualizar marca del slide {}: {}", orden, e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", e.getMessage()
+                "message", ApiResponses.mensajeSeguro(e)
             ));
         } catch (Exception e) {
             log.error("Error inesperado al actualizar marca del slide {}", orden, e);
@@ -311,7 +312,7 @@ public class PersonalizacionController {
             log.warn("Error al limpiar slide {}: {}", orden, e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", e.getMessage()
+                "message", ApiResponses.mensajeSeguro(e)
             ));
         } catch (Exception e) {
             log.error("Error inesperado al limpiar slide {}", orden, e);
@@ -342,7 +343,7 @@ public class PersonalizacionController {
             log.warn("Error al buscar slides por marca {}: {}", marcaId, e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", e.getMessage()
+                "message", ApiResponses.mensajeSeguro(e)
             ));
         } catch (Exception e) {
             log.error("Error al buscar slides por marca {}", marcaId, e);

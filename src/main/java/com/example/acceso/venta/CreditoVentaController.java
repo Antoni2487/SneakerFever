@@ -3,11 +3,11 @@ package com.example.acceso.venta;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.dashboard.ReporteCreditosDTO;
 import com.example.acceso.common.ApiResponses;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -46,9 +46,9 @@ public class CreditoVentaController {
             CreditoVentaResponse credito = creditoVentaService.obtenerCreditoPorId(id);
             return createSuccessResponse(credito);
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.NOT_FOUND);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener el crédito: " + e.getMessage());
+            return ApiResponses.error("Error al obtener el crédito: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -62,9 +62,9 @@ public class CreditoVentaController {
             CreditoVentaResponse credito = creditoVentaService.obtenerCreditoPorVentaId(ventaId);
             return createSuccessResponse(credito);
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.NOT_FOUND);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener el crédito: " + e.getMessage());
+            return ApiResponses.error("Error al obtener el crédito: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -78,7 +78,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosPorCliente(clienteId);
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar créditos del cliente: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos del cliente: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -92,7 +92,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosActivos();
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar créditos activos: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos activos: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -106,7 +106,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosVencidos();
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar créditos vencidos: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos vencidos: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -121,7 +121,7 @@ public class CreditoVentaController {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosProximosVencer(dias);
             return createSuccessListResponse(creditos);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar créditos próximos a vencer: " + e.getMessage());
+            return ApiResponses.error("Error al listar créditos próximos a vencer: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -137,7 +137,7 @@ public class CreditoVentaController {
             List<CuotaPagoResponse> cuotas = creditoVentaService.listarCuotasPorCredito(creditoId);
             return createSuccessListResponse(cuotas);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar cuotas: " + e.getMessage());
+            return ApiResponses.error("Error al listar cuotas: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -151,9 +151,9 @@ public class CreditoVentaController {
             CuotaPagoResponse cuota = creditoVentaService.obtenerCuotaPorId(cuotaId);
             return createSuccessResponse(cuota);
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.NOT_FOUND);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return ApiResponses.error("Error al obtener la cuota: " + e.getMessage());
+            return ApiResponses.error("Error al obtener la cuota: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -167,7 +167,7 @@ public class CreditoVentaController {
             List<CuotaPagoResponse> cuotas = creditoVentaService.listarCuotasVencidas();
             return createSuccessListResponse(cuotas);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar cuotas vencidas: " + e.getMessage());
+            return ApiResponses.error("Error al listar cuotas vencidas: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -181,17 +181,17 @@ public class CreditoVentaController {
     public ResponseEntity<Map<String, Object>> registrarPago(
             @Valid @RequestBody RegistrarPagoRequest request,
             BindingResult result,
-            HttpSession session) {
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
 
         if (result.hasErrors()) {
             return createValidationErrorResponse(result);
         }
 
 
-        Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
-        String nombreUsuario = (usuarioLogueado != null)
-                ? usuarioLogueado.getUsuario()
-                : "SYSTEM";
+        // Del JWT (antes HttpSession, que con el login de React siempre venía vacío
+        // y caía en "SYSTEM": la venta fallaba al buscar ese usuario). SecurityConfig
+        // exige autoridad en esta ruta, así que el principal siempre está presente.
+        String nombreUsuario = usuarioLogueado.getUsuario();
 
         try {
             RegistroPagoResponse pago = creditoVentaService.registrarPago(request, nombreUsuario);
@@ -204,9 +204,9 @@ public class CreditoVentaController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (RuntimeException e) {
-            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ApiResponses.error("Error al registrar el pago: " + e.getMessage());
+            return ApiResponses.error("Error al registrar el pago: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -221,7 +221,7 @@ public class CreditoVentaController {
             List<RegistroPagoResponse> pagos = creditoVentaService.listarPagosPorCredito(creditoId);
             return createSuccessListResponse(pagos);
         } catch (Exception e) {
-            return ApiResponses.error("Error al listar pagos: " + e.getMessage());
+            return ApiResponses.error("Error al listar pagos: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -240,7 +240,7 @@ public class CreditoVentaController {
             ReporteCreditosDTO reporte = creditoVentaService.generarReporteCreditos();
             return createSuccessResponse(reporte);
         } catch (Exception e) {
-            return ApiResponses.error("Error al generar reporte: " + e.getMessage());
+            return ApiResponses.error("Error al generar reporte: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -261,7 +261,7 @@ public class CreditoVentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al actualizar estados: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar estados: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -280,7 +280,7 @@ public class CreditoVentaController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ApiResponses.error("Error al actualizar estados: " + e.getMessage());
+            return ApiResponses.error("Error al actualizar estados: " + ApiResponses.mensajeSeguro(e));
         }
     }
 

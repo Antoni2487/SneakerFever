@@ -4,12 +4,12 @@ import com.example.acceso.common.ApiResponses;
 import com.example.acceso.perfil.Perfil;
 import com.example.acceso.perfil.PerfilResponse;
 import com.example.acceso.perfil.PerfilService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -46,7 +46,7 @@ public class UsuarioController {
      */
     @GetMapping("/api/listar")
     @ResponseBody
-    public ResponseEntity<?> listarUsuariosApi(HttpSession session) {
+    public ResponseEntity<?> listarUsuariosApi(@AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
             List<Usuario> usuarios = usuarioService.listarUsuarios();
 
@@ -54,7 +54,6 @@ public class UsuarioController {
             response.put("success", true);
             response.put("data", usuarios.stream().map(UsuarioResponse::from).toList());
 
-            Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
             if (usuarioLogueado != null) {
                 response.put("currentUserId", usuarioLogueado.getId());
                 response.put("currentUserPerfilId", usuarioLogueado.getPerfil() != null
@@ -67,7 +66,7 @@ public class UsuarioController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error al listar usuarios", e);
-            return ApiResponses.error("Error al listar usuarios: " + e.getMessage());
+            return ApiResponses.error("Error al listar usuarios: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -90,14 +89,13 @@ public class UsuarioController {
     public ResponseEntity<?> guardarUsuarioAjax(
             @Valid @RequestBody UsuarioRequest request,
             BindingResult bindingResult,
-            HttpSession session) {
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
 
         if (bindingResult.hasErrors()) {
             return ApiResponses.validationError(bindingResult);
         }
 
         try {
-            Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
             Perfil perfilNuevo = request.getPerfilId() != null
                     ? perfilService.obtenerPerfilPorId(request.getPerfilId()).orElse(null)
                     : null;
@@ -132,7 +130,7 @@ public class UsuarioController {
             throw e;
         } catch (Exception e) {
             log.error("Error al guardar usuario", e);
-            return ApiResponses.error("Error interno del servidor: " + e.getMessage());
+            return ApiResponses.error("Error interno del servidor: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -150,7 +148,7 @@ public class UsuarioController {
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             log.error("Error al obtener usuario {}", id, e);
-            return ApiResponses.error("Error al obtener usuario: " + e.getMessage());
+            return ApiResponses.error("Error al obtener usuario: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -159,9 +157,8 @@ public class UsuarioController {
      */
     @DeleteMapping("/api/eliminar/{id}")
     @ResponseBody
-    public ResponseEntity<?> eliminarUsuarioAjax(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<?> eliminarUsuarioAjax(@PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
-            Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
 
             Usuario usuarioAEliminar = usuarioService.obtenerUsuarioPorId(id).orElse(null);
             if (usuarioAEliminar == null) {
@@ -184,7 +181,7 @@ public class UsuarioController {
             throw e;
         } catch (Exception e) {
             log.error("Error al eliminar usuario {}", id, e);
-            return ApiResponses.error("Error al eliminar usuario: " + e.getMessage());
+            return ApiResponses.error("Error al eliminar usuario: " + ApiResponses.mensajeSeguro(e));
         }
     }
 
@@ -193,9 +190,8 @@ public class UsuarioController {
      */
     @PostMapping("/api/cambiar-estado/{id}")
     @ResponseBody
-    public ResponseEntity<?> cambiarEstadoUsuarioAjax(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<?> cambiarEstadoUsuarioAjax(@PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
-            Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
 
             Usuario usuarioACambiar = usuarioService.obtenerUsuarioPorId(id).orElse(null);
             if (usuarioACambiar == null) {
@@ -224,7 +220,7 @@ public class UsuarioController {
             throw e;
         } catch (Exception e) {
             log.error("Error al cambiar estado de usuario {}", id, e);
-            return ApiResponses.error("Error al cambiar estado: " + e.getMessage());
+            return ApiResponses.error("Error al cambiar estado: " + ApiResponses.mensajeSeguro(e));
         }
     }
 }

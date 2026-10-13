@@ -123,7 +123,7 @@ public class MarcaController {
 
         } catch (MarcaService.MarcaException e) {
             log.warn("Error de negocio al crear marca: {}", e.getMessage());
-            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al crear marca", e);
             return ApiResponses.error("Error al crear la marca");
@@ -159,7 +159,7 @@ public class MarcaController {
 
         } catch (MarcaService.MarcaException e) {
             log.warn("Error de negocio al actualizar marca {}: {}", id, e.getMessage());
-            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al actualizar marca {}", id, e);
             return ApiResponses.error("Error al actualizar la marca");
@@ -177,7 +177,7 @@ public class MarcaController {
             ));
         } catch (MarcaService.MarcaException e) {
             log.warn("Error de negocio al eliminar marca {}: {}", id, e.getMessage());
-            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al eliminar marca {}", id, e);
             return ApiResponses.error("Error al eliminar la marca");
@@ -230,7 +230,7 @@ public class MarcaController {
 
         } catch (MarcaService.MarcaException e) {
             log.warn("Error al actualizar imagen de marca {}: {}", id, e.getMessage());
-            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al actualizar imagen de marca {}", id, e);
             return ApiResponses.error("Error al actualizar la imagen");
@@ -254,7 +254,7 @@ public class MarcaController {
 
         } catch (MarcaService.MarcaException e) {
             log.warn("Error al eliminar imagen de marca {}: {}", id, e.getMessage());
-            return ApiResponses.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ApiResponses.error(ApiResponses.mensajeSeguro(e), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("Error inesperado al eliminar imagen de marca {}", id, e);
             return ApiResponses.error("Error al eliminar la imagen");

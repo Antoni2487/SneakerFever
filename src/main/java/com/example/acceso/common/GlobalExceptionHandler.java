@@ -63,7 +63,9 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<Map<String, Object>> handleBusinessException(RuntimeException ex) {
         logger.warn("Excepción de negocio no controlada localmente: {}", ex.getMessage());
-        return ApiResponses.error(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        // mensajeSeguro: algunas envuelven un error de BD con su texto
+        // ("Error al guardar el producto: <SQL>", causa adjunta).
+        return ApiResponses.error(ApiResponses.mensajeSeguro(ex), HttpStatus.BAD_REQUEST);
     }
 
     // Reglas de "último administrador" (UsuarioService): antes se atrapaba
@@ -82,7 +84,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleUnexpectedException(Exception ex) {
         logger.error("Excepción no controlada llegó al GlobalExceptionHandler", ex);
-        return ApiResponses.error("Ocurrió un error inesperado: " + ex.getMessage(),
+        return ApiResponses.error("Ocurrió un error inesperado: " + ApiResponses.mensajeSeguro(ex),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

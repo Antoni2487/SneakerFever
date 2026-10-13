@@ -1,5 +1,6 @@
 package com.example.acceso.dashboard;
 
+import com.example.acceso.common.ApiResponses;
 import com.example.acceso.producto.Producto;
 import com.example.acceso.producto.ProductoService;
 import com.example.acceso.cliente.ClienteService;
@@ -58,7 +59,7 @@ public class DashboardController {
             response.put("data", estadisticas);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al obtener estadísticas: " + e.getMessage());
+            response.put("message", "Error al obtener estadísticas: " + ApiResponses.mensajeSeguro(e));
         }
         return ResponseEntity.ok(response);
     }
@@ -77,7 +78,7 @@ public class DashboardController {
             response.put("data", reporte);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al generar reporte: " + e.getMessage());
+            response.put("message", "Error al generar reporte: " + ApiResponses.mensajeSeguro(e));
         }
         return ResponseEntity.ok(response);
     }
@@ -93,7 +94,7 @@ public class DashboardController {
             response.put("total", total);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al contar clientes: " + e.getMessage());
+            response.put("message", "Error al contar clientes: " + ApiResponses.mensajeSeguro(e));
         }
         return ResponseEntity.ok(response);
     }
@@ -110,7 +111,7 @@ public class DashboardController {
             response.put("total", productos.size());
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al listar productos: " + e.getMessage());
+            response.put("message", "Error al listar productos: " + ApiResponses.mensajeSeguro(e));
         }
         return ResponseEntity.ok(response);
     }
@@ -138,7 +139,7 @@ public class DashboardController {
             response.put("data", resumen);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al obtener el resumen: " + e.getMessage());
+            response.put("message", "Error al obtener el resumen: " + ApiResponses.mensajeSeguro(e));
         }
         return ResponseEntity.ok(response);
     }
@@ -155,7 +156,7 @@ public class DashboardController {
             response.put("data", ventaService.obtenerVentasPorDia(dias));
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al obtener la tendencia de ventas: " + e.getMessage());
+            response.put("message", "Error al obtener la tendencia de ventas: " + ApiResponses.mensajeSeguro(e));
         }
         return ResponseEntity.ok(response);
     }
@@ -172,7 +173,7 @@ public class DashboardController {
             response.put("data", ventaService.obtenerProductosMasVendidos(limite));
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error al obtener los productos más vendidos: " + e.getMessage());
+            response.put("message", "Error al obtener los productos más vendidos: " + ApiResponses.mensajeSeguro(e));
         }
         return ResponseEntity.ok(response);
     }
