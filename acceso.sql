@@ -41,7 +41,14 @@ CREATE TABLE `opciones` (
 INSERT INTO `opciones` (`id`, `nombre`, `ruta`, `icono`) VALUES
 (1, 'Dashboard', '/', 'home'),
 (2, 'Gestión de Usuarios', '/usuarios/listar', 'users'),
-(3, 'Gestión de Perfiles', '/perfiles/listar', 'shield');
+(3, 'Gestión de Perfiles', '/perfiles/listar', 'shield'),
+(4, 'Productos', '/productos', 'box-seam'),
+(5, 'Categorias', '/categorias', 'grid'),
+(6, 'Marcas', '/marcas', 'star'),
+(7, 'Ventas', '/ventas', 'cart'),
+(8, 'Inventario', '/inventario', 'boxes'),
+(9, 'Clientes', '/clientes', 'person-badge'),
+(10, 'Personalizacion', '/personalizacion', 'palette');
 
 -- --------------------------------------------------------
 
@@ -84,6 +91,13 @@ INSERT INTO `perfil_opcion` (`id_perfil`, `id_opcion`) VALUES
 (1, 1),
 (1, 2),
 (1, 3),
+(1, 4),
+(1, 5),
+(1, 6),
+(1, 7),
+(1, 8),
+(1, 9),
+(1, 10),
 (2, 1),
 (2, 2),
 (3, 1);
@@ -156,7 +170,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `opciones`
 --
 ALTER TABLE `opciones`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `perfiles`
