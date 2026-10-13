@@ -39,7 +39,7 @@ CREATE TABLE `opciones` (
 --
 
 INSERT INTO `opciones` (`id`, `nombre`, `ruta`, `icono`) VALUES
-(1, 'Dashboard', '/', 'home'),
+(1, 'Dashboard', '/dashboard', 'home'),
 (2, 'Gestión de Usuarios', '/usuarios/listar', 'users'),
 (3, 'Gestión de Perfiles', '/perfiles/listar', 'shield'),
 (4, 'Productos', '/productos', 'box-seam'),

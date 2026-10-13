@@ -42,6 +42,14 @@ import java.util.Optional;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    /**
+     * Autoridad del dashboard ({@code /admin/api/**}). Su Opcion no sigue la
+     * convención "ruta = dominio": en acceso.sql histórico la ruta es "/" y el
+     * dashboard Thymeleaf vivía en "/admin", así que esos dos casos se
+     * normalizan a esta autoridad junto con "/dashboard" (la ruta de React).
+     */
+    public static final String AUTORIDAD_DASHBOARD = "dashboard";
+
     private final JwtService jwtService;
     private final UsuarioService usuarioService;
 
@@ -95,11 +103,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return perfil.getOpciones().stream()
                 .map(Opcion::getRuta)
-                .map(this::primerSegmento)
-                .filter(segmento -> !segmento.isEmpty())
+                .map(this::autoridadDeRuta)
+                .filter(autoridad -> !autoridad.isEmpty())
                 .distinct()
                 .<GrantedAuthority>map(SimpleGrantedAuthority::new)
                 .toList();
+    }
+
+    private String autoridadDeRuta(String ruta) {
+        if ("/".equals(ruta)) {
+            return AUTORIDAD_DASHBOARD;
+        }
+        String segmento = primerSegmento(ruta);
+        return "admin".equals(segmento) ? AUTORIDAD_DASHBOARD : segmento;
     }
 
     /** "/productos" -&gt; "productos", "/usuarios/listar" -&gt; "usuarios", "/" o null/"" -&gt; "". */

@@ -14,38 +14,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * Autenticación JWT stateless (ver {@link JwtService} / {@link JwtAuthenticationFilter}).
- * Reemplaza a SessionInterceptor + HttpSession, retirados en esta misma
- * migración — ver AUDITORIA_INTEGRAL.md, sección 9 (Bloque A).
+ * Reemplaza a SessionInterceptor + HttpSession, retirados en la migración a JWT.
  *
- * Alcance deliberado de ESTA fase (no toca lo que sigue — son fases
- * separadas del plan de la auditoría):
  * <ul>
- *   <li><b>RBAC por Opción (Fase A de AUDITORIA_TECNICA_2026-09-10.md)</b>:
- *       cada grupo de endpoints de dominio exige la autoridad derivada de la
- *       {@code Opcion} correspondiente (ver
- *       {@link JwtAuthenticationFilter#doFilterInternal}) en vez de solo
- *       {@code authenticated()}. {@code /admin/**} (dashboard) y
- *       {@code /api/upload/**} (compartido entre varios dominios) quedan
- *       deliberadamente solo en {@code authenticated()} — no hay una Opción
- *       1:1 razonable para ninguno de los dos todavía.</li>
- *   <li><b>CSRF sigue deshabilitado</b>: los endpoints de negocio ya no
- *       dependen de una cookie de sesión ambiental (van con
- *       {@code Authorization: Bearer}), lo que reduce la superficie CSRF real
- *       a solo {@code /api/auth/refresh} y {@code /api/auth/logout} (los
- *       únicos que leen la cookie httpOnly del refresh token) — se revisa a
- *       fondo en la fase de CSRF del plan (hallazgo #2).</li>
- *   <li>La lista de rutas protegidas replica EXACTAMENTE la que tenía
- *       {@code SessionInterceptor} (ver commit anterior de WebConfig), para
- *       no ampliar ni reducir la superficie de seguridad como efecto
- *       colateral de esta migración.</li>
+ *   <li><b>Denegar por defecto</b>: lo público es una lista blanca explícita y
+ *       cada grupo de endpoints de dominio exige la autoridad derivada de su
+ *       {@code Opcion} (ver {@link JwtAuthenticationFilter}); lo demás es
+ *       {@code denyAll()}.</li>
+ *   <li><b>RBAC por Opción</b>: {@code /admin/api/**} (dashboard) exige la
+ *       autoridad {@link JwtAuthenticationFilter#AUTORIDAD_DASHBOARD};
+ *       {@code /api/upload/{tipo}/**} la del dominio dueño de esa carpeta.</li>
+ *   <li><b>CSRF sigue deshabilitado</b>: los endpoints de negocio van con
+ *       {@code Authorization: Bearer}, sin cookie ambiental; la superficie CSRF
+ *       real se reduce a {@code /api/auth/refresh} y {@code /api/auth/logout}
+ *       (cookie httpOnly {@code SameSite=Strict} del refresh token).</li>
  * </ul>
  *
- * Efecto colateral conocido y aceptado: el panel admin Thymeleaf legacy
- * ({@code LoginController} + plantillas {@code admin/*.html}) deja de poder
- * acceder a las rutas protegidas de abajo, porque su login solo escribe un
- * atributo en HttpSession y nunca produce un JWT — Spring Security no lo
- * reconoce como autenticado. No queda abierto: queda inaccesible (401). Es el
- * mismo flujo que ya está marcado para retirarse en el Bloque E del plan.
+ * El panel admin Thymeleaf legacy ({@code LoginController} + plantillas
+ * {@code admin/*.html}) queda inaccesible: su login solo escribe HttpSession y
+ * nunca produce un JWT. Se retira en el Bloque E del plan.
  */
 @Configuration
 public class SecurityConfig {
@@ -70,21 +57,26 @@ public class SecurityConfig {
                         // finalizar la compra exige JWT — CartController.checkout toma
                         // el Usuario del SecurityContext.
                         .requestMatchers(HttpMethod.POST, "/carrito/api/checkout").authenticated()
+                        // Lista blanca EXPLÍCITA de lo público: sitio web, carrito,
+                        // login y recursos estáticos. Todo lo que no figure aquí ni en
+                        // las reglas de abajo se deniega (anyRequest().denyAll()).
                         .requestMatchers(
-                                "/api/auth/**",
-                                "/login",
-                                "/logout",
-                                "/personalizacion/api/public/**",
-                                "/api/public/**",
-                                "/carrito/api/**",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/uploads/**",
-                                "/error",
-                                "/favicon.ico")
+                                // Sitio público Thymeleaf (WebController) y checkout legacy,
+                                // que valida su propia sesión (CheckoutController).
+                                "/", "/catalogo", "/contacto", "/producto/**",
+                                "/carrito/api/**", "/carrito/checkout", "/carrito/procesar",
+                                "/api/auth/**", "/login", "/logout",
+                                "/api/public/**", "/personalizacion/api/public/**",
+                                "/web/**", "/css/**", "/js/**", "/images/**", "/uploads/**",
+                                "/error", "/favicon.ico")
                         .permitAll()
-                        .requestMatchers("/admin/**", "/api/upload/**").authenticated()
+                        .requestMatchers("/admin/api/**").hasAuthority(JwtAuthenticationFilter.AUTORIDAD_DASHBOARD)
+                        // Cada carpeta de imágenes la gestiona su dominio: antes bastaba
+                        // estar logueado para subir o BORRAR imágenes de cualquiera.
+                        .requestMatchers("/api/upload/productos/**").hasAuthority("productos")
+                        .requestMatchers("/api/upload/marcas/**").hasAuthority("marcas")
+                        .requestMatchers("/api/upload/categorias/**").hasAuthority("categorias")
+                        .requestMatchers("/api/upload/personalizacion/**").hasAuthority("personalizacion")
                         .requestMatchers("/marcas/api/**").hasAuthority("marcas")
                         .requestMatchers("/categorias/api/**").hasAuthority("categorias")
                         .requestMatchers("/clientes/api/**").hasAuthority("clientes")
@@ -96,10 +88,12 @@ public class SecurityConfig {
                         .requestMatchers("/ventas/api/**", "/creditos/api/**").hasAuthority("ventas")
                         .requestMatchers("/inventario/api/**").hasAuthority("inventario")
                         .requestMatchers("/personalizacion/api/**").hasAuthority("personalizacion")
-                        // Todo lo demás (sitio público servido por WebController,
-                        // CheckoutController, etc.) queda igual que antes: nunca
-                        // estuvo cubierto por SessionInterceptor.
-                        .anyRequest().permitAll())
+                        // Denegar por defecto: un endpoint nuevo sin regla explícita da
+                        // 403 en vez de quedar público sin que nadie lo note. También
+                        // cubre las vistas Thymeleaf legacy del panel (/admin,
+                        // /productos, /ventas/nueva...), inservibles desde la migración
+                        // a JWT porque su login nunca produce un token.
+                        .anyRequest().denyAll())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(
                                 (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
