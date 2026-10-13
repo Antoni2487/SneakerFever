@@ -1,5 +1,7 @@
 package com.example.acceso.dashboard;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import com.example.acceso.producto.Producto;
 import com.example.acceso.producto.ProductoService;
@@ -20,6 +22,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
+@PreAuthorize("hasAuthority('" + Permisos.DASHBOARD + "')")
 public class DashboardController {
 
     private final UsuarioService usuarioService;

@@ -1,5 +1,7 @@
 package com.example.acceso.usuario;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import com.example.acceso.perfil.Perfil;
 import com.example.acceso.perfil.PerfilResponse;
@@ -21,6 +23,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/usuarios")
+@PreAuthorize("hasAuthority('" + Permisos.USUARIOS + "')")
 public class UsuarioController {
 
     private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);

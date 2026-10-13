@@ -1,5 +1,7 @@
 package com.example.acceso.inventario;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.common.ApiResponses;
 import jakarta.validation.Valid;
@@ -21,6 +23,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/inventario")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('" + Permisos.INVENTARIO + "')")
 public class MovimientoInventarioController {
 
     private final MovimientoInventarioService movimientoService;

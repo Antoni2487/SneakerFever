@@ -3,6 +3,7 @@ export interface Opcion {
   nombre: string
   ruta: string
   icono: string | null
+  permiso: string | null
 }
 
 export interface Perfil {

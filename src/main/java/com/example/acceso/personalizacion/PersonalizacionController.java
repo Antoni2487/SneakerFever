@@ -1,5 +1,7 @@
 package com.example.acceso.personalizacion;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import com.example.acceso.marca.Marca;
 import com.example.acceso.personalizacion.Personalizacion;
@@ -17,6 +19,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/personalizacion")
+@PreAuthorize("hasAuthority('" + Permisos.PERSONALIZACION + "')")
 public class PersonalizacionController {
 
     private static final Logger log = LoggerFactory.getLogger(PersonalizacionController.class);
@@ -353,6 +356,8 @@ public class PersonalizacionController {
 
     // ===================== API REST - Endpoints Públicos =====================
 
+    // Público (sitio web): anula el permiso de la clase.
+    @PreAuthorize("permitAll()")
     @GetMapping("/api/public/configuracion")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerConfiguracionPublica() {
@@ -380,6 +385,8 @@ public class PersonalizacionController {
         }
     }
 
+    // Público (sitio web): anula el permiso de la clase.
+    @PreAuthorize("permitAll()")
     @GetMapping("/api/public/logo")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerLogoPublico() {
@@ -406,6 +413,8 @@ public class PersonalizacionController {
         }
     }
 
+    // Público (sitio web): anula el permiso de la clase.
+    @PreAuthorize("permitAll()")
     @GetMapping("/api/public/slides")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerSlidesPublicos() {

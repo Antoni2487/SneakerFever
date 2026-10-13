@@ -1,5 +1,6 @@
 package com.example.acceso.common;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,9 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/upload")
+// Cada carpeta de imágenes la gestiona su dominio: /api/upload/productos/** exige
+// PRODUCTOS, etc. Todos los métodos reciben {tipo}; uno desconocido se deniega.
+@PreAuthorize("hasAuthority(T(com.example.acceso.seguridad.Permisos).deTipoUpload(#tipo))")
 public class FileUploadController {
 
     @Value("${upload.path:src/main/resources/static/uploads}")

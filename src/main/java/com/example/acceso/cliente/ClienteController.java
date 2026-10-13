@@ -1,5 +1,7 @@
 package com.example.acceso.cliente;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/clientes")
+@PreAuthorize("hasAuthority('" + Permisos.CLIENTES + "')")
 public class ClienteController {
 
     private final ClienteService clienteService;
