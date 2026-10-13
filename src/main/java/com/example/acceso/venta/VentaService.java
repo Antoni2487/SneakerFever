@@ -135,7 +135,8 @@ public class VentaService {
                     .observaciones("Salida por venta #" + ventaId)
                     .build();
 
-            movimientoInventarioService.registrarMovimiento(movimiento, usuarioId);
+            // El stock ya se descontó en procesarDetallesVenta: solo se registra en el kardex.
+            movimientoInventarioService.registrarMovimientoYaAplicado(movimiento, usuarioId);
 
         } catch (Exception e) {
             log.warn("⚠️ No se pudo registrar movimiento para producto {}: {}",
@@ -415,6 +416,17 @@ public class VentaService {
 
         for (int i = 0; i < detallesRequest.size(); i++) {
             CrearVentaRequest.DetalleVentaRequest detalleRequest = detallesRequest.get(i);
+
+            // Mismas reglas que @Min/@DecimalMin de DetalleVentaRequest, pero aplicadas aquí:
+            // el checkout del carrito llama a este Service sin pasar por @Valid, y una cantidad
+            // negativa haría que descontarStock SUMARA stock y la venta quedara con total negativo.
+            if (detalleRequest.getCantidad() == null || detalleRequest.getCantidad() < 1) {
+                throw new IllegalArgumentException("La cantidad debe ser al menos 1 (detalle #" + (i + 1) + ")");
+            }
+            if (detalleRequest.getPrecioUnitario() == null
+                    || detalleRequest.getPrecioUnitario().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("El precio unitario debe ser mayor a 0 (detalle #" + (i + 1) + ")");
+            }
 
             Producto producto = productRepository.findById(detalleRequest.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalleRequest.getProductoId()));

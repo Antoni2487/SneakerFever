@@ -136,6 +136,9 @@ class VentaServiceTest {
         assertThat(producto.getStock()).isEqualTo(3);
         verify(productRepository).save(producto);
         verify(creditoVentaService, never()).crearCredito(any(), any());
+        // El kardex se registra sin volver a descontar stock (antes se descontaba dos veces).
+        verify(movimientoInventarioService).registrarMovimientoYaAplicado(any(), eq(1L));
+        verify(movimientoInventarioService, never()).registrarMovimiento(any(), any());
     }
 
     // ===================== Crear venta - CREDITO =====================
@@ -196,6 +199,24 @@ class VentaServiceTest {
 
         verify(ventaRepository, never()).save(any(Venta.class));
         verify(comprobanteSecuenciaService).generarNumeroComprobante(any(), anyString());
+    }
+
+    @Test
+    @DisplayName("Crear venta con cantidad negativa: lanza excepción, no toca stock ni guarda la venta")
+    void crearVentaConCantidadNegativa_lanzaExcepcionYNoTocaStock() {
+        Cliente cliente = clienteActivo(1L, "12345678");
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        mockComprobante("B001", "000126");
+
+        CrearVentaRequest request = requestBase(1L, FormaPago.CONTADO,
+                detalleRequest(10L, -5, new BigDecimal("100.00")));
+
+        assertThatThrownBy(() -> ventaService.crearVenta(request, "admin"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("al menos 1");
+
+        verify(productRepository, never()).save(any(Producto.class));
+        verify(ventaRepository, never()).save(any(Venta.class));
     }
 
     // ===================== Resolución de cliente =====================

@@ -32,6 +32,24 @@ public class MovimientoInventarioService {
      */
     @Transactional
     public MovimientoInventarioResponse registrarMovimiento(RegistrarMovimientoRequest request, Long usuarioId) {
+        return guardarMovimiento(request, usuarioId, true);
+    }
+
+    /**
+     * Registra en el kardex un movimiento cuyo efecto en el stock YA aplicó el
+     * llamador en esta misma transacción (p. ej. VentaService descuenta el stock
+     * al procesar los detalles, antes de guardar la venta). Volver a aplicarlo
+     * aquí descontaba el stock dos veces por venta — y si no alcanzaba para la
+     * segunda resta, la excepción dejaba la transacción de la venta marcada
+     * rollback-only y la venta entera fallaba.
+     */
+    @Transactional
+    public MovimientoInventarioResponse registrarMovimientoYaAplicado(RegistrarMovimientoRequest request, Long usuarioId) {
+        return guardarMovimiento(request, usuarioId, false);
+    }
+
+    private MovimientoInventarioResponse guardarMovimiento(RegistrarMovimientoRequest request, Long usuarioId,
+            boolean aplicarStock) {
         log.info("📦 Registrando movimiento de inventario - Producto: {}, Tipo: {}, Cantidad: {}",
                 request.getProductoId(), request.getTipoMovimiento(), request.getCantidad());
 
@@ -43,23 +61,32 @@ public class MovimientoInventarioService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioId));
 
-        // 3. Capturar stock anterior
-        Integer stockAnterior = producto.getStock();
+        Integer stockAnterior;
+        Integer nuevoStock;
+        if (aplicarStock) {
+            // 3. Capturar stock anterior
+            stockAnterior = producto.getStock();
 
-        // 4. Calcular nuevo stock según tipo de movimiento
-        Integer nuevoStock = calcularNuevoStock(producto.getStock(), request.getCantidad(), request.getTipoMovimiento());
+            // 4. Calcular nuevo stock según tipo de movimiento
+            nuevoStock = calcularNuevoStock(producto.getStock(), request.getCantidad(), request.getTipoMovimiento());
 
-        // 5. Validar stock suficiente para salidas/mermas
-        if (nuevoStock < 0) {
-            throw new RuntimeException(String.format(
-                    "Stock insuficiente. Stock actual: %d, Cantidad solicitada: %d",
-                    producto.getStock(), request.getCantidad()
-            ));
+            // 5. Validar stock suficiente para salidas/mermas
+            if (nuevoStock < 0) {
+                throw new RuntimeException(String.format(
+                        "Stock insuficiente. Stock actual: %d, Cantidad solicitada: %d",
+                        producto.getStock(), request.getCantidad()
+                ));
+            }
+
+            // 6. Actualizar stock del producto
+            producto.setStock(nuevoStock);
+            productRepository.save(producto);
+        } else {
+            // El stock actual ya es el resultado del movimiento: el anterior se
+            // reconstruye deshaciendo el movimiento.
+            nuevoStock = producto.getStock();
+            stockAnterior = calcularStockAnterior(nuevoStock, request.getCantidad(), request.getTipoMovimiento());
         }
-
-        // 6. Actualizar stock del producto
-        producto.setStock(nuevoStock);
-        productRepository.save(producto);
 
         // 7. Crear registro de movimiento
         MovimientoInventario movimiento = MovimientoInventario.builder()
@@ -81,6 +108,13 @@ public class MovimientoInventarioService {
                 movimientoGuardado.getId(), stockAnterior, nuevoStock);
 
         return convertirAResponse(movimientoGuardado);
+    }
+
+    private Integer calcularStockAnterior(Integer stockNuevo, Integer cantidad, TipoMovimiento tipo) {
+        return switch (tipo) {
+            case ENTRADA, DEVOLUCION -> stockNuevo - cantidad;
+            case SALIDA, MERMA -> stockNuevo + cantidad;
+        };
     }
 
     /**
