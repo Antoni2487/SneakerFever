@@ -3,6 +3,7 @@ package com.example.acceso.seguridad;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -64,6 +65,11 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        // Va ANTES del permitAll de "/carrito/api/**" (gana la primera
+                        // regla que coincide): ver/agregar al carrito es público, pero
+                        // finalizar la compra exige JWT — CartController.checkout toma
+                        // el Usuario del SecurityContext.
+                        .requestMatchers(HttpMethod.POST, "/carrito/api/checkout").authenticated()
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/login",

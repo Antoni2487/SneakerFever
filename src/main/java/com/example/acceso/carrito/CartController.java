@@ -11,6 +11,7 @@ import com.example.acceso.venta.VentaService;
 import com.example.acceso.venta.ComprobanteSecuenciaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,12 +46,17 @@ public class CartController {
     @PostMapping("/api/agregar/{id}")
     @ResponseBody
     public ResponseEntity<?> agregarProducto(@PathVariable Long id, @RequestParam(defaultValue = "1") Integer cantidad, HttpSession session) {
+        if (cantidad == null || cantidad < 1) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "La cantidad debe ser al menos 1"));
+        }
         try {
             Carrito carrito = obtenerCarritoSession(session);
             Producto producto = productService.obtenerProductoPorId(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado")); 
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-            if (producto.getStock() < cantidad) {
+            // Contra lo que ya hay en el carrito, no solo contra lo que se agrega ahora:
+            // agregarItem suma la cantidad si el producto ya estaba.
+            if (producto.getStock() < cantidadEnCarrito(carrito, id) + cantidad) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Stock insuficiente"));
             }
 
@@ -86,25 +92,39 @@ public class CartController {
                                               @RequestParam Integer cantidad, 
                                               HttpSession session) {
         Carrito carrito = obtenerCarritoSession(session);
-        
+
         if (cantidad <= 0) {
             carrito.eliminarItem(id); // Si baja a 0, se elimina
         } else {
-            // Validar stock aquí si quieres ser muy estricto, 
-            // por ahora confiamos en la actualización
+            Producto producto = productService.obtenerProductoPorId(id).orElse(null);
+            if (producto == null) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Producto no encontrado"));
+            }
+            if (producto.getStock() < cantidad) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Stock insuficiente"));
+            }
             carrito.actualizarCantidad(id, cantidad);
         }
-        
+
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    private int cantidadEnCarrito(Carrito carrito, Long productoId) {
+        return carrito.getItems().stream()
+                .filter(item -> item.getProductoId().equals(productoId))
+                .mapToInt(ItemCarrito::getCantidad)
+                .sum();
+    }
+
     // 5. Checkout desde el sitio público en JSON (variante de CheckoutController.procesarCompra,
-    // que devuelve redirect+flash pensado para el form Thymeleaf). Igual que el original, exige
-    // sesión de Usuario (no hay cuenta de cliente separada en este backend) - ver CheckoutController.
+    // que devuelve redirect+flash pensado para el form Thymeleaf). Exige un Usuario autenticado
+    // (no hay cuenta de cliente separada en este backend), pero por JWT: el login de React nunca
+    // escribe "usuarioLogueado" en HttpSession, así que leerlo de ahí daba 401 siempre.
+    // SecurityConfig ya rechaza esta ruta sin token; el null-check queda como red de seguridad.
     @PostMapping("/api/checkout")
     @ResponseBody
-    public ResponseEntity<?> checkout(@RequestBody CheckoutRequest request, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+    public ResponseEntity<?> checkout(@RequestBody CheckoutRequest request,
+            @AuthenticationPrincipal Usuario usuario, HttpSession session) {
         if (usuario == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Debes iniciar sesión para completar la compra"));
         }
