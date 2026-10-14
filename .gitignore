@@ -24,6 +24,8 @@ hs_err_pid*
 replay_pid*
 
 application.properties
+# ...salvo la de tests: no tiene secretos reales (H2 en memoria) y CI la necesita.
+!src/test/resources/application.properties
 
 # Build de Maven
 target/
