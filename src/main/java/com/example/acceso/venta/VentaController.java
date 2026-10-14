@@ -1,5 +1,7 @@
 package com.example.acceso.venta;
 
+import org.springframework.data.domain.Sort;
+import com.example.acceso.common.Paginacion;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.usuario.Usuario;
@@ -39,6 +41,20 @@ public class VentaController {
     /**
      * Obtener todas las ventas (JSON)
      */
+    /**
+     * Listado paginado del panel: {@code ?page=0&size=10&q=texto}. Busca por cliente (nombre o documento) o comprobante; más recientes primero.
+     */
+    @GetMapping("/api/pagina")
+    public ResponseEntity<Map<String, Object>> paginarVentas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + Paginacion.TAMANO_POR_DEFECTO) int size,
+            @RequestParam(required = false) String q) {
+        return Paginacion.respuesta(ventaService.paginarVentas(Paginacion.busqueda(q),
+                Paginacion.crear(page, size, Sort.by(Sort.Direction.DESC, "fechaCreacion").and(Sort.by(Sort.Direction.DESC, "id")))));
+    }
+
+    // Lectura que también usa el Dashboard: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.VENTAS + "', '" + Permisos.DASHBOARD + "')")
     @GetMapping("/api/listar")
     public ResponseEntity<Map<String, Object>> listarVentasJson() {
         try {
@@ -261,6 +277,8 @@ public class VentaController {
     /**
      * Generar reporte de ventas
      */
+    // Lectura que también usa el Dashboard: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.VENTAS + "', '" + Permisos.DASHBOARD + "')")
     @GetMapping("/api/reporte")
     public ResponseEntity<Map<String, Object>> generarReporteVentas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,

@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 import Swal from 'sweetalert2'
 import Modal from '../components/ui/Modal'
+import Pagination from '../components/ui/Pagination'
+import { usePaginatedList } from '../lib/usePaginatedList'
 import { apiClient, ApiError } from '../lib/apiClient'
 import type { Cliente, ClienteFormData } from '../types'
 
@@ -23,9 +25,8 @@ function notify(message: string, icon: 'success' | 'error' | 'info' = 'info') {
 }
 
 export default function Clientes() {
-  const [clientes, setClientes] = useState<Cliente[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const { items, loading, page, pageSize, totalPages, totalElements, search, setSearch, setPage, reload } =
+    usePaginatedList<Cliente>('/clientes/api/pagina', { onError: (message) => notify(message, 'error') })
   const [modalOpen, setModalOpen] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [form, setForm] = useState<ClienteFormData>(EMPTY_FORM)
@@ -35,31 +36,6 @@ export default function Clientes() {
   const [consultaDoc, setConsultaDoc] = useState('')
   const [consultaLoading, setConsultaLoading] = useState(false)
   const [consultaMensaje, setConsultaMensaje] = useState<{ type: 'success' | 'warning' | 'danger'; text: string } | null>(null)
-
-  useEffect(() => {
-    loadClientes()
-  }, [])
-
-  async function loadClientes() {
-    setLoading(true)
-    try {
-      const res = await apiClient.get<Cliente[]>('/clientes/api/datatables')
-      const data = ((res.data as Cliente[]) ?? []).filter((c) => c.estado !== 2)
-      setClientes(data)
-    } catch (error) {
-      notify(error instanceof ApiError ? error.message : 'Error al cargar clientes', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return clientes
-    return clientes.filter(
-      (c) => c.nombre.toLowerCase().includes(term) || c.documento.includes(term) || c.telefono.includes(term),
-    )
-  }, [clientes, search])
 
   function openCreateModal() {
     setEditId(null)
@@ -151,7 +127,7 @@ export default function Clientes() {
         notify('Cliente creado exitosamente', 'success')
       }
       setModalOpen(false)
-      await loadClientes()
+      reload()
     } catch (error) {
       if (error instanceof ApiError && error.errors) {
         setFieldErrors(error.errors)
@@ -182,7 +158,7 @@ export default function Clientes() {
     try {
       await apiClient.put(`/clientes/api/cambiar-estado/${cliente.id}`)
       notify('Estado cambiado exitosamente', 'success')
-      await loadClientes()
+      reload()
     } catch (error) {
       notify(error instanceof ApiError ? error.message : 'Error al cambiar el estado', 'error')
     }
@@ -204,7 +180,7 @@ export default function Clientes() {
     try {
       await apiClient.delete(`/clientes/api/eliminar/${cliente.id}`)
       notify('Cliente eliminado exitosamente', 'success')
-      await loadClientes()
+      reload()
     } catch (error) {
       notify(error instanceof ApiError ? error.message : 'Error al eliminar el cliente', 'error')
     }
@@ -264,14 +240,14 @@ export default function Clientes() {
                       Cargando...
                     </td>
                   </tr>
-                ) : filtered.length === 0 ? (
+                ) : items.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-3 py-6 text-slate-500">
                       No se encontraron resultados
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((cliente) => {
+                  items.map((cliente) => {
                     const isActive = cliente.estado === 1
                     return (
                       <tr key={cliente.id} className={`border-t ${isActive ? '' : 'bg-slate-100 text-slate-500'}`}>
@@ -321,6 +297,13 @@ export default function Clientes() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            onPageChange={setPage}
+          />
         </div>
       </div>
 

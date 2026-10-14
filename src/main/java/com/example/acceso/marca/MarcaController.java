@@ -262,6 +262,8 @@ public class MarcaController {
         }
     }
 
+    // Lectura que también usa el formulario de Productos: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.MARCAS + "', '" + Permisos.PRODUCTOS + "')")
     @GetMapping("/api/activas")
     public ResponseEntity<Map<String, Object>> marcasActivas() {
         try {

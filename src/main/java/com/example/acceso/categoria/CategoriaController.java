@@ -238,6 +238,8 @@ public class CategoriaController {
     /**
      * Obtener solo categorías activas (para selects)
      */
+    // Lectura que también usa el formulario de Productos: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.CATEGORIAS + "', '" + Permisos.PRODUCTOS + "')")
     @GetMapping("/api/activas")
     public ResponseEntity<Map<String, Object>> categoriasActivas() {
         try {

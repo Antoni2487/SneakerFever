@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -40,7 +41,9 @@ public class ProductoResponse {
                 .nombre(producto.getNombre())
                 .descripcion(producto.getDescripcion())
                 .imagen(producto.getImagen())
-                .imagenes(producto.getImagenes())
+                // Copia: el DTO no debe retener la colección lazy de Hibernate, que
+                // falla si se serializa fuera de la transacción (open-in-view=false).
+                .imagenes(producto.getImagenes() == null ? List.of() : new ArrayList<>(producto.getImagenes()))
                 .precio(producto.getPrecio())
                 .descuento(producto.getDescuento())
                 .destacado(producto.getDestacado())

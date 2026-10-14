@@ -1,5 +1,7 @@
 package com.example.acceso.venta;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.example.acceso.venta.EstadoVenta;
 import com.example.acceso.venta.Venta;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -77,5 +79,17 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     @Query("SELECT v FROM Venta v WHERE v.credito IS NOT NULL ORDER BY v.fechaCreacion DESC")
     List<Venta> findVentasConCreditoWithDetails();
 
-    
+    /**
+     * Listado paginado de ventas; busca por cliente (nombre o documento) o por
+     * comprobante ("B001-00000012"). Los detalles se cargan en lote
+     * ({@code @BatchSize} en Venta.detalles), no con fetch join.
+     */
+    @EntityGraph(attributePaths = {"cliente"})
+    @Query(value = "SELECT v FROM Venta v JOIN v.cliente c WHERE "
+            + "LOWER(c.nombre) LIKE LOWER(CONCAT('%', :q, '%')) OR c.documento LIKE CONCAT('%', :q, '%') "
+            + "OR LOWER(CONCAT(v.serie, '-', v.numero)) LIKE LOWER(CONCAT('%', :q, '%'))",
+            countQuery = "SELECT COUNT(v) FROM Venta v JOIN v.cliente c WHERE "
+            + "LOWER(c.nombre) LIKE LOWER(CONCAT('%', :q, '%')) OR c.documento LIKE CONCAT('%', :q, '%') "
+            + "OR LOWER(CONCAT(v.serie, '-', v.numero)) LIKE LOWER(CONCAT('%', :q, '%'))")
+    Page<Venta> buscarPagina(@Param("q") String q, Pageable pageable);
 }

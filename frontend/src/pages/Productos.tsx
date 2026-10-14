@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import Swal from 'sweetalert2'
 import Modal from '../components/ui/Modal'
 import ImageThumbnail from '../components/ui/ImageThumbnail'
+import Pagination from '../components/ui/Pagination'
+import { usePaginatedList } from '../lib/usePaginatedList'
 import { apiClient, ApiError, uploadFile } from '../lib/apiClient'
 import type { Brand, Category, Genero, Product, ProductFormData } from '../types'
 
@@ -49,11 +51,10 @@ function precioFinal(precio: number, descuento: number | null) {
 }
 
 export default function Productos() {
-  const [productos, setProductos] = useState<Product[]>([])
+  const { items, loading, page, pageSize, totalPages, totalElements, search, setSearch, setPage, reload } =
+    usePaginatedList<Product>('/productos/api/pagina', { onError: (message) => notify(message, 'error') })
   const [categorias, setCategorias] = useState<Category[]>([])
   const [marcas, setMarcas] = useState<Brand[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [detalle, setDetalle] = useState<Product | null>(null)
   const [editId, setEditId] = useState<number | null>(null)
@@ -61,24 +62,6 @@ export default function Productos() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
-
-  useEffect(() => {
-    loadProductos()
-    loadOpciones()
-  }, [])
-
-  async function loadProductos() {
-    setLoading(true)
-    try {
-      const res = await apiClient.get<Product[]>('/productos/api/datatables')
-      const data = ((res.data as Product[]) ?? []).filter((p) => p.estado !== 2)
-      setProductos(data)
-    } catch (error) {
-      notify(error instanceof ApiError ? error.message : 'Error al cargar productos', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function loadOpciones() {
     try {
@@ -93,11 +76,9 @@ export default function Productos() {
     }
   }
 
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return productos
-    return productos.filter((p) => p.nombre.toLowerCase().includes(term))
-  }, [productos, search])
+  useEffect(() => {
+    loadOpciones()
+  }, [])
 
   function openCreateModal() {
     setEditId(null)
@@ -202,7 +183,7 @@ export default function Productos() {
         notify('Producto creado exitosamente', 'success')
       }
       setModalOpen(false)
-      await loadProductos()
+      reload()
     } catch (error) {
       if (error instanceof ApiError && error.errors) {
         setFieldErrors(error.errors)
@@ -233,7 +214,7 @@ export default function Productos() {
     try {
       await apiClient.put(`/productos/api/cambiar-estado/${producto.id}`)
       notify('Estado cambiado exitosamente', 'success')
-      await loadProductos()
+      reload()
     } catch (error) {
       notify(error instanceof ApiError ? error.message : 'Error al cambiar el estado', 'error')
     }
@@ -243,7 +224,7 @@ export default function Productos() {
     try {
       await apiClient.put(`/productos/api/destacado/${producto.id}`)
       notify('Estado destacado cambiado exitosamente', 'success')
-      await loadProductos()
+      reload()
     } catch (error) {
       notify(error instanceof ApiError ? error.message : 'Error al cambiar el destacado', 'error')
     }
@@ -265,7 +246,7 @@ export default function Productos() {
     try {
       await apiClient.delete(`/productos/api/eliminar/${producto.id}`)
       notify('Producto eliminado exitosamente', 'success')
-      await loadProductos()
+      reload()
     } catch (error) {
       notify(error instanceof ApiError ? error.message : 'Error al eliminar el producto', 'error')
     }
@@ -323,14 +304,14 @@ export default function Productos() {
                       Cargando...
                     </td>
                   </tr>
-                ) : filtered.length === 0 ? (
+                ) : items.length === 0 ? (
                   <tr>
                     <td colSpan={11} className="px-3 py-6 text-slate-500">
                       No se encontraron resultados
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((producto) => {
+                  items.map((producto) => {
                     const isActive = producto.estado === 1
                     const isDestacado = Boolean(producto.destacado)
                     const final = precioFinal(producto.precio, producto.descuento)
@@ -416,6 +397,13 @@ export default function Productos() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            onPageChange={setPage}
+          />
         </div>
       </div>
 

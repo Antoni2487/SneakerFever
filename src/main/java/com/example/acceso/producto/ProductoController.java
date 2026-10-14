@@ -1,5 +1,7 @@
 package com.example.acceso.producto;
 
+import org.springframework.data.domain.Sort;
+import com.example.acceso.common.Paginacion;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.marca.MarcaService;
@@ -37,6 +39,8 @@ public class ProductoController {
     /**
      * Obtener todos los productos activos (JSON)
      */
+    // Lectura que también usa la pantalla de Inventario: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.PRODUCTOS + "', '" + Permisos.INVENTARIO + "')")
     @GetMapping("/api/listar")
     public ResponseEntity<Map<String, Object>> listarProductosJson(
             @RequestParam(required = false, defaultValue = "false") Boolean ordenado) {
@@ -58,6 +62,18 @@ public class ProductoController {
     /**
      * Obtener todos los productos (activos e inactivos) para DataTables
      */
+    /**
+     * Listado paginado del panel: {@code ?page=0&size=10&q=texto}. Busca por nombre; excluye eliminados; más recientes primero.
+     */
+    @GetMapping("/api/pagina")
+    public ResponseEntity<Map<String, Object>> paginarProductos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + Paginacion.TAMANO_POR_DEFECTO) int size,
+            @RequestParam(required = false) String q) {
+        return Paginacion.respuesta(productService.paginarProductos(Paginacion.busqueda(q),
+                Paginacion.crear(page, size, Sort.by(Sort.Direction.DESC, "id"))));
+    }
+
     @GetMapping("/api/datatables")
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
@@ -93,6 +109,8 @@ public class ProductoController {
     /**
      * Obtener productos disponibles para ventas (solo datos necesarios)
      */
+    // Lectura que también usa Nueva venta (elegir producto): anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.PRODUCTOS + "', '" + Permisos.VENTAS + "')")
     @GetMapping("/api/listarDisponibles")
     public ResponseEntity<List<Map<String, Object>>> listarProductosDisponibles() {
         try {
@@ -506,6 +524,8 @@ public class ProductoController {
     /**
      * Obtener productos con stock bajo
      */
+    // Lectura que también usa Inventario y Dashboard: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.PRODUCTOS + "', '" + Permisos.INVENTARIO + "', '" + Permisos.DASHBOARD + "')")
     @GetMapping("/api/stock-bajo")
     public ResponseEntity<Map<String, Object>> productosStockBajo(
             @RequestParam(required = false, defaultValue = "10") Integer limite) {

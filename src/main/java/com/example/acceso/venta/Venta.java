@@ -1,5 +1,6 @@
 package com.example.acceso.venta;
 
+import org.hibernate.annotations.BatchSize;
 import com.example.acceso.cliente.Cliente;
 import com.example.acceso.venta.EstadoVenta;
 import com.example.acceso.venta.FormaPago;
@@ -106,6 +107,7 @@ public class Venta {
 
     // Relaciones
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50) // ver Producto.imagenes: carga en lote en listados paginados
     @Builder.Default
     private List<DetalleVenta> detalles = new ArrayList<>();
 

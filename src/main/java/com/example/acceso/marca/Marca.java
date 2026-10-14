@@ -1,5 +1,6 @@
 package com.example.acceso.marca;
 
+import org.hibernate.annotations.BatchSize;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -43,6 +44,7 @@ public class Marca {
     @Size(max = 500, message = "La URL de la imagen no puede exceder los 500 caracteres")
     @Column(name = "imagen", length = 500)
     private String imagen;
+    @BatchSize(size = 50) // carga en lote en listados (ver Producto.imagenes)
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "brand_imagenes",  // ← Cambiar a minúsculas (convención)

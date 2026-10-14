@@ -1,5 +1,7 @@
 package com.example.acceso.cliente;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.example.acceso.common.ApiResponses;
 import com.example.acceso.cliente.DniResponseDTO;
 import com.example.acceso.cliente.RucResponseDTO;
@@ -173,6 +175,11 @@ public class ClienteService {
     @Transactional(readOnly = true)
     public List<Cliente> listarTodosClientes() {
         return clienteRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ClienteResponse> paginarClientes(String busqueda, Pageable pageable) {
+        return clienteRepository.buscarPagina(busqueda, pageable).map(ClienteResponse::from);
     }
 
     // ===================== GUARDAR / ACTUALIZAR =====================
