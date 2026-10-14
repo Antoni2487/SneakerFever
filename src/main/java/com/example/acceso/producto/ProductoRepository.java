@@ -1,5 +1,8 @@
 package com.example.acceso.producto;
 
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.example.acceso.marca.Marca;
 import com.example.acceso.categoria.Categoria;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -105,4 +108,15 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
            "LEFT JOIN FETCH p.imagenes")
     List<Producto> findAllWithRelations();
 
+    /**
+     * Listado paginado del panel (excluye eliminados). Solo trae las relaciones a
+     * uno: las imágenes se cargan en lote ({@code @BatchSize} en Producto).
+     * {@code q} vacío = sin filtro.
+     */
+    @EntityGraph(attributePaths = {"category", "brand"})
+    @Query(value = "SELECT p FROM Producto p WHERE p.estado <> 2 "
+            + "AND LOWER(p.nombre) LIKE LOWER(CONCAT('%', :q, '%'))",
+            countQuery = "SELECT COUNT(p) FROM Producto p WHERE p.estado <> 2 "
+            + "AND LOWER(p.nombre) LIKE LOWER(CONCAT('%', :q, '%'))")
+    Page<Producto> buscarPagina(@Param("q") String q, Pageable pageable);
 }

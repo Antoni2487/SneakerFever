@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Swal from 'sweetalert2'
+import Pagination from '../components/ui/Pagination'
+import { usePaginatedList } from '../lib/usePaginatedList'
 import { apiClient, ApiError } from '../lib/apiClient'
 import type { EstadoVenta, FormaPago, Venta, VentaEstadisticas } from '../types'
 import NuevaVentaModal from '../components/ventas/NuevaVentaModal'
@@ -30,31 +32,17 @@ function formatDateTime(value: string) {
 }
 
 export default function Ventas() {
+  const { items, loading, page, pageSize, totalPages, totalElements, search, setSearch, setPage, reload } =
+    usePaginatedList<Venta>('/ventas/api/pagina', { onError: (message) => notify(message, 'error') })
   const [tab, setTab] = useState<'ventas' | 'creditos'>('ventas')
-  const [ventas, setVentas] = useState<Venta[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
   const [stats, setStats] = useState<VentaEstadisticas>({ ventasHoy: 0, ventasSemana: 0, ventasMes: 0, totalVentas: 0 })
 
   const [nuevaVentaOpen, setNuevaVentaOpen] = useState(false)
   const [detalleId, setDetalleId] = useState<number | null>(null)
 
   useEffect(() => {
-    loadVentas()
     loadStats()
   }, [])
-
-  async function loadVentas() {
-    setLoading(true)
-    try {
-      const res = await apiClient.get<Venta[]>('/ventas/api/listar')
-      setVentas((res.data as Venta[]) ?? [])
-    } catch (error) {
-      notify(error instanceof ApiError ? error.message : 'Error al cargar ventas', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function loadStats() {
     try {
@@ -66,17 +54,9 @@ export default function Ventas() {
   }
 
   function refrescarTodo() {
-    loadVentas()
+    reload()
     loadStats()
   }
-
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return ventas
-    return ventas.filter(
-      (v) => v.cliente_nombre.toLowerCase().includes(term) || v.comprobante_completo.toLowerCase().includes(term) || v.cliente_documento.includes(term),
-    )
-  }, [ventas, search])
 
   async function handleAnular(venta: Venta) {
     const result = await Swal.fire({
@@ -196,14 +176,14 @@ export default function Ventas() {
                           Cargando...
                         </td>
                       </tr>
-                    ) : filtered.length === 0 ? (
+                    ) : items.length === 0 ? (
                       <tr>
                         <td colSpan={8} className="px-2 py-6 text-slate-500">
                           No se encontraron resultados
                         </td>
                       </tr>
                     ) : (
-                      filtered.map((venta) => (
+                      items.map((venta) => (
                         <tr key={venta.id} className="border-t">
                           <td className="px-2 py-2">{venta.id}</td>
                           <td className="px-2 py-2">{venta.comprobante_completo}</td>
@@ -240,6 +220,13 @@ export default function Ventas() {
                   </tbody>
                 </table>
               </div>
+              <Pagination
+                page={page}
+                pageSize={pageSize}
+                totalPages={totalPages}
+                totalElements={totalElements}
+                onPageChange={setPage}
+              />
             </div>
           </div>
         ) : (

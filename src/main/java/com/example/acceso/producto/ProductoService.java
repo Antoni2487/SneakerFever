@@ -1,5 +1,7 @@
 package com.example.acceso.producto;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.example.acceso.marca.Marca;
 import com.example.acceso.marca.MarcaRepository;
 import com.example.acceso.categoria.Categoria;
@@ -45,6 +47,12 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public List<Producto> listarTodosProductos() {
         return productRepository.findAllWithRelations();
+    }
+
+    /** Listado paginado del panel; mapea a DTO dentro de la transacción (carga lazy de imágenes en lote). */
+    @Transactional(readOnly = true)
+    public Page<ProductoResponse> paginarProductos(String busqueda, Pageable pageable) {
+        return productRepository.buscarPagina(busqueda, pageable).map(ProductoResponse::from);
     }
 
     @Transactional(readOnly = true)

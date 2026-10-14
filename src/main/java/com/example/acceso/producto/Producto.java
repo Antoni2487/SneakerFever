@@ -1,5 +1,6 @@
 package com.example.acceso.producto;
 
+import org.hibernate.annotations.BatchSize;
 import com.example.acceso.venta.DetalleVenta;
 import com.example.acceso.marca.Marca;
 import com.example.acceso.categoria.Categoria;
@@ -24,6 +25,7 @@ import java.util.List;
 @Builder
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
+@BatchSize(size = 50)
 @Table(name = "productos")
 public class Producto {
 
@@ -44,6 +46,10 @@ public class Producto {
     @Column(name = "imagen", length = 500)
     private String imagen;
     
+    // @BatchSize: en un listado paginado las imágenes se cargan en lote (una
+    // consulta por página) en vez de una por producto, sin hacer fetch join de
+    // una colección — que obligaría a Hibernate a paginar en memoria.
+    @BatchSize(size = 50)
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "producto_imagenes",

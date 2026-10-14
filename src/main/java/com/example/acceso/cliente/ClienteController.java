@@ -1,5 +1,7 @@
 package com.example.acceso.cliente;
 
+import org.springframework.data.domain.Sort;
+import com.example.acceso.common.Paginacion;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
@@ -47,6 +49,18 @@ public class ClienteController {
     /**
      * Obtener todos los clientes (activos e inactivos) para DataTables
      */
+    /**
+     * Listado paginado del panel: {@code ?page=0&size=10&q=texto}. Busca por nombre, documento o teléfono; excluye eliminados; orden alfabético.
+     */
+    @GetMapping("/api/pagina")
+    public ResponseEntity<Map<String, Object>> paginarClientes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + Paginacion.TAMANO_POR_DEFECTO) int size,
+            @RequestParam(required = false) String q) {
+        return Paginacion.respuesta(clienteService.paginarClientes(Paginacion.busqueda(q),
+                Paginacion.crear(page, size, Sort.by("nombre").and(Sort.by("id")))));
+    }
+
     @GetMapping("/api/datatables")
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {

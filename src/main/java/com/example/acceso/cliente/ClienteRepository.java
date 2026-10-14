@@ -1,5 +1,9 @@
 package com.example.acceso.cliente;
 
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.example.acceso.cliente.Cliente;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,4 +21,12 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     long countByEstado(Integer estado);
     Optional<Cliente> findByCorreo(String correo);
 
+    /** Listado paginado del panel (excluye eliminados); busca por nombre, documento o teléfono. */
+    @Query(value = "SELECT c FROM Cliente c WHERE c.estado <> 2 AND ("
+            + "LOWER(c.nombre) LIKE LOWER(CONCAT('%', :q, '%')) "
+            + "OR c.documento LIKE CONCAT('%', :q, '%') OR c.telefono LIKE CONCAT('%', :q, '%'))",
+            countQuery = "SELECT COUNT(c) FROM Cliente c WHERE c.estado <> 2 AND ("
+            + "LOWER(c.nombre) LIKE LOWER(CONCAT('%', :q, '%')) "
+            + "OR c.documento LIKE CONCAT('%', :q, '%') OR c.telefono LIKE CONCAT('%', :q, '%'))")
+    Page<Cliente> buscarPagina(@Param("q") String q, Pageable pageable);
 }

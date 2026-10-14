@@ -1,5 +1,7 @@
 package com.example.acceso.producto;
 
+import org.springframework.data.domain.Sort;
+import com.example.acceso.common.Paginacion;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.marca.MarcaService;
@@ -58,6 +60,18 @@ public class ProductoController {
     /**
      * Obtener todos los productos (activos e inactivos) para DataTables
      */
+    /**
+     * Listado paginado del panel: {@code ?page=0&size=10&q=texto}. Busca por nombre; excluye eliminados; más recientes primero.
+     */
+    @GetMapping("/api/pagina")
+    public ResponseEntity<Map<String, Object>> paginarProductos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + Paginacion.TAMANO_POR_DEFECTO) int size,
+            @RequestParam(required = false) String q) {
+        return Paginacion.respuesta(productService.paginarProductos(Paginacion.busqueda(q),
+                Paginacion.crear(page, size, Sort.by(Sort.Direction.DESC, "id"))));
+    }
+
     @GetMapping("/api/datatables")
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {

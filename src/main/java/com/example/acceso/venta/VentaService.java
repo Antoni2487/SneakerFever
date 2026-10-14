@@ -1,5 +1,7 @@
 package com.example.acceso.venta;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.example.acceso.producto.Producto;
 import com.example.acceso.producto.ProductoRepository;
 import com.example.acceso.cliente.Cliente;
@@ -160,6 +162,11 @@ public class VentaService {
         return ventaRepository.findAll().stream()
                 .map(this::convertirAVentaResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<VentaResponse> paginarVentas(String busqueda, Pageable pageable) {
+        return ventaRepository.buscarPagina(busqueda, pageable).map(this::convertirAVentaResponse);
     }
 
     @Transactional(readOnly = true)

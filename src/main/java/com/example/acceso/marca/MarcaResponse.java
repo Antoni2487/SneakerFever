@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -30,7 +31,8 @@ public class MarcaResponse {
                 .descripcion(marca.getDescripcion())
                 .estado(marca.getEstado())
                 .imagen(marca.getImagen())
-                .imagenes(marca.getImagenes())
+                // Copia de la colección lazy (ver ProductoResponse.from).
+                .imagenes(marca.getImagenes() == null ? List.of() : new ArrayList<>(marca.getImagenes()))
                 .fechaCreacion(marca.getFechaCreacion())
                 .fechaActualizacion(marca.getFechaActualizacion())
                 .build();
