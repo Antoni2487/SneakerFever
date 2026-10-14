@@ -118,3 +118,50 @@ Dado que hay entregas de curso en curso y el proyecto está en producción activ
 ---
 
 ¿Procedemos con el plan de refactor fase por fase (empezando por la Fase A, RBAC) antes de tocar código, o prefieres priorizar otro orden?
+
+---
+
+## 7. Seguimiento — estado al 14 de octubre de 2026
+
+Revisión de cada hallazgo contra `develop` (HEAD `91cafa1`). Tests: 128 en
+verde (`./mvnw test`, sin MySQL ni secretos), más CI en GitHub Actions.
+
+| # | Hallazgo | Estado | Dónde se resolvió |
+|---|---|---|---|
+| 1 | Controllers híbridos (vista Thymeleaf + API) | ⏳ Pendiente | Las vistas Thymeleaf del panel quedan inaccesibles (`denyAll`) pero el código sigue. Retirarlo es el Bloque E: decisión pendiente (ver abajo). |
+| 1 / 5 | Serie de comprobante duplicada (`F001`/`B001`) | ✅ | Fase D (`eb51f00`): todo pasa por `ComprobanteSecuenciaService`. |
+| 2 | Lógica de negocio en DTOs de crédito | ✅ | Fase C (`01281f9`). |
+| 3 | Sin `record` en DTOs | ➖ Se mantiene | Estilo, no correctitud; se conserva Lombok por consistencia. |
+| 6 | Error sin `timestamp`/`path`; TypeMismatch devolvía vista | ✅ | `a1dd993`. Además: mensajes técnicos ocultos al cliente (`ApiResponses.mensajeSeguro`, `79b3a26`) y 403 en vez de 500 ante `@PreAuthorize` (`21646f7`). |
+| 7 | Tests en 2 de 12 services | ✅ | Los 12 services (11 de dominio + `JwtService`) tienen tests (`ad15ef2`, `3ab5137`); test de contexto completo e integración de seguridad con MockMvc (`4bb327e`); `ControllersPreAuthorizeTest` impide endpoints sin permiso. |
+| 8 / 9 | Sin paginación | ⏳ Pendiente | Cambia el contrato de la API y el frontend: decisión pendiente. |
+| 9 | Prefijos `/api` no uniformes, sin versionado | ➖ Se mantiene | Renombrar rompería el frontend sin beneficio funcional hoy. |
+| 10 | Sin RBAC | ✅ | Fase A (`0b25638`) y luego permisos por código estable (`opciones.permiso`) + `@PreAuthorize` por controller (`21646f7`); denegar por defecto (`b6f8c67`). |
+| 10 | CORS por defecto / mappings sueltos | ✅ | `76a03db`: un único `CorsConfigurationSource`, configurable con `app.cors.allowed-origins`. |
+| 10 | CSRF deshabilitado | ✅ Aceptado | Superficie limitada a `/api/auth/refresh` y `/logout`, cookie `httpOnly` + `SameSite=Strict`. |
+| 10 | Logout sin revocar el access token | ⏳ Pendiente | Ventana de 30 min. Propuesta: versión de token por usuario (decisión pendiente, cambia el esquema). |
+| 11 | Sin reintentos hacia el microservicio Node | ➖ Se mantiene | El fallo ya se maneja sin caer; reintentar un servicio local opcional no aporta. |
+| 12 | Sin Dockerfile; compose sin healthcheck | ✅ | `e6ef1a8`: imágenes multi-stage no-root (backend JRE alpine, frontend nginx), healthcheck de MySQL, `acceso.sql` cargado al crear el volumen. |
+| 13 | Sin CI/CD | ✅ | `91cafa1`: GitHub Actions (tests backend, lint + build frontend, build de imágenes). |
+
+### Defectos encontrados durante el seguimiento (no estaban en este informe)
+
+- Cada venta descontaba el stock dos veces; si no alcanzaba, la venta entera
+  fallaba (`0b32eee`).
+- Tras la migración a JWT, varios controllers seguían leyendo `HttpSession`:
+  checkout web, crear venta, registrar pago, registrar movimiento de
+  inventario y las protecciones de "no eliminarte a ti mismo" no funcionaban
+  (`c5aa95c`, `79b3a26`).
+- El carrito aceptaba cantidades negativas (`c5aa95c`).
+- `acceso.sql` solo traía 3 opciones de menú: con el RBAC, el administrador
+  quedaba sin acceso en una instalación nueva (`1ef7d38`).
+- Anular una venta no registraba la devolución en el kardex (`79b3a26`).
+
+### Decisiones pendientes (requieren definición del equipo)
+
+1. **Retirar el Thymeleaf legacy** (Bloque E): panel admin (`templates/admin`,
+   `static/admin`, ~12 000 líneas) y, si React reemplaza también al sitio
+   público, `WebController`/`CheckoutController`/`LoginController`.
+2. **Paginación** en listados de productos, ventas y clientes (backend +
+   frontend).
+3. **Revocación del logout** (versión de token por usuario).
