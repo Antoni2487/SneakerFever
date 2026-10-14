@@ -100,6 +100,8 @@ public class ClienteController {
     /**
      * Consultar documento (DNI/RUC) en API externa
      */
+    // Lectura que también usa Nueva venta (buscar cliente): anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.CLIENTES + "', '" + Permisos.VENTAS + "')")
     @GetMapping("/api/consultar-documento/{documento}")
     public ResponseEntity<Map<String, Object>> consultarDocumento(@PathVariable String documento) {
         try {
@@ -285,6 +287,8 @@ public class ClienteController {
     /**
      * Buscar cliente por documento
      */
+    // Lectura que también usa Nueva venta (buscar cliente): anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.CLIENTES + "', '" + Permisos.VENTAS + "')")
     @GetMapping("/api/documento/{documento}")
     public ResponseEntity<Map<String, Object>> buscarPorDocumento(@PathVariable String documento) {
         try {

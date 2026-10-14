@@ -53,6 +53,8 @@ public class VentaController {
                 Paginacion.crear(page, size, Sort.by(Sort.Direction.DESC, "fechaCreacion").and(Sort.by(Sort.Direction.DESC, "id")))));
     }
 
+    // Lectura que también usa el Dashboard: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.VENTAS + "', '" + Permisos.DASHBOARD + "')")
     @GetMapping("/api/listar")
     public ResponseEntity<Map<String, Object>> listarVentasJson() {
         try {
@@ -275,6 +277,8 @@ public class VentaController {
     /**
      * Generar reporte de ventas
      */
+    // Lectura que también usa el Dashboard: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.VENTAS + "', '" + Permisos.DASHBOARD + "')")
     @GetMapping("/api/reporte")
     public ResponseEntity<Map<String, Object>> generarReporteVentas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,

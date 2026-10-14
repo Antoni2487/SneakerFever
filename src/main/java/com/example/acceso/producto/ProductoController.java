@@ -39,6 +39,8 @@ public class ProductoController {
     /**
      * Obtener todos los productos activos (JSON)
      */
+    // Lectura que también usa la pantalla de Inventario: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.PRODUCTOS + "', '" + Permisos.INVENTARIO + "')")
     @GetMapping("/api/listar")
     public ResponseEntity<Map<String, Object>> listarProductosJson(
             @RequestParam(required = false, defaultValue = "false") Boolean ordenado) {
@@ -107,6 +109,8 @@ public class ProductoController {
     /**
      * Obtener productos disponibles para ventas (solo datos necesarios)
      */
+    // Lectura que también usa Nueva venta (elegir producto): anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.PRODUCTOS + "', '" + Permisos.VENTAS + "')")
     @GetMapping("/api/listarDisponibles")
     public ResponseEntity<List<Map<String, Object>>> listarProductosDisponibles() {
         try {
@@ -520,6 +524,8 @@ public class ProductoController {
     /**
      * Obtener productos con stock bajo
      */
+    // Lectura que también usa Inventario y Dashboard: anula el permiso de la clase.
+    @PreAuthorize("hasAnyAuthority('" + Permisos.PRODUCTOS + "', '" + Permisos.INVENTARIO + "', '" + Permisos.DASHBOARD + "')")
     @GetMapping("/api/stock-bajo")
     public ResponseEntity<Map<String, Object>> productosStockBajo(
             @RequestParam(required = false, defaultValue = "10") Integer limite) {
