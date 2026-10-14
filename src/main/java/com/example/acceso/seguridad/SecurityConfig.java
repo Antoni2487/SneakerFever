@@ -1,6 +1,7 @@
 package com.example.acceso.seguridad;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * Autenticación JWT stateless (ver {@link JwtService} / {@link JwtAuthenticationFilter}).
@@ -44,6 +50,29 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * CORS: por defecto ningún origen externo (el frontend va por el mismo origen:
+     * proxy de Vite en desarrollo, nginx en Docker). Si el frontend se sirve desde
+     * otro dominio, se habilita con {@code app.cors.allowed-origins} (lista
+     * separada por comas). {@code allowCredentials} es necesario para la cookie
+     * httpOnly del refresh token.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:}") List<String> allowedOrigins) {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        List<String> origenes = allowedOrigins.stream().map(String::trim).filter(o -> !o.isEmpty()).toList();
+        if (!origenes.isEmpty()) {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOrigins(origenes);
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+            config.setAllowCredentials(true);
+            source.registerCorsConfiguration("/**", config);
+        }
+        return source;
     }
 
     @Bean

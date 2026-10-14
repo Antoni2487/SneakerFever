@@ -19,6 +19,8 @@ import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Reglas de acceso de punta a punta (filtro JWT + SecurityConfig +
  * @PreAuthorize + GlobalExceptionHandler) con la app completa sobre H2.
  */
-@SpringBootTest
+@SpringBootTest(properties = "app.cors.allowed-origins=https://tienda.test")
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DisplayName("Seguridad - integración con la app completa")
@@ -99,5 +101,18 @@ class SeguridadIntegrationTest {
         String refresh = jwtService.generateRefreshToken(vendedor);
         mvc.perform(get("/ventas/api/listar").header("Authorization", "Bearer " + refresh))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void cors_soloElOrigenConfigurado() throws Exception {
+        mvc.perform(options("/ventas/api/listar")
+                        .header("Origin", "https://tienda.test")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://tienda.test"));
+        mvc.perform(options("/ventas/api/listar")
+                        .header("Origin", "https://malicioso.test")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isForbidden());
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -60,24 +59,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .setCachePeriod(3600); // Cache de 1 hora para imágenes de productos
     }
 
-    // La protección de rutas (antes SessionInterceptor) ahora vive en
-    // SecurityConfig.securityFilterChain(), con la misma lista exacta de
-    // rutas — ver AUDITORIA_INTEGRAL.md sección 9 (Bloque A: migración a JWT).
-
-    @Override
-    public void addCorsMappings(@NonNull CorsRegistry registry) {
-        // Configuración CORS para APIs
-        registry.addMapping("/usuarios/api/**")
-                .allowedOrigins("http://localhost:8080")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
-
-        // NUEVO: CORS para API de upload
-        registry.addMapping("/api/upload/**")
-                .allowedOrigins("http://localhost:8080")
-                .allowedMethods("GET", "POST", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
-    }
+    // La protección de rutas y el CORS viven en SecurityConfig.
 }
