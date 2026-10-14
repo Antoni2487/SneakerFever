@@ -159,7 +159,7 @@ public class VentaController {
             response.put("data", venta);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
+            return ApiResponses.errorDeNegocio(e);
         } catch (Exception e) {
             return ApiResponses.error("Error al obtener la venta: " + ApiResponses.mensajeSeguro(e));
         }
@@ -191,7 +191,7 @@ public class VentaController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (RuntimeException e) {
-            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
+            return ApiResponses.errorDeNegocio(e);
         } catch (Exception e) {
             return ApiResponses.error("Error al crear la venta: " + ApiResponses.mensajeSeguro(e));
         }
@@ -243,7 +243,7 @@ public class VentaController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
+            return ApiResponses.errorDeNegocio(e);
         } catch (Exception e) {
             return ApiResponses.error("Error al actualizar el estado: " + ApiResponses.mensajeSeguro(e));
         }
@@ -266,7 +266,7 @@ public class VentaController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            return ApiResponses.error(ApiResponses.mensajeSeguro(e));
+            return ApiResponses.errorDeNegocio(e);
         } catch (Exception e) {
             return ApiResponses.error("Error al anular la venta: " + ApiResponses.mensajeSeguro(e));
         }

@@ -53,6 +53,17 @@ public final class ApiResponses {
         return e.getMessage() != null ? e.getMessage() : MENSAJE_ERROR_INTERNO;
     }
 
+    /**
+     * Respuesta para una excepción atrapada en un controller: 400 con su mensaje
+     * si es de negocio (p. ej. "Stock insuficiente"), 500 genérico si es técnica.
+     */
+    public static ResponseEntity<Map<String, Object>> errorDeNegocio(Throwable e) {
+        String mensaje = mensajeSeguro(e);
+        return MENSAJE_ERROR_INTERNO.equals(mensaje)
+                ? error(mensaje, HttpStatus.INTERNAL_SERVER_ERROR)
+                : error(mensaje, HttpStatus.BAD_REQUEST);
+    }
+
     private static boolean esDeNegocio(Throwable t) {
         return EXCEPCIONES_DE_NEGOCIO.contains(t.getClass())
                 || t.getClass().getName().startsWith("com.example.acceso.");

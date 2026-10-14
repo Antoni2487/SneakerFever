@@ -41,4 +41,13 @@ class ApiResponsesTest {
                 new DataIntegrityViolationException("Duplicate entry 'x'"));
         assertThat(ApiResponses.mensajeSeguro(envuelta)).isEqualTo(ApiResponses.MENSAJE_ERROR_INTERNO);
     }
+
+    @Test
+    @DisplayName("errorDeNegocio: 400 para reglas de negocio, 500 para errores técnicos")
+    void errorDeNegocio_eligeElCodigoHttp() {
+        assertThat(ApiResponses.errorDeNegocio(new IllegalStateException("Stock insuficiente")).getStatusCode().value())
+                .isEqualTo(400);
+        assertThat(ApiResponses.errorDeNegocio(new DataIntegrityViolationException("Duplicate entry")).getStatusCode().value())
+                .isEqualTo(500);
+    }
 }
