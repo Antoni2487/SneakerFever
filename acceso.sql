@@ -31,24 +31,27 @@ CREATE TABLE `opciones` (
   `id` bigint(20) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `ruta` varchar(100) NOT NULL,
-  `icono` varchar(50) DEFAULT NULL
+  `icono` varchar(50) DEFAULT NULL,
+  `permiso` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `opciones`
 --
 
-INSERT INTO `opciones` (`id`, `nombre`, `ruta`, `icono`) VALUES
-(1, 'Dashboard', '/dashboard', 'home'),
-(2, 'Gestión de Usuarios', '/usuarios/listar', 'users'),
-(3, 'Gestión de Perfiles', '/perfiles/listar', 'shield'),
-(4, 'Productos', '/productos', 'box-seam'),
-(5, 'Categorias', '/categorias', 'grid'),
-(6, 'Marcas', '/marcas', 'star'),
-(7, 'Ventas', '/ventas', 'cart'),
-(8, 'Inventario', '/inventario', 'boxes'),
-(9, 'Clientes', '/clientes', 'person-badge'),
-(10, 'Personalizacion', '/personalizacion', 'palette');
+-- `permiso`: código estable que exige la API (ver seguridad/Permisos.java),
+-- independiente de `ruta` (que es solo el link del sidebar).
+INSERT INTO `opciones` (`id`, `nombre`, `ruta`, `icono`, `permiso`) VALUES
+(1, 'Dashboard', '/dashboard', 'home', 'DASHBOARD'),
+(2, 'Gestión de Usuarios', '/usuarios/listar', 'users', 'USUARIOS'),
+(3, 'Gestión de Perfiles', '/perfiles/listar', 'shield', 'PERFILES'),
+(4, 'Productos', '/productos', 'box-seam', 'PRODUCTOS'),
+(5, 'Categorias', '/categorias', 'grid', 'CATEGORIAS'),
+(6, 'Marcas', '/marcas', 'star', 'MARCAS'),
+(7, 'Ventas', '/ventas', 'cart', 'VENTAS'),
+(8, 'Inventario', '/inventario', 'boxes', 'INVENTARIO'),
+(9, 'Clientes', '/clientes', 'person-badge', 'CLIENTES'),
+(10, 'Personalizacion', '/personalizacion', 'palette', 'PERSONALIZACION');
 
 -- --------------------------------------------------------
 

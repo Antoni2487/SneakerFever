@@ -16,6 +16,7 @@ public class OpcionResponse {
     private String nombre;
     private String ruta;
     private String icono;
+    private String permiso;
 
     public static OpcionResponse from(Opcion opcion) {
         return OpcionResponse.builder()
@@ -23,6 +24,7 @@ public class OpcionResponse {
                 .nombre(opcion.getNombre())
                 .ruta(opcion.getRuta())
                 .icono(opcion.getIcono())
+                .permiso(opcion.getPermiso())
                 .build();
     }
 }

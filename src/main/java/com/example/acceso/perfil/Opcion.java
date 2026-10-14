@@ -32,4 +32,13 @@ public class Opcion {
     @Column(length = 50)
     private String icono;
 
+    /**
+     * Código de permiso que otorga esta opción (ver {@code seguridad.Permisos}),
+     * independiente de la ruta. Nullable solo para que {@code ddl-auto=update}
+     * pueda agregar la columna a bases existentes; {@code PermisosOpcionInitializer}
+     * la completa al arrancar.
+     */
+    @Column(length = 50)
+    private String permiso;
+
 }

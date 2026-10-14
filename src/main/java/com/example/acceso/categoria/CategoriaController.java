@@ -1,5 +1,7 @@
 package com.example.acceso.categoria;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/categorias")
+@PreAuthorize("hasAuthority('" + Permisos.CATEGORIAS + "')")
 public class CategoriaController {
 
     private final CategoriaService categoryService;

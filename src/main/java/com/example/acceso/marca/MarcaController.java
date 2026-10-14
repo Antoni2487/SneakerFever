@@ -1,5 +1,7 @@
 package com.example.acceso.marca;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/marcas")
+@PreAuthorize("hasAuthority('" + Permisos.MARCAS + "')")
 public class MarcaController {
 
     private static final Logger log = LoggerFactory.getLogger(MarcaController.class);

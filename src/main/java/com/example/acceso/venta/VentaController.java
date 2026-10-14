@@ -1,5 +1,7 @@
 package com.example.acceso.venta;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.usuario.Usuario;
 import com.example.acceso.dashboard.ReporteVentasDTO;
 import com.example.acceso.common.ApiResponses;
@@ -20,6 +22,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/ventas")
+@PreAuthorize("hasAuthority('" + Permisos.VENTAS + "')")
 public class VentaController {
 
     private final VentaService ventaService;

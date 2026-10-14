@@ -1,5 +1,7 @@
 package com.example.acceso.producto;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.marca.MarcaService;
 import com.example.acceso.categoria.CategoriaService;
 import com.example.acceso.common.ApiResponses;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/productos")
+@PreAuthorize("hasAuthority('" + Permisos.PRODUCTOS + "')")
 public class ProductoController {
 
     private final ProductoService productService;

@@ -30,25 +30,14 @@ import java.util.Optional;
  * emitirse el token — propiedad que la sesión anterior no tenía (el Usuario
  * quedaba cacheado en HttpSession hasta el logout o la expiración de sesión).
  *
- * RBAC (Fase A del plan de AUDITORIA_TECNICA_2026-09-10.md): las
- * {@link GrantedAuthority} del usuario se derivan del primer segmento de
- * {@link Opcion#getRuta()} de cada opción asignada a su {@link Perfil} (p.
- * ej. "/productos" o "/usuarios/listar" → autoridad "productos"/"usuarios").
- * Ese segmento coincide por construcción con la ruta base de cada dominio
- * (el link del sidebar en React usa exactamente ese mismo "ruta", así que ya
- * tiene que coincidir con la ruta real del frontend para funcionar hoy). Ver
- * {@link SecurityConfig} para el {@code hasAuthority(...)} por endpoint.
+ * RBAC: las {@link GrantedAuthority} del usuario son los
+ * {@link Opcion#getPermiso() códigos de permiso} de las opciones de su
+ * {@link Perfil} (ver {@link Permisos}). Cada controller exige el suyo con
+ * {@code @PreAuthorize("hasAuthority(...)")}. La ruta de la opción ya no
+ * interviene: es solo el link del sidebar.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-    /**
-     * Autoridad del dashboard ({@code /admin/api/**}). Su Opcion no sigue la
-     * convención "ruta = dominio": en acceso.sql histórico la ruta es "/" y el
-     * dashboard Thymeleaf vivía en "/admin", así que esos dos casos se
-     * normalizan a esta autoridad junto con "/dashboard" (la ruta de React).
-     */
-    public static final String AUTORIDAD_DASHBOARD = "dashboard";
 
     private final JwtService jwtService;
     private final UsuarioService usuarioService;
@@ -102,32 +91,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return List.of();
         }
         return perfil.getOpciones().stream()
-                .map(Opcion::getRuta)
-                .map(this::autoridadDeRuta)
-                .filter(autoridad -> !autoridad.isEmpty())
+                .map(Opcion::getPermiso)
+                .filter(permiso -> permiso != null && !permiso.isBlank())
                 .distinct()
                 .<GrantedAuthority>map(SimpleGrantedAuthority::new)
                 .toList();
-    }
-
-    private String autoridadDeRuta(String ruta) {
-        if ("/".equals(ruta)) {
-            return AUTORIDAD_DASHBOARD;
-        }
-        String segmento = primerSegmento(ruta);
-        return "admin".equals(segmento) ? AUTORIDAD_DASHBOARD : segmento;
-    }
-
-    /** "/productos" -&gt; "productos", "/usuarios/listar" -&gt; "usuarios", "/" o null/"" -&gt; "". */
-    private String primerSegmento(String ruta) {
-        if (ruta == null) {
-            return "";
-        }
-        for (String parte : ruta.split("/")) {
-            if (!parte.isBlank()) {
-                return parte.toLowerCase();
-            }
-        }
-        return "";
     }
 }

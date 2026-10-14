@@ -26,10 +26,13 @@ retirará.
   en memoria del frontend) y deja el refresh token (7 días) en una cookie
   `httpOnly`.
 - **Permisos por perfil**: cada `Perfil` tiene `Opciones` (tabla
-  `perfil_opcion`). El primer segmento de la ruta de cada opción es la
-  autoridad que exige su API: la opción `/productos` habilita
-  `/productos/api/**` y `/api/upload/productos/**`. La opción Dashboard
-  (`/dashboard`) habilita `/admin/api/**`.
+  `perfil_opcion`), y cada opción otorga un código de permiso estable
+  (`opciones.permiso`: `PRODUCTOS`, `VENTAS`, `DASHBOARD`...; ver
+  `seguridad/Permisos.java`). Cada controller lo exige con
+  `@PreAuthorize`. La `ruta` de la opción es solo el link del sidebar: se
+  puede cambiar sin afectar los permisos.
+  En una base anterior a esta columna, el permiso se completa solo al arrancar
+  (`PermisosOpcionInitializer`, deducido de la ruta).
 - **Denegar por defecto**: lo público es una lista explícita en
   `SecurityConfig`; cualquier endpoint sin regla responde 403.
 

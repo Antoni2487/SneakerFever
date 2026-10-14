@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,6 +78,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleAccesoDenegadoException(AccesoDenegadoException ex) {
         logger.warn("Acceso denegado: {}", ex.getMessage());
         return ApiResponses.error(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    // @PreAuthorize lanza AccessDeniedException DENTRO de la invocación del
+    // controller, así que llega aquí y no al accessDeniedHandler de
+    // SecurityConfig. Sin este handler la atrapaba el de Exception.class y
+    // respondía 500 en vez de 403.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDeniedException(AccessDeniedException ex) {
+        return ApiResponses.error("No tienes permiso para realizar esta acción", HttpStatus.FORBIDDEN);
     }
 
     // Red de seguridad para cualquier excepción no controlada que llegue hasta

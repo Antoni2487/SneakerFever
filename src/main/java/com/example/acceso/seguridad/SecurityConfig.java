@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,13 +18,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * Reemplaza a SessionInterceptor + HttpSession, retirados en la migración a JWT.
  *
  * <ul>
- *   <li><b>Denegar por defecto</b>: lo público es una lista blanca explícita y
- *       cada grupo de endpoints de dominio exige la autoridad derivada de su
- *       {@code Opcion} (ver {@link JwtAuthenticationFilter}); lo demás es
+ *   <li><b>Denegar por defecto</b>: lo público es una lista blanca explícita,
+ *       las APIs del panel exigen autenticación y lo demás es
  *       {@code denyAll()}.</li>
- *   <li><b>RBAC por Opción</b>: {@code /admin/api/**} (dashboard) exige la
- *       autoridad {@link JwtAuthenticationFilter#AUTORIDAD_DASHBOARD};
- *       {@code /api/upload/{tipo}/**} la del dominio dueño de esa carpeta.</li>
+ *   <li><b>Permisos por método</b> ({@link EnableMethodSecurity}): cada
+ *       controller declara su permiso con
+ *       {@code @PreAuthorize("hasAuthority('" + Permisos.PRODUCTOS + "')")}; las
+ *       autoridades del usuario salen de {@code opciones.permiso} (ver
+ *       {@link JwtAuthenticationFilter}). {@code ControllersPreAuthorizeTest}
+ *       falla si un endpoint del panel queda sin {@code @PreAuthorize}.</li>
  *   <li><b>CSRF sigue deshabilitado</b>: los endpoints de negocio van con
  *       {@code Authorization: Bearer}, sin cookie ambiental; la superficie CSRF
  *       real se reduce a {@code /api/auth/refresh} y {@code /api/auth/logout}
@@ -35,6 +38,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * nunca produce un JWT. Se retira en el Bloque E del plan.
  */
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -70,24 +74,16 @@ public class SecurityConfig {
                                 "/web/**", "/css/**", "/js/**", "/images/**", "/uploads/**",
                                 "/error", "/favicon.ico")
                         .permitAll()
-                        .requestMatchers("/admin/api/**").hasAuthority(JwtAuthenticationFilter.AUTORIDAD_DASHBOARD)
-                        // Cada carpeta de imágenes la gestiona su dominio: antes bastaba
-                        // estar logueado para subir o BORRAR imágenes de cualquiera.
-                        .requestMatchers("/api/upload/productos/**").hasAuthority("productos")
-                        .requestMatchers("/api/upload/marcas/**").hasAuthority("marcas")
-                        .requestMatchers("/api/upload/categorias/**").hasAuthority("categorias")
-                        .requestMatchers("/api/upload/personalizacion/**").hasAuthority("personalizacion")
-                        .requestMatchers("/marcas/api/**").hasAuthority("marcas")
-                        .requestMatchers("/categorias/api/**").hasAuthority("categorias")
-                        .requestMatchers("/clientes/api/**").hasAuthority("clientes")
-                        .requestMatchers("/productos/api/**").hasAuthority("productos")
-                        .requestMatchers("/usuarios/api/**").hasAuthority("usuarios")
-                        .requestMatchers("/perfiles/api/**").hasAuthority("perfiles")
-                        // Créditos vive como pestaña dentro de la misma pantalla de
-                        // Ventas (una sola Opcion "Ventas" en BD) — misma autoridad.
-                        .requestMatchers("/ventas/api/**", "/creditos/api/**").hasAuthority("ventas")
-                        .requestMatchers("/inventario/api/**").hasAuthority("inventario")
-                        .requestMatchers("/personalizacion/api/**").hasAuthority("personalizacion")
+                        // APIs del panel: aquí solo se exige estar autenticado. El permiso
+                        // fino (PRODUCTOS, VENTAS, ...) lo declara cada controller con
+                        // @PreAuthorize, junto al código que protege — ver Permisos.
+                        .requestMatchers(
+                                "/admin/api/**", "/api/upload/**",
+                                "/marcas/api/**", "/categorias/api/**", "/clientes/api/**",
+                                "/productos/api/**", "/usuarios/api/**", "/perfiles/api/**",
+                                "/ventas/api/**", "/creditos/api/**", "/inventario/api/**",
+                                "/personalizacion/api/**")
+                        .authenticated()
                         // Denegar por defecto: un endpoint nuevo sin regla explícita da
                         // 403 en vez de quedar público sin que nadie lo note. También
                         // cubre las vistas Thymeleaf legacy del panel (/admin,

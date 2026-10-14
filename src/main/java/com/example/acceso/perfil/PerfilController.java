@@ -1,5 +1,7 @@
 package com.example.acceso.perfil;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import com.example.acceso.perfil.OpcionResponse;
 import com.example.acceso.perfil.PerfilRequest;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/perfiles")
+@PreAuthorize("hasAuthority('" + Permisos.PERFILES + "')")
 public class PerfilController {
 
     private final PerfilService perfilService;
