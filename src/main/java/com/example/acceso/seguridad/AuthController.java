@@ -29,13 +29,16 @@ public class AuthController {
 
     private final UsuarioService usuarioService;
     private final JwtService jwtService;
+    private final RevocacionTokenService revocacionTokenService;
 
     @Value("${jwt.cookie.secure:false}")
     private boolean cookieSecure;
 
-    public AuthController(UsuarioService usuarioService, JwtService jwtService) {
+    public AuthController(UsuarioService usuarioService, JwtService jwtService,
+            RevocacionTokenService revocacionTokenService) {
         this.usuarioService = usuarioService;
         this.jwtService = jwtService;
+        this.revocacionTokenService = revocacionTokenService;
     }
 
     public record LoginRequest(String usuario, String clave) {
@@ -86,6 +89,9 @@ public class AuthController {
         } catch (JwtException | IllegalArgumentException e) {
             return ApiResponses.error("Refresh token inválido o expirado", HttpStatus.UNAUTHORIZED);
         }
+        if (revocacionTokenService.estaRevocado(claims.getId())) {
+            return ApiResponses.error("La sesión fue cerrada", HttpStatus.UNAUTHORIZED);
+        }
 
         Optional<Usuario> usuarioOpt = usuarioService.findByUsuario(claims.getSubject());
         if (usuarioOpt.isEmpty() || usuarioOpt.get().getEstado() != 1) {
@@ -100,12 +106,35 @@ public class AuthController {
         return ResponseEntity.ok(body);
     }
 
+    /**
+     * Cierra la sesión en el servidor: revoca el refresh token (cookie) y el
+     * access token (header Authorization) de ESTA sesión, así dejan de servir
+     * aunque alguien los haya copiado. Las sesiones de otros dispositivos
+     * siguen abiertas. Responde 200 aunque falte alguno o ya esté vencido:
+     * cerrar sesión debe funcionar siempre.
+     */
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, Object>> logout(HttpServletResponse response) {
-        // Sin blacklist de servidor (ver limitación documentada en la clase):
-        // esto solo borra la cookie de ESTE navegador.
+    public ResponseEntity<Map<String, Object>> logout(
+            @CookieValue(value = REFRESH_COOKIE_NAME, required = false) String refreshToken,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+            HttpServletResponse response) {
+        revocarSiEsValido(refreshToken, JwtService.TOKEN_TYPE_REFRESH);
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            revocarSiEsValido(authorization.substring(7), JwtService.TOKEN_TYPE_ACCESS);
+        }
         response.addHeader(HttpHeaders.SET_COOKIE, buildExpiredRefreshCookie().toString());
         return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    private void revocarSiEsValido(String token, String tipo) {
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        try {
+            revocacionTokenService.revocar(jwtService.parseAndValidate(token, tipo));
+        } catch (JwtException | IllegalArgumentException e) {
+            // Vencido, manipulado o de otro tipo: no hay nada que revocar.
+        }
     }
 
     @GetMapping("/me")

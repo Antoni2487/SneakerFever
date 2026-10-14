@@ -4,6 +4,7 @@ package com.example.acceso;
 // Importaciones de clases necesarias de Spring Boot.
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 
 // Se excluye UserDetailsServiceAutoConfiguration: la autenticación es JWT manual
@@ -11,7 +12,9 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 // UserDetailsService de Spring Security, así que sin este exclude Boot genera
 // igual un usuario en memoria con contraseña aleatoria en cada arranque (que
 // nunca se usa) y lo loguea como WARN.
+// @EnableScheduling: limpieza periódica de tokens revocados (RevocacionTokenService).
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
+@EnableScheduling
 public class AccesoApplication {
 
 

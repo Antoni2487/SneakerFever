@@ -128,18 +128,18 @@ verde (`./mvnw test`, sin MySQL ni secretos), más CI en GitHub Actions.
 
 | # | Hallazgo | Estado | Dónde se resolvió |
 |---|---|---|---|
-| 1 | Controllers híbridos (vista Thymeleaf + API) | ⏳ Pendiente | Las vistas Thymeleaf del panel quedan inaccesibles (`denyAll`) pero el código sigue. Retirarlo es el Bloque E: decisión pendiente (ver abajo). |
+| 1 | Controllers híbridos (vista Thymeleaf + API) | ✅ | Thymeleaf retirado por completo (`d872cab`): los controllers son `@RestController` y la interfaz es 100 % React. |
 | 1 / 5 | Serie de comprobante duplicada (`F001`/`B001`) | ✅ | Fase D (`eb51f00`): todo pasa por `ComprobanteSecuenciaService`. |
 | 2 | Lógica de negocio en DTOs de crédito | ✅ | Fase C (`01281f9`). |
 | 3 | Sin `record` en DTOs | ➖ Se mantiene | Estilo, no correctitud; se conserva Lombok por consistencia. |
 | 6 | Error sin `timestamp`/`path`; TypeMismatch devolvía vista | ✅ | `a1dd993`. Además: mensajes técnicos ocultos al cliente (`ApiResponses.mensajeSeguro`, `79b3a26`) y 403 en vez de 500 ante `@PreAuthorize` (`21646f7`). |
 | 7 | Tests en 2 de 12 services | ✅ | Los 12 services (11 de dominio + `JwtService`) tienen tests (`ad15ef2`, `3ab5137`); test de contexto completo e integración de seguridad con MockMvc (`4bb327e`); `ControllersPreAuthorizeTest` impide endpoints sin permiso. |
-| 8 / 9 | Sin paginación | ⏳ Pendiente | Cambia el contrato de la API y el frontend: decisión pendiente. |
+| 8 / 9 | Sin paginación | ✅ | `8e0832f`: `/api/pagina` en productos, ventas y clientes (filtro en la BD, sin fetch join de colecciones) y paginador en React. |
 | 9 | Prefijos `/api` no uniformes, sin versionado | ➖ Se mantiene | Renombrar rompería el frontend sin beneficio funcional hoy. |
 | 10 | Sin RBAC | ✅ | Fase A (`0b25638`) y luego permisos por código estable (`opciones.permiso`) + `@PreAuthorize` por controller (`21646f7`); denegar por defecto (`b6f8c67`). |
 | 10 | CORS por defecto / mappings sueltos | ✅ | `76a03db`: un único `CorsConfigurationSource`, configurable con `app.cors.allowed-origins`. |
 | 10 | CSRF deshabilitado | ✅ Aceptado | Superficie limitada a `/api/auth/refresh` y `/logout`, cookie `httpOnly` + `SameSite=Strict`. |
-| 10 | Logout sin revocar el access token | ⏳ Pendiente | Ventana de 30 min. Propuesta: versión de token por usuario (decisión pendiente, cambia el esquema). |
+| 10 | Logout sin revocar el access token | ✅ | Logout revoca access y refresh de la sesión por `jti` (tabla `tokens_revocados`, limpieza horaria). |
 | 11 | Sin reintentos hacia el microservicio Node | ➖ Se mantiene | El fallo ya se maneja sin caer; reintentar un servicio local opcional no aporta. |
 | 12 | Sin Dockerfile; compose sin healthcheck | ✅ | `e6ef1a8`: imágenes multi-stage no-root (backend JRE alpine, frontend nginx), healthcheck de MySQL, `acceso.sql` cargado al crear el volumen. |
 | 13 | Sin CI/CD | ✅ | `91cafa1`: GitHub Actions (tests backend, lint + build frontend, build de imágenes). |
@@ -157,11 +157,11 @@ verde (`./mvnw test`, sin MySQL ni secretos), más CI en GitHub Actions.
   quedaba sin acceso en una instalación nueva (`1ef7d38`).
 - Anular una venta no registraba la devolución en el kardex (`79b3a26`).
 
-### Decisiones pendientes (requieren definición del equipo)
+### Decisiones tomadas después del seguimiento (14-oct)
 
-1. **Retirar el Thymeleaf legacy** (Bloque E): panel admin (`templates/admin`,
-   `static/admin`, ~12 000 líneas) y, si React reemplaza también al sitio
-   público, `WebController`/`CheckoutController`/`LoginController`.
-2. **Paginación** en listados de productos, ventas y clientes (backend +
-   frontend).
-3. **Revocación del logout** (versión de token por usuario).
+Las tres decisiones pendientes se resolvieron: se retiró el Thymeleaf
+(incluido el sitio público; se pierden las secciones de preguntas frecuentes
+e información de la tienda, que React no tenía), se paginaron los listados y
+el logout revoca los tokens en el servidor. Al hacerlo apareció otro defecto:
+varias pantallas leían datos de otro dominio y el RBAC las bloqueaba (p. ej.
+un vendedor no podía registrar ventas); se corrigió en `8feff3a`.

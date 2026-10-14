@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Generación y validación de JWT (access + refresh) para el login de React.
@@ -70,6 +71,8 @@ public class JwtService {
     private String buildToken(Usuario usuario, String type, Duration ttl) {
         Instant now = Instant.now();
         return Jwts.builder()
+                // jti: identificador único, permite revocar este token concreto (logout).
+                .id(UUID.randomUUID().toString())
                 .subject(usuario.getUsuario())
                 .claim("userId", usuario.getId())
                 .claim("type", type)
@@ -84,8 +87,8 @@ public class JwtService {
      * ("access" o "refresh") — evita que un refresh token se use como access
      * token en un endpoint de negocio, o viceversa en /api/auth/refresh.
      *
-     * @throws JwtException si el token es inválido, expiró, o es del tipo
-     *                       equivocado (incluye subclases como
+     * @throws JwtException si el token es inválido, expiró, es del tipo
+     *                       equivocado o no tiene jti (incluye subclases como
      *                       ExpiredJwtException/SignatureException/etc.)
      */
     public Claims parseAndValidate(String token, String expectedType) {
@@ -98,6 +101,11 @@ public class JwtService {
         String actualType = claims.get("type", String.class);
         if (!expectedType.equals(actualType)) {
             throw new JwtException("Tipo de token inválido: se esperaba '" + expectedType + "'");
+        }
+        // Tokens emitidos antes de que existiera el jti no se pueden revocar:
+        // se rechazan (el usuario vuelve a iniciar sesión una vez).
+        if (claims.getId() == null) {
+            throw new JwtException("Token sin identificador (jti)");
         }
         return claims;
     }

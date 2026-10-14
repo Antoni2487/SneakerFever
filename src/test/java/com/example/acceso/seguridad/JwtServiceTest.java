@@ -78,4 +78,24 @@ class JwtServiceTest {
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("32 caracteres");
         assertThatThrownBy(() -> crear("", 30).validarSecreto()).isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    void cadaTokenTieneUnJtiDistinto() {
+        String jti1 = jwtService.parseAndValidate(jwtService.generateAccessToken(usuario), JwtService.TOKEN_TYPE_ACCESS).getId();
+        String jti2 = jwtService.parseAndValidate(jwtService.generateAccessToken(usuario), JwtService.TOKEN_TYPE_ACCESS).getId();
+
+        assertThat(jti1).isNotBlank().isNotEqualTo(jti2);
+    }
+
+    @Test
+    void tokenSinJti_anteriorALaRevocacion_seRechaza() {
+        String sinJti = io.jsonwebtoken.Jwts.builder()
+                .subject("vendedor").claim("type", JwtService.TOKEN_TYPE_ACCESS)
+                .expiration(new java.util.Date(System.currentTimeMillis() + 60_000))
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(SECRET.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                .compact();
+
+        assertThatThrownBy(() -> jwtService.parseAndValidate(sinJti, JwtService.TOKEN_TYPE_ACCESS))
+                .isInstanceOf(JwtException.class).hasMessageContaining("jti");
+    }
 }
