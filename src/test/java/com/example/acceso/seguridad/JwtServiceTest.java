@@ -71,4 +71,11 @@ class JwtServiceTest {
     void refreshCookieMaxAge_esDe7Dias() {
         assertThat(jwtService.getRefreshTokenExpirationSeconds()).isEqualTo(7L * 24 * 3600);
     }
+
+    @Test
+    void secretoCortoOVacio_fallaAlArrancar() {
+        assertThatThrownBy(() -> crear("corto", 30).validarSecreto())
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("32 caracteres");
+        assertThatThrownBy(() -> crear("", 30).validarSecreto()).isInstanceOf(IllegalStateException.class);
+    }
 }

@@ -34,3 +34,6 @@ target/
 desktop.ini
 Thumbs.db
 .DS_Store
+
+# Secretos de docker compose
+.env

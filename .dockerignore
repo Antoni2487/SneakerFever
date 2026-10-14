@@ -1,0 +1,11 @@
+# Contexto del build del backend: solo pom, wrapper y src.
+.git
+.idea
+.vscode
+target
+frontend
+acceso
+*.md
+# Nunca meter la configuración local (credenciales, jwt.secret) en la imagen.
+src/main/resources/application.properties
+src/main/java/com/example/acceso/servicios-api/node_modules

@@ -47,12 +47,10 @@ docker compose up -d        # MySQL 8 en localhost:3308, base "acceso", root sin
 > El `docker-compose.yml` es **solo para desarrollo local**: usa
 > `MYSQL_ALLOW_EMPTY_PASSWORD`. No usarlo así en un servidor.
 
-Hibernate crea las tablas al arrancar (`ddl-auto=update`). Después del primer
-arranque, carga los datos iniciales (perfiles, opciones de menú y usuarios):
-
-```bash
-mysql -h 127.0.0.1 -P 3308 -u root acceso < acceso.sql
-```
+La primera vez (volumen vacío), MySQL carga solo `acceso.sql`: perfiles,
+opciones de menú con su permiso y usuarios. Hibernate crea el resto de las
+tablas al arrancar el backend (`ddl-auto=update`). Si ya tenías el volumen de
+antes, tus datos se conservan y el script no se vuelve a ejecutar.
 
 ### 2. Backend
 
@@ -93,6 +91,22 @@ aviso.
 cd src/main/java/com/example/acceso/servicios-api
 npm install && node index.js   # http://localhost:3000
 ```
+
+### Todo con Docker (demo, sin instalar Java ni Node)
+
+```bash
+cp .env.example .env        # y completa JWT_SECRET (openssl rand -base64 48) y MIAPI_TOKEN
+docker compose --profile app up -d --build
+```
+
+Levanta MySQL, el backend y el frontend (nginx) en **http://localhost:8080**.
+nginx sirve el frontend y hace de proxy hacia el backend por el mismo origen,
+así que no hace falta CORS. Las imágenes subidas quedan en el volumen
+`sneakerfever-uploads`. Si falta `JWT_SECRET`, el backend no arranca y lo
+indica en `docker logs sneakerfever-backend`.
+
+Si el frontend se sirve desde otro dominio, habilítalo en el backend con
+`app.cors.allowed-origins` (variable `APP_CORS_ALLOWED_ORIGINS`).
 
 ## Proyecto académico
 

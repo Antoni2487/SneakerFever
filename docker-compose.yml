@@ -1,3 +1,9 @@
+# SOLO PARA DESARROLLO LOCAL / DEMO: MySQL sin contraseña de root.
+#
+#   docker compose up -d                      -> solo MySQL (para correr el backend desde el IDE)
+#   docker compose --profile app up -d --build -> MySQL + backend + frontend en http://localhost:8080
+#
+# El perfil "app" lee los secretos de un archivo .env junto a este (ver .env.example).
 services:
   mysql:
     image: mysql:8.0
@@ -10,6 +16,47 @@ services:
       - "3308:3306"
     volumes:
       - sneakerfever-mysql-data:/var/lib/mysql
+      # Datos iniciales (perfiles, opciones con permiso, usuarios): MySQL lo
+      # ejecuta solo la primera vez, con el volumen vacío. Una base existente no se toca.
+      - ./acceso.sql:/docker-entrypoint-initdb.d/01-acceso.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    profiles: ["app"]
+    build: .
+    container_name: sneakerfever-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/acceso?useUnicode=true&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:-}
+      # http://localhost no es HTTPS: con true el navegador no enviaría la cookie.
+      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-false}
+      MIAPI_TOKEN: ${MIAPI_TOKEN:-}
+      MIAPI_URL_DNI: https://miapi.cloud/v1/dni/
+      MIAPI_URL_RUC: https://miapi.cloud/v1/ruc/
+    volumes:
+      - sneakerfever-uploads:/app/uploads
+
+  frontend:
+    profiles: ["app"]
+    build: ./frontend
+    container_name: sneakerfever-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:8080"
 
 volumes:
   sneakerfever-mysql-data:
+  sneakerfever-uploads:
