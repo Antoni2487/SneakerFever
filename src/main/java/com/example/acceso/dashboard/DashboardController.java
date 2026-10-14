@@ -11,16 +11,14 @@ import com.example.acceso.venta.CreditoVentaService;
 import com.example.acceso.venta.VentaService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.ui.Model;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/admin")
 @PreAuthorize("hasAuthority('" + Permisos.DASHBOARD + "')")
 public class DashboardController {
@@ -43,17 +41,8 @@ public class DashboardController {
         this.creditoVentaService = creditoVentaService;
     }
 
-    // ===================== VISTA PRINCIPAL =====================
-    @GetMapping
-    public String mostrarDashboard(Model model) {
-        long totalUsuarios = usuarioService.contarUsuarios();
-        model.addAttribute("totalUsuarios", totalUsuarios);
-        return "admin/index"; // tu plantilla dashboard.html o index.html
-    }
-
     // ===================== API - ESTADÍSTICAS =====================
     @GetMapping("/api/estadisticas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
         Map<String, Object> response = new HashMap<>();
         try {
@@ -69,7 +58,6 @@ public class DashboardController {
 
     // ===================== API - REPORTE DE VENTAS =====================
     @GetMapping("/api/reporte")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> generarReporte(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
@@ -88,7 +76,6 @@ public class DashboardController {
 
     // ===================== API - CLIENTES =====================
     @GetMapping("/api/count-clientes")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> contarClientes() {
         Map<String, Object> response = new HashMap<>();
         try {
@@ -104,7 +91,6 @@ public class DashboardController {
 
     // ===================== API - PRODUCTOS =====================
     @GetMapping("/api/listar-productos")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarProductos() {
         Map<String, Object> response = new HashMap<>();
         try {
@@ -126,7 +112,6 @@ public class DashboardController {
      * combinando conteos/estadísticas ya expuestos por separado en cada dominio.
      */
     @GetMapping("/api/resumen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerResumen() {
         Map<String, Object> response = new HashMap<>();
         try {
@@ -150,7 +135,6 @@ public class DashboardController {
     // ===================== API - TENDENCIA DE VENTAS =====================
 
     @GetMapping("/api/ventas-tendencia")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerVentasTendencia(
             @RequestParam(defaultValue = "7") int dias) {
         Map<String, Object> response = new HashMap<>();
@@ -167,7 +151,6 @@ public class DashboardController {
     // ===================== API - PRODUCTOS MÁS VENDIDOS =====================
 
     @GetMapping("/api/productos-mas-vendidos")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerProductosMasVendidos(
             @RequestParam(defaultValue = "5") int limite) {
         Map<String, Object> response = new HashMap<>();

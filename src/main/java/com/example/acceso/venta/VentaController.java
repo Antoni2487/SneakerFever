@@ -9,8 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -20,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 
-@Controller
+@RestController
 @RequestMapping("/ventas")
 @PreAuthorize("hasAuthority('" + Permisos.VENTAS + "')")
 public class VentaController {
@@ -35,27 +33,6 @@ public class VentaController {
     }
 
 
-    // ===================== Vistas =====================
-
-    /**
-     * Página principal de gestión de ventas
-     */
-    @GetMapping({"", "/"})
-    public String listarVentas(Model model) {
-        model.addAttribute("title", "Gestión de Ventas");
-        return "admin/ventas";
-    }
-
-    @GetMapping("/listar")
-    public String listarVentasRedirect() {
-        return "redirect:/ventas";
-    }
-
-    @GetMapping("/nueva")
-    public String nuevaVenta(Model model) {
-        model.addAttribute("title", "Nueva Venta");
-        return "admin/ventas/nueva";
-    }
 
     // ===================== API REST - Listados =====================
 
@@ -63,7 +40,6 @@ public class VentaController {
      * Obtener todas las ventas (JSON)
      */
     @GetMapping("/api/listar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarVentasJson() {
         try {
             List<VentaResponse> ventas = ventaService.listarTodasLasVentas();
@@ -82,7 +58,6 @@ public class VentaController {
      * Obtener ventas por cliente
      */
     @GetMapping("/api/cliente/{clienteId}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarVentasPorCliente(@PathVariable Long clienteId) {
         try {
             List<VentaResponse> ventas = ventaService.listarVentasPorCliente(clienteId);
@@ -101,7 +76,6 @@ public class VentaController {
      * Obtener ventas por estado
      */
     @GetMapping("/api/estado/{estado}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarVentasPorEstado(@PathVariable EstadoVenta estado) {
         try {
             List<VentaResponse> ventas = ventaService.listarVentasPorEstado(estado);
@@ -120,7 +94,6 @@ public class VentaController {
      * Obtener ventas por rango de fechas
      */
     @GetMapping("/api/rango-fechas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarVentasPorRangoFechas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
@@ -141,7 +114,6 @@ public class VentaController {
      * Obtener ventas con crédito
      */
     @GetMapping("/api/creditos")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarVentasConCredito() {
         try {
             List<VentaResponse> ventas = ventaService.listarVentasConCredito();
@@ -162,7 +134,6 @@ public class VentaController {
      * Obtener venta por ID
      */
     @GetMapping("/api/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerVenta(@PathVariable Long id) {
         try {
             VentaResponse venta = ventaService.obtenerVentaPorId(id);
@@ -179,7 +150,6 @@ public class VentaController {
     }
 
     @PostMapping("/api/crear")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> crearVenta(
             @Valid @RequestBody CrearVentaRequest request,
             BindingResult result,
@@ -211,7 +181,6 @@ public class VentaController {
         }
     }
     @GetMapping("/api/series/activas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerSerieActiva(
             @RequestParam("tipo_comprobante") TipoComprobante tipoComprobante) {
         try {
@@ -244,7 +213,6 @@ public class VentaController {
      * Actualizar estado de venta
      */
     @PutMapping("/api/estado/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarEstadoVenta(
             @PathVariable Long id,
             @RequestParam EstadoVenta nuevoEstado) {
@@ -269,7 +237,6 @@ public class VentaController {
      * Anular venta
      */
     @PutMapping("/api/anular/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> anularVenta(@PathVariable Long id,
             @AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
@@ -295,7 +262,6 @@ public class VentaController {
      * Generar reporte de ventas
      */
     @GetMapping("/api/reporte")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> generarReporteVentas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
@@ -316,7 +282,6 @@ public class VentaController {
      * Obtener estadísticas del dashboard de ventas
      */
     @GetMapping("/api/estadisticas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerEstadisticasVentas() {
         try {
             Map<String, Object> estadisticas = ventaService.obtenerEstadisticasDashboard();

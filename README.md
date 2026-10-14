@@ -16,9 +16,9 @@ Proyecto académico de la Universidad Tecnológica del Perú (UTP).
 El backend se organiza por dominio (`producto`, `venta`, `inventario`, ...),
 cada uno con su Controller → Service → Repository → Entity.
 
-Las vistas Thymeleaf (`src/main/resources/templates`) son el sitio anterior.
-El panel admin Thymeleaf quedó sin uso desde la migración a React + JWT y se
-retirará.
+El backend es solo API REST (JSON): toda la interfaz, tanto la tienda como el
+panel de administración, es el SPA de React en `frontend/`. Las imágenes del
+sitio están en `src/main/resources/static/web/images` y se sirven en `/web/images/**`.
 
 ## Seguridad
 

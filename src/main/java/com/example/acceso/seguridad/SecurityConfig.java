@@ -38,10 +38,6 @@ import java.util.List;
  *       real se reduce a {@code /api/auth/refresh} y {@code /api/auth/logout}
  *       (cookie httpOnly {@code SameSite=Strict} del refresh token).</li>
  * </ul>
- *
- * El panel admin Thymeleaf legacy ({@code LoginController} + plantillas
- * {@code admin/*.html}) queda inaccesible: su login solo escribe HttpSession y
- * nunca produce un JWT. Se retira en el Bloque E del plan.
  */
 @Configuration
 @EnableMethodSecurity
@@ -90,17 +86,16 @@ public class SecurityConfig {
                         // finalizar la compra exige JWT — CartController.checkout toma
                         // el Usuario del SecurityContext.
                         .requestMatchers(HttpMethod.POST, "/carrito/api/checkout").authenticated()
-                        // Lista blanca EXPLÍCITA de lo público: sitio web, carrito,
-                        // login y recursos estáticos. Todo lo que no figure aquí ni en
+                        // Lista blanca EXPLÍCITA de lo público: carrito, login, catálogo
+                        // público e imágenes. El sitio y el panel son el SPA de React,
+                        // servido aparte (Vite en desarrollo, nginx en Docker). Todo lo que no figure aquí ni en
                         // las reglas de abajo se deniega (anyRequest().denyAll()).
                         .requestMatchers(
-                                // Sitio público Thymeleaf (WebController) y checkout legacy,
-                                // que valida su propia sesión (CheckoutController).
-                                "/", "/catalogo", "/contacto", "/producto/**",
-                                "/carrito/api/**", "/carrito/checkout", "/carrito/procesar",
-                                "/api/auth/**", "/login", "/logout",
+                                "/carrito/api/**",
+                                "/api/auth/**",
                                 "/api/public/**", "/personalizacion/api/public/**",
-                                "/web/**", "/css/**", "/js/**", "/images/**", "/uploads/**",
+                                // Assets del sitio (static/web/images) e imágenes subidas.
+                                "/web/**", "/uploads/**",
                                 "/error", "/favicon.ico")
                         .permitAll()
                         // APIs del panel: aquí solo se exige estar autenticado. El permiso
@@ -114,10 +109,7 @@ public class SecurityConfig {
                                 "/personalizacion/api/**")
                         .authenticated()
                         // Denegar por defecto: un endpoint nuevo sin regla explícita da
-                        // 403 en vez de quedar público sin que nadie lo note. También
-                        // cubre las vistas Thymeleaf legacy del panel (/admin,
-                        // /productos, /ventas/nueva...), inservibles desde la migración
-                        // a JWT porque su login nunca produce un token.
+                        // 403 en vez de quedar público sin que nadie lo note.
                         .anyRequest().denyAll())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(

@@ -8,7 +8,6 @@ import com.example.acceso.cliente.ClienteService.ClienteException;
 import com.example.acceso.personalizacion.PersonalizacionService.PersonalizacionException;
 import com.example.acceso.producto.ProductoService.ProductoException;
 import com.example.acceso.usuario.UsuarioService.AccesoDenegadoException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
@@ -35,20 +34,11 @@ public class GlobalExceptionHandler {
     // Esto ocurre, por ejemplo, si alguien intenta acceder a /usuarios/api/abc en
     // lugar de /usuarios/api/123.
     @ExceptionHandler(TypeMismatchException.class)
-    public Object handleTypeMismatchException(TypeMismatchException ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleTypeMismatchException(TypeMismatchException ex) {
         // Registra una advertencia en la consola con detalles sobre el error.
-        // Es una buena práctica para saber qué tipo de errores están ocurriendo.
         logger.warn("Se detectó un intento de acceder a una URL con un tipo de dato incorrecto. " +
                 "Valor: '{}', Tipo requerido: '{}'.", ex.getValue(), ex.getRequiredType());
-
-        // Las rutas /api/** las consume el frontend por fetch/JSON -- devolver
-        // una vista Thymeleaf ahí rompía el parseo (ver AUDITORIA_TECNICA,
-        // hallazgo #6). Las vistas legacy (admin/*.html) siguen redirigiendo
-        // a inicio, comportamiento sin cambios.
-        if (request.getRequestURI().contains("/api/")) {
-            return ApiResponses.error("Parámetro inválido en la URL", HttpStatus.BAD_REQUEST);
-        }
-        return "redirect:/";
+        return ApiResponses.error("Parámetro inválido en la URL", HttpStatus.BAD_REQUEST);
     }
 
     // Excepciones de negocio de los distintos dominios (Marca, Categoría,

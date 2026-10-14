@@ -11,13 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("/personalizacion")
 @PreAuthorize("hasAuthority('" + Permisos.PERSONALIZACION + "')")
 public class PersonalizacionController {
@@ -33,20 +31,10 @@ public class PersonalizacionController {
         this.brandService = brandService;
     }
 
-    // ===================== Vistas =====================
-
-    @GetMapping({"", "/"})
-    public String mostrarPersonalizacion(Model model) {
-        model.addAttribute("title", "Centro de Personalización");
-        model.addAttribute("logoVacio", personalizacionService.logoEstaVacio());
-        model.addAttribute("slidesConImagen", personalizacionService.contarSlidesConImagen());
-        return "admin/personalizacion";
-    }
 
     // ===================== API REST - Logo =====================
 
     @GetMapping("/api/logo")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerLogo() {
         try {
             Optional<Personalizacion> logo = personalizacionService.obtenerLogo();
@@ -69,7 +57,6 @@ public class PersonalizacionController {
     }
 
     @PutMapping("/api/logo/imagen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarImagenLogo(
             @RequestParam("imagenUrl") String imagenUrl) {
         try {
@@ -101,7 +88,6 @@ public class PersonalizacionController {
     }
 
     @DeleteMapping("/api/logo/imagen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarImagenLogo() {
         try {
             Personalizacion actualizado = personalizacionService.eliminarLogo();
@@ -127,7 +113,6 @@ public class PersonalizacionController {
     // ===================== API REST - Slides (Listados) =====================
 
     @GetMapping("/api/slides")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarSlides() {
         try {
             List<Personalizacion> slides = personalizacionService.listarSlides();
@@ -143,7 +128,6 @@ public class PersonalizacionController {
     }
 
     @GetMapping("/api/slides/con-marca")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarSlidesConMarca() {
         try {
             List<Personalizacion> slides = personalizacionService.listarSlidesConMarca();
@@ -159,7 +143,6 @@ public class PersonalizacionController {
     }
 
     @GetMapping("/api/slides/sin-marca")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarSlidesSinMarca() {
         try {
             List<Personalizacion> slides = personalizacionService.obtenerSlidesSinMarca();
@@ -177,7 +160,6 @@ public class PersonalizacionController {
     // ===================== API REST - Slides (Individual) =====================
 
     @GetMapping("/api/slide/{orden}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerSlidePorOrden(@PathVariable Integer orden) {
         try {
             ValidationResult validacion = validarOrden(orden);
@@ -208,7 +190,6 @@ public class PersonalizacionController {
     }
 
     @PutMapping("/api/slide/{orden}/imagen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarImagenSlide(
             @PathVariable Integer orden,
             @RequestParam("imagenUrl") String imagenUrl,
@@ -254,7 +235,6 @@ public class PersonalizacionController {
     }
 
     @PutMapping("/api/slide/{orden}/marca")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarMarcaSlide(
             @PathVariable Integer orden,
             @RequestParam(value = "marcaId", required = false) Long marcaId) {
@@ -292,7 +272,6 @@ public class PersonalizacionController {
     }
 
     @DeleteMapping("/api/slide/{orden}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> limpiarSlide(@PathVariable Integer orden) {
         try {
             ValidationResult validacion = validarOrden(orden);
@@ -326,7 +305,6 @@ public class PersonalizacionController {
     // ===================== API REST - Búsquedas =====================
 
     @GetMapping("/api/slides/por-marca/{marcaId}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerSlidesPorMarca(@PathVariable Long marcaId) {
         try {
             if (marcaId == null || marcaId <= 0) {
@@ -359,7 +337,6 @@ public class PersonalizacionController {
     // Público (sitio web): anula el permiso de la clase.
     @PreAuthorize("permitAll()")
     @GetMapping("/api/public/configuracion")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerConfiguracionPublica() {
         try {
             Optional<Personalizacion> logo = personalizacionService.obtenerLogo();
@@ -388,7 +365,6 @@ public class PersonalizacionController {
     // Público (sitio web): anula el permiso de la clase.
     @PreAuthorize("permitAll()")
     @GetMapping("/api/public/logo")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerLogoPublico() {
         try {
             Optional<String> logoUrl = personalizacionService.obtenerImagenUrlLogo();
@@ -416,7 +392,6 @@ public class PersonalizacionController {
     // Público (sitio web): anula el permiso de la clase.
     @PreAuthorize("permitAll()")
     @GetMapping("/api/public/slides")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerSlidesPublicos() {
         try {
             List<Personalizacion> slides = personalizacionService.listarSlidesConMarca();
@@ -440,7 +415,6 @@ public class PersonalizacionController {
     // ===================== API REST - Utilidades =====================
 
     @GetMapping("/api/marcas-disponibles")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerMarcasDisponibles() {
         try {
             List<Marca> marcas = brandService.listarMarcas();

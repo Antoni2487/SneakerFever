@@ -7,8 +7,6 @@ import com.example.acceso.categoria.CategoriaService;
 import com.example.acceso.common.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -16,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Controller
+@RestController
 @RequestMapping("/productos")
 @PreAuthorize("hasAuthority('" + Permisos.PRODUCTOS + "')")
 public class ProductoController {
@@ -33,26 +31,6 @@ public class ProductoController {
         this.brandService = brandService;
     }
 
-    // ===================== Vistas =====================
-
-    /**
-     * Página principal de gestión de productos
-     */
-    @GetMapping({"", "/"})
-    public String listarProductos(Model model) {
-        model.addAttribute("title", "Gestión de Productos");
-        model.addAttribute("totalProductos", productService.contarProductos());
-        model.addAttribute("totalTodosProductos", productService.contarTodosProductos());
-        model.addAttribute("categorias", categoryService.listarCategorias());
-        model.addAttribute("marcas", brandService.listarMarcas());
-        model.addAttribute("generos", com.example.acceso.producto.Genero.values());
-        return "admin/productos";
-    }
-
-    @GetMapping("/listar")
-    public String listarProductosRedirect() {
-        return "redirect:/productos";
-    }
 
     // ===================== API REST - Listados =====================
 
@@ -60,7 +38,6 @@ public class ProductoController {
      * Obtener todos los productos activos (JSON)
      */
     @GetMapping("/api/listar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarProductosJson(
             @RequestParam(required = false, defaultValue = "false") Boolean ordenado) {
         try {
@@ -82,7 +59,6 @@ public class ProductoController {
      * Obtener todos los productos (activos e inactivos) para DataTables
      */
     @GetMapping("/api/datatables")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
             List<ProductoResponse> productos = productService.listarTodosProductos().stream()
@@ -104,7 +80,6 @@ public class ProductoController {
      * Obtener estadísticas de productos (activos, inactivos, eliminados)
      */
     @GetMapping("/api/estadisticas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
         try {
             Map<String, Object> response = new HashMap<>();
@@ -119,7 +94,6 @@ public class ProductoController {
      * Obtener productos disponibles para ventas (solo datos necesarios)
      */
     @GetMapping("/api/listarDisponibles")
-    @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> listarProductosDisponibles() {
         try {
             List<Producto> productos = productService.listarProductos().stream()
@@ -159,7 +133,6 @@ public class ProductoController {
      * Obtener productos destacados
      */
     @GetMapping("/api/destacados")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosDestacados(
             @RequestParam(required = false) String genero) {
         try {
@@ -189,7 +162,6 @@ public class ProductoController {
      * Obtener productos por género
      */
     @GetMapping("/api/genero/{genero}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosPorGenero(
             @PathVariable String genero,
             @RequestParam(required = false, defaultValue = "false") Boolean todos) {
@@ -215,7 +187,6 @@ public class ProductoController {
      * Obtener productos en rebaja (SALE)
      */
     @GetMapping("/api/sale")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosEnRebaja(
             @RequestParam(required = false) String genero) {
         try {
@@ -247,7 +218,6 @@ public class ProductoController {
      * Obtener productos por categoría
      */
     @GetMapping("/api/categoria/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosPorCategoria(@PathVariable Long id) {
         try {
             List<ProductoResponse> productos = productService.listarPorCategoria(id).stream()
@@ -267,7 +237,6 @@ public class ProductoController {
      * Obtener productos por marca
      */
     @GetMapping("/api/marca/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosPorMarca(@PathVariable Long id) {
         try {
             List<ProductoResponse> productos = productService.listarPorMarca(id).stream()
@@ -289,7 +258,6 @@ public class ProductoController {
      * Obtener producto por ID
      */
     @GetMapping("/api/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerProducto(@PathVariable Long id) {
         try {
             Optional<Producto> producto = productService.obtenerProductoPorId(id);
@@ -313,7 +281,6 @@ public class ProductoController {
      * Crear nuevo producto
      */
     @PostMapping("/api/crear")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> crearProducto(@Valid @RequestBody ProductoRequest request, BindingResult result) {
         if (result.hasErrors()) {
             return ApiResponses.validationError(result);
@@ -344,7 +311,6 @@ public class ProductoController {
      * Actualizar producto existente
      */
     @PutMapping("/api/actualizar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarProducto(
             @PathVariable Long id,
             @Valid @RequestBody ProductoRequest request,
@@ -384,7 +350,6 @@ public class ProductoController {
      * Eliminar producto (eliminación lógica)
      */
     @DeleteMapping("/api/eliminar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarProducto(@PathVariable Long id) {
         try {
             productService.eliminarProducto(id);
@@ -406,7 +371,6 @@ public class ProductoController {
      * Cambiar estado de producto (activar/desactivar)
      */
     @PutMapping("/api/cambiar-estado/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarEstado(@PathVariable Long id) {
         try {
             Optional<Producto> producto = productService.cambiarEstadoProducto(id);
@@ -430,7 +394,6 @@ public class ProductoController {
      * Cambiar estado destacado de producto
      */
     @PutMapping("/api/destacado/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarDestacado(@PathVariable Long id) {
         try {
             Optional<Producto> producto = productService.cambiarEstadoDestacado(id);
@@ -456,7 +419,6 @@ public class ProductoController {
      * Buscar productos por texto
      */
     @GetMapping("/api/buscar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarProductos(
             @RequestParam String q,
             @RequestParam(required = false, defaultValue = "false") Boolean todos) {
@@ -480,7 +442,6 @@ public class ProductoController {
      * Buscar por rango de precio
      */
     @GetMapping("/api/rango-precio")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarPorRangoPrecio(
             @RequestParam BigDecimal min,
             @RequestParam BigDecimal max) {
@@ -504,7 +465,6 @@ public class ProductoController {
      * Obtener productos recientes
      */
     @GetMapping("/api/recientes")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosRecientes() {
         try {
             List<ProductoResponse> productos = productService.obtenerProductosRecientes().stream()
@@ -525,7 +485,6 @@ public class ProductoController {
      * Obtener destacados recientes
      */
     @GetMapping("/api/destacados-recientes")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> destacadosRecientes() {
         try {
             List<ProductoResponse> productos = productService.obtenerDestacadosRecientes().stream()
@@ -548,7 +507,6 @@ public class ProductoController {
      * Obtener productos con stock bajo
      */
     @GetMapping("/api/stock-bajo")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosStockBajo(
             @RequestParam(required = false, defaultValue = "10") Integer limite) {
         try {
@@ -570,7 +528,6 @@ public class ProductoController {
      * Obtener productos con stock disponible
      */
     @GetMapping("/api/stock-disponible")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> productosStockDisponible(
             @RequestParam(required = false, defaultValue = "0") Integer minimo) {
         try {
@@ -593,7 +550,6 @@ public class ProductoController {
      * Actualizar stock de un producto
      */
     @PutMapping("/api/stock/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarStock(
             @PathVariable Long id,
             @RequestParam Integer stock) {

@@ -10,8 +10,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/inventario")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('" + Permisos.INVENTARIO + "')")
@@ -28,17 +26,7 @@ public class MovimientoInventarioController {
 
     private final MovimientoInventarioService movimientoService;
 
-    /**
-     * Vista principal
-     */
-    @GetMapping({"", "/"})
-    public String index(Model model) {
-        model.addAttribute("title", "Gestión de Inventario");
-        return "admin/inventario";
-    }
-
     @PostMapping("/api/registrar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> registrarMovimiento(
             @Valid @RequestBody RegistrarMovimientoRequest request,
             BindingResult result,
@@ -65,7 +53,6 @@ public class MovimientoInventarioController {
 
 
      @GetMapping("/api/ultimos") // ✅ corregido
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarUltimos() {
         try {
             List<MovimientoInventarioResponse> movimientos = movimientoService.listarUltimos();
@@ -82,7 +69,6 @@ public class MovimientoInventarioController {
      * Kardex de producto
      */
     @GetMapping("/api/kardex/{productoId}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerKardex(@PathVariable Long productoId) {
         try {
             List<MovimientoInventarioResponse> kardex = movimientoService.obtenerKardex(productoId);
@@ -96,7 +82,6 @@ public class MovimientoInventarioController {
      * Listar por tipo de movimiento
      */
     @GetMapping("/api/tipo/{tipo}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarPorTipo(@PathVariable TipoMovimiento tipo) {
         try {
             List<MovimientoInventarioResponse> movimientos = movimientoService.listarPorTipo(tipo);
@@ -110,7 +95,6 @@ public class MovimientoInventarioController {
      * Listar por rango de fechas
      */
     @GetMapping("/api/fechas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarPorFechas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {

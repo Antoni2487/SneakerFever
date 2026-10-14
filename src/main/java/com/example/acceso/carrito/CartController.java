@@ -13,7 +13,6 @@ import com.example.acceso.venta.ComprobanteSecuenciaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/carrito")
 public class CartController {
 
@@ -38,14 +37,12 @@ public class CartController {
 
     // 1. Obtener el carrito actual (JSON para el sidebar)
     @GetMapping("/api/ver")
-    @ResponseBody
     public Carrito verCarrito(HttpSession session) {
         return obtenerCarritoSession(session);
     }
 
     // 2. Agregar producto al carrito
     @PostMapping("/api/agregar/{id}")
-    @ResponseBody
     public ResponseEntity<?> agregarProducto(@PathVariable Long id, @RequestParam(defaultValue = "1") Integer cantidad, HttpSession session) {
         if (cantidad == null || cantidad < 1) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "La cantidad debe ser al menos 1"));
@@ -79,7 +76,6 @@ public class CartController {
 
     // 3. Eliminar item
     @DeleteMapping("/api/eliminar/{id}")
-    @ResponseBody
     public ResponseEntity<?> eliminarItem(@PathVariable Long id, HttpSession session) {
         Carrito carrito = obtenerCarritoSession(session);
         carrito.eliminarItem(id);
@@ -88,7 +84,6 @@ public class CartController {
     
 
     @PutMapping("/api/actualizar/{id}")
-    @ResponseBody
     public ResponseEntity<?> actualizarCantidad(@PathVariable Long id, 
                                               @RequestParam Integer cantidad, 
                                               HttpSession session) {
@@ -117,13 +112,10 @@ public class CartController {
                 .sum();
     }
 
-    // 5. Checkout desde el sitio público en JSON (variante de CheckoutController.procesarCompra,
-    // que devuelve redirect+flash pensado para el form Thymeleaf). Exige un Usuario autenticado
-    // (no hay cuenta de cliente separada en este backend), pero por JWT: el login de React nunca
-    // escribe "usuarioLogueado" en HttpSession, así que leerlo de ahí daba 401 siempre.
+    // 5. Checkout del sitio público. Exige un Usuario autenticado por JWT (no hay cuenta de
+    // cliente separada en este backend); el carrito sí vive en la HttpSession del visitante.
     // SecurityConfig ya rechaza esta ruta sin token; el null-check queda como red de seguridad.
     @PostMapping("/api/checkout")
-    @ResponseBody
     public ResponseEntity<?> checkout(@RequestBody CheckoutRequest request,
             @AuthenticationPrincipal Usuario usuario, HttpSession session) {
         if (usuario == null) {

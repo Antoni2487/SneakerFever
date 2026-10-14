@@ -35,22 +35,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
-        // CSS
-        registry.addResourceHandler("/css/**")
-                .addResourceLocations("classpath:/static/admin/css/", "classpath:/static/web/css/")
-                .setCachePeriod(0);
-
-        // JavaScript
-        registry.addResourceHandler("/js/**")
-                .addResourceLocations("classpath:/static/admin/js/", "classpath:/static/web/js/")
-                .setCachePeriod(0);
-
-        // Imágenes estáticas
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations("classpath:/static/admin/images/", "classpath:/static/web/images/")
-                .setCachePeriod(0);
-
-        // NUEVO: Imágenes subidas por los usuarios (productos)
+        // Imágenes subidas por los usuarios (productos, marcas, personalización).
+        // Los assets del sitio (static/web/images) los sirve el handler por defecto de Spring.
         Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
         String uploadLocation = "file:///" + uploadDir.toString().replace("\\", "/") + "/";
 

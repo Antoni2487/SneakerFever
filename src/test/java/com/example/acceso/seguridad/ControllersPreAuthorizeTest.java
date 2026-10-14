@@ -1,9 +1,7 @@
 package com.example.acceso.seguridad;
 
 import com.example.acceso.carrito.CartController;
-import com.example.acceso.carrito.CheckoutController;
 import com.example.acceso.common.PublicSiteController;
-import com.example.acceso.common.WebController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -33,11 +31,8 @@ class ControllersPreAuthorizeTest {
     /** Controllers públicos o con su propia validación, a propósito sin @PreAuthorize. */
     private static final Set<Class<?>> SIN_PERMISO_POR_DISENO = Set.of(
             AuthController.class,       // login / refresh / me
-            LoginController.class,      // login Thymeleaf legacy
-            WebController.class,        // sitio público Thymeleaf
             PublicSiteController.class, // /api/public/**
-            CartController.class,       // carrito público; checkout exige JWT en SecurityConfig
-            CheckoutController.class);  // checkout legacy, valida su propia sesión
+            CartController.class);      // carrito público; checkout exige JWT en SecurityConfig
 
     @Test
     void todoEndpointDeControllerNoPublicoTienePreAuthorize() throws ClassNotFoundException {
