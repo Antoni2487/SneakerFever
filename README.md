@@ -25,6 +25,10 @@ sitio están en `src/main/resources/static/web/images` y se sirven en `/web/imag
 - **Login con JWT**: `POST /api/auth/login` devuelve un access token (30 min,
   en memoria del frontend) y deja el refresh token (7 días) en una cookie
   `httpOnly`.
+- **Logout en el servidor**: `POST /api/auth/logout` revoca el access y el
+  refresh token de esa sesión (tabla `tokens_revocados`, por `jti`): dejan de
+  servir aunque alguien los haya copiado. Las sesiones de otros dispositivos
+  siguen abiertas. Las filas vencidas se limpian solas cada hora.
 - **Permisos por perfil**: cada `Perfil` tiene `Opciones` (tabla
   `perfil_opcion`), y cada opción otorga un código de permiso estable
   (`opciones.permiso`: `PRODUCTOS`, `VENTAS`, `DASHBOARD`...; ver

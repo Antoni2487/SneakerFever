@@ -35,16 +35,22 @@ import java.util.Optional;
  * {@link Perfil} (ver {@link Permisos}). Cada controller exige el suyo con
  * {@code @PreAuthorize("hasAuthority(...)")}. La ruta de la opción ya no
  * interviene: es solo el link del sidebar.
+ *
+ * Un access token revocado con logout ({@link RevocacionTokenService}) se trata
+ * como ausente aunque su firma y expiración sean válidas.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UsuarioService usuarioService;
+    private final RevocacionTokenService revocacionTokenService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UsuarioService usuarioService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UsuarioService usuarioService,
+            RevocacionTokenService revocacionTokenService) {
         this.jwtService = jwtService;
         this.usuarioService = usuarioService;
+        this.revocacionTokenService = revocacionTokenService;
     }
 
     @Override
@@ -56,6 +62,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             try {
                 Claims claims = jwtService.parseAndValidate(token, JwtService.TOKEN_TYPE_ACCESS);
+                if (revocacionTokenService.estaRevocado(claims.getId())) {
+                    // Token cerrado con logout: firma válida, pero ya no sirve.
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 String username = claims.getSubject();
 
                 // Con el Perfil y sus Opciones ya inicializados: este filtro corre

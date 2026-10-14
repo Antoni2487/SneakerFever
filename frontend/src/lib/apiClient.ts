@@ -171,9 +171,11 @@ export async function loginRequest(usuario: string, clave: string): Promise<Logi
   return { accessToken: token, usuario: body.usuario }
 }
 
+// El backend revoca el refresh token (cookie) y el access token (header) de esta
+// sesión: dejan de servir aunque alguien los haya copiado.
 export async function logoutRequest(): Promise<void> {
   try {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include', headers: authHeaders(false) })
   } finally {
     setAccessToken(null)
   }
