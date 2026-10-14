@@ -61,7 +61,7 @@ public final class Permisos {
             }
         }
         // El dashboard nunca siguió la convención "ruta = dominio": en acceso.sql
-        // histórico es "/", el dashboard Thymeleaf vivía en "/admin" y el de React
+        // histórico es "/", el dashboard antiguo vivía en "/admin" y el de React
         // en "/dashboard".
         if (segmento.isEmpty() || segmento.equals("ADMIN")) {
             return DASHBOARD;

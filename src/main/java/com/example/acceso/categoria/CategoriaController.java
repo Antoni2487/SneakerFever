@@ -5,8 +5,6 @@ import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Controller
+@RestController
 @RequestMapping("/categorias")
 @PreAuthorize("hasAuthority('" + Permisos.CATEGORIAS + "')")
 public class CategoriaController {
@@ -28,25 +26,6 @@ public class CategoriaController {
         this.categoryService = categoryService;
     }
 
-    // ===================== Vistas =====================
-
-    /**
-     * Página principal de gestión de categorías
-     */
-    @GetMapping({"", "/"})
-       public String listarCategorias(Model model) {
-           // menuOpciones ya se configura en LoginController
-           model.addAttribute("title", "Gestión de Categorías");
-           model.addAttribute("totalCategorias", categoryService.contarCategorias());
-           model.addAttribute("totalTodasCategorias", categoryService.contarTodasCategorias());
-           return "admin/categorias";
-       }
-
-       @GetMapping("/listar")
-       public String listarCategoriasRedirect() {
-           return "redirect:/categorias";
-       }
-
 
     // ===================== API REST - Listados =====================
 
@@ -54,7 +33,6 @@ public class CategoriaController {
      * Obtener todas las categorías activas (JSON)
      */
     @GetMapping("/api/listar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCategoriasJson() {
         try {
             List<CategoriaResponse> categorias = categoryService.listarCategorias().stream()
@@ -74,7 +52,6 @@ public class CategoriaController {
      * Obtener todas las categorías (activas e inactivas) para DataTables
      */
     @GetMapping("/api/datatables")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
             List<CategoriaResponse> categorias = categoryService.listarTodasCategorias().stream()
@@ -99,7 +76,6 @@ public class CategoriaController {
      * Obtener categoría por ID
      */
     @GetMapping("/api/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerCategoria(@PathVariable Long id) {
         try {
             Optional<Categoria> categoria = categoryService.obtenerCategoriaPorId(id);
@@ -123,7 +99,6 @@ public class CategoriaController {
      * Crear nueva categoría
      */
     @PostMapping("/api/crear")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> crearCategoria(@Valid @RequestBody CategoriaRequest request, BindingResult result) {
         if (result.hasErrors()) {
             return ApiResponses.validationError(result);
@@ -155,7 +130,6 @@ public class CategoriaController {
      * Actualizar categoría existente
      */
     @PutMapping("/api/actualizar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarCategoria(
             @PathVariable Long id,
             @Valid @RequestBody CategoriaRequest request,
@@ -198,7 +172,6 @@ public class CategoriaController {
      * Eliminar categoría (eliminación lógica)
      */
     @DeleteMapping("/api/eliminar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarCategoria(@PathVariable Long id) {
         try {
             categoryService.eliminarCategoria(id);
@@ -220,7 +193,6 @@ public class CategoriaController {
      * Cambiar estado de categoría (activar/desactivar)
      */
     @PutMapping("/api/cambiar-estado/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarEstado(@PathVariable Long id) {
         try {
             Optional<Categoria> categoria = categoryService.cambiarEstadoCategoria(id);
@@ -246,7 +218,6 @@ public class CategoriaController {
      * Buscar categorías por nombre
      */
     @GetMapping("/api/buscar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarCategorias(@RequestParam String q) {
         try {
             List<CategoriaResponse> categorias = categoryService.buscarCategorias(q).stream()
@@ -268,7 +239,6 @@ public class CategoriaController {
      * Obtener solo categorías activas (para selects)
      */
     @GetMapping("/api/activas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> categoriasActivas() {
         try {
             List<CategoriaResponse> categorias = categoryService.listarCategorias().stream()

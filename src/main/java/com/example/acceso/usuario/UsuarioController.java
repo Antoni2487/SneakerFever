@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/usuarios")
 @PreAuthorize("hasAuthority('" + Permisos.USUARIOS + "')")
 public class UsuarioController {
@@ -36,19 +34,10 @@ public class UsuarioController {
         this.perfilService = perfilService;
     }
 
-    @GetMapping("/listar")
-    public String listarUsuarios(Model model) {
-        List<Usuario> usuarios = usuarioService.listarUsuarios();
-        model.addAttribute("usuarios", usuarios);
-        model.addAttribute("formUsuario", new Usuario());
-        return "admin/usuarios";
-    }
-
     /**
      * Lista usuarios y envía datos de seguridad al frontend
      */
     @GetMapping("/api/listar")
-    @ResponseBody
     public ResponseEntity<?> listarUsuariosApi(@AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
             List<Usuario> usuarios = usuarioService.listarUsuarios();
@@ -74,7 +63,6 @@ public class UsuarioController {
     }
 
     @GetMapping("/api/perfiles")
-    @ResponseBody
     public ResponseEntity<?> listarPerfilesActivosApi() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -88,7 +76,6 @@ public class UsuarioController {
      * Guarda o actualiza un usuario con validaciones de seguridad
      */
     @PostMapping("/api/guardar")
-    @ResponseBody
     public ResponseEntity<?> guardarUsuarioAjax(
             @Valid @RequestBody UsuarioRequest request,
             BindingResult bindingResult,
@@ -138,7 +125,6 @@ public class UsuarioController {
     }
 
     @GetMapping("/api/{id}")
-    @ResponseBody
     public ResponseEntity<?> obtenerUsuario(@PathVariable Long id) {
         try {
             return usuarioService.obtenerUsuarioPorId(id)
@@ -159,7 +145,6 @@ public class UsuarioController {
      * Elimina un usuario con validaciones de seguridad robustas
      */
     @DeleteMapping("/api/eliminar/{id}")
-    @ResponseBody
     public ResponseEntity<?> eliminarUsuarioAjax(@PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
 
@@ -192,7 +177,6 @@ public class UsuarioController {
      * Cambia el estado de un usuario con validaciones de seguridad
      */
     @PostMapping("/api/cambiar-estado/{id}")
-    @ResponseBody
     public ResponseEntity<?> cambiarEstadoUsuarioAjax(@PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogueado) {
         try {
 

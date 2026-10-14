@@ -5,14 +5,12 @@ import com.example.acceso.seguridad.Permisos;
 import com.example.acceso.common.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("/clientes")
 @PreAuthorize("hasAuthority('" + Permisos.CLIENTES + "')")
 public class ClienteController {
@@ -23,23 +21,6 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
-    // ===================== Vistas =====================
-
-    /**
-     * Página principal de gestión de clientes
-     */
-    @GetMapping({"", "/"})
-    public String listarClientes(Model model) {
-        model.addAttribute("title", "Gestión de Clientes");
-        model.addAttribute("totalClientes", clienteService.contarClientes());
-        model.addAttribute("totalTodosClientes", clienteService.listarTodosClientes().size());
-        return "admin/clientes";
-    }
-
-    @GetMapping("/listar")
-    public String listarClientesRedirect() {
-        return "redirect:/clientes";
-    }
 
     // ===================== API REST - Listados =====================
 
@@ -47,7 +28,6 @@ public class ClienteController {
      * Obtener todos los clientes activos (JSON)
      */
     @GetMapping("/api/listar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarClientesJson() {
         try {
             List<ClienteResponse> clientes = clienteService.listarClientes().stream()
@@ -68,7 +48,6 @@ public class ClienteController {
      * Obtener todos los clientes (activos e inactivos) para DataTables
      */
     @GetMapping("/api/datatables")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
             List<ClienteResponse> clientes = clienteService.listarTodosClientes().stream()
@@ -91,7 +70,6 @@ public class ClienteController {
      * Obtener estadísticas de clientes (activos, inactivos, eliminados)
      */
     @GetMapping("/api/estadisticas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
         try {
             Map<String, Object> response = new HashMap<>();
@@ -109,7 +87,6 @@ public class ClienteController {
      * Consultar documento (DNI/RUC) en API externa
      */
     @GetMapping("/api/consultar-documento/{documento}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> consultarDocumento(@PathVariable String documento) {
         try {
             Map<String, Object> resultado = clienteService.consultarDocumento(documento);
@@ -130,7 +107,6 @@ public class ClienteController {
      * Obtener cliente por ID
      */
     @GetMapping("/api/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerCliente(@PathVariable Long id) {
         try {
             Optional<Cliente> cliente = clienteService.obtenerClientePorId(id);
@@ -154,7 +130,6 @@ public class ClienteController {
      * Crear nuevo cliente
      */
     @PostMapping("/api/crear")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> crearCliente(@Valid @RequestBody ClienteRequest request, BindingResult result) {
         if (result.hasErrors()) {
             return ApiResponses.validationError(result);
@@ -186,7 +161,6 @@ public class ClienteController {
      * Actualizar cliente existente
      */
     @PutMapping("/api/actualizar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarCliente(
             @PathVariable Long id,
             @Valid @RequestBody ClienteRequest request,
@@ -231,7 +205,6 @@ public class ClienteController {
      * Eliminar cliente (eliminación lógica)
      */
     @DeleteMapping("/api/eliminar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarCliente(@PathVariable Long id) {
         try {
             clienteService.eliminarCliente(id);
@@ -253,7 +226,6 @@ public class ClienteController {
      * Cambiar estado de cliente (activar/desactivar)
      */
     @PutMapping("/api/cambiar-estado/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarEstado(@PathVariable Long id) {
         try {
             Optional<Cliente> cliente = clienteService.cambiarEstadoCliente(id);
@@ -279,7 +251,6 @@ public class ClienteController {
      * Buscar clientes por nombre
      */
     @GetMapping("/api/buscar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarClientes(@RequestParam String q) {
         try {
             List<ClienteResponse> clientes = clienteService.buscarClientesActivos(q).stream()
@@ -301,7 +272,6 @@ public class ClienteController {
      * Buscar cliente por documento
      */
     @GetMapping("/api/documento/{documento}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarPorDocumento(@PathVariable String documento) {
         try {
             Optional<Cliente> cliente = clienteService.findByDocumento(documento);
@@ -327,7 +297,6 @@ public class ClienteController {
      * Contar clientes activos
      */
     @GetMapping("/api/count")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> contarClientes() {
         try {
             long total = clienteService.contarClientes();

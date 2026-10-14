@@ -8,14 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("/marcas")
 @PreAuthorize("hasAuthority('" + Permisos.MARCAS + "')")
 public class MarcaController {
@@ -28,25 +26,10 @@ public class MarcaController {
         this.brandService = brandService;
     }
 
-    // ===================== Vistas =====================
-
-    @GetMapping({"", "/"})
-    public String listarMarcas(Model model) {
-        model.addAttribute("title", "Gestión de Marcas");
-        model.addAttribute("totalMarcas", brandService.contarMarcas());
-        model.addAttribute("totalTodasMarcas", brandService.contarTodasMarcas());
-        return "admin/marcas";
-    }
-
-    @GetMapping("/listar")
-    public String listarMarcasRedirect() {
-        return "redirect:/marcas";
-    }
 
     // ===================== API REST - Listados =====================
 
     @GetMapping("/api/listar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarMarcasJson() {
         try {
             List<MarcaResponse> marcas = brandService.listarMarcas().stream()
@@ -64,7 +47,6 @@ public class MarcaController {
     }
 
     @GetMapping("/api/datatables")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarParaDataTables() {
         try {
             List<MarcaResponse> marcas = brandService.listarTodasMarcas().stream()
@@ -85,7 +67,6 @@ public class MarcaController {
     // ===================== API REST - CRUD =====================
 
     @GetMapping("/api/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerMarca(@PathVariable Long id) {
         try {
             return brandService.obtenerMarcaPorId(id)
@@ -104,7 +85,6 @@ public class MarcaController {
     }
 
     @PostMapping("/api/crear")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> crearMarca(
             @Valid @RequestBody MarcaRequest request, BindingResult result) {
         if (result.hasErrors()) {
@@ -134,7 +114,6 @@ public class MarcaController {
     }
 
     @PutMapping("/api/actualizar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarMarca(
             @PathVariable Long id, @Valid @RequestBody MarcaRequest request, BindingResult result) {
         if (result.hasErrors()) {
@@ -170,7 +149,6 @@ public class MarcaController {
     }
 
     @DeleteMapping("/api/eliminar/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarMarca(@PathVariable Long id) {
         try {
             brandService.eliminarMarca(id);
@@ -188,7 +166,6 @@ public class MarcaController {
     }
 
     @PutMapping("/api/cambiar-estado/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> cambiarEstado(@PathVariable Long id) {
         try {
             return brandService.cambiarEstadoMarca(id)
@@ -214,7 +191,6 @@ public class MarcaController {
      * Se usa después de subir la imagen con FileUploadController
      */
     @PutMapping("/api/{id}/imagen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarImagenMarca(
             @PathVariable Long id,
             @RequestParam("imagenUrl") String imagenUrl) {
@@ -244,7 +220,6 @@ public class MarcaController {
      * Eliminar la imagen de una marca
      */
     @DeleteMapping("/api/{id}/imagen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarImagenMarca(@PathVariable Long id) {
         try {
             Marca actualizada = brandService.eliminarImagen(id);
@@ -267,7 +242,6 @@ public class MarcaController {
     // ===================== API REST - Búsquedas =====================
 
     @GetMapping("/api/buscar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> buscarMarcas(@RequestParam String q) {
         try {
             if (q == null || q.trim().isEmpty()) {
@@ -289,7 +263,6 @@ public class MarcaController {
     }
 
     @GetMapping("/api/activas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasActivas() {
         try {
             List<MarcaResponse> marcas = brandService.listarMarcas().stream()
@@ -306,7 +279,6 @@ public class MarcaController {
     }
 
     @GetMapping("/api/con-imagen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasConImagen() {
         try {
             List<MarcaResponse> marcas = brandService.listarMarcasConImagen().stream()
@@ -324,7 +296,6 @@ public class MarcaController {
     }
 
     @GetMapping("/api/sin-imagen")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> marcasSinImagen() {
         try {
             List<MarcaResponse> marcas = brandService.listarMarcasSinImagen().stream()

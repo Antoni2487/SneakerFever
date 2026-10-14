@@ -10,14 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("/creditos")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('" + Permisos.VENTAS + "')")
@@ -28,22 +26,12 @@ public class CreditoVentaController {
 
     // ===================== VISTAS =====================
 
-    /**
-     * Página principal de gestión de créditos
-     */
-    @GetMapping({"", "/"})
-    public String listarCreditos(Model model) {
-        model.addAttribute("title", "Gestión de Créditos");
-        return "admin/creditos";
-    }
-
     // ===================== API REST - CONSULTAS DE CRÉDITOS =====================
 
     /**
      * Obtener crédito por ID
      */
     @GetMapping("/api/{id}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerCredito(@PathVariable Long id) {
         try {
             CreditoVentaResponse credito = creditoVentaService.obtenerCreditoPorId(id);
@@ -59,7 +47,6 @@ public class CreditoVentaController {
      * Obtener crédito por ID de venta
      */
     @GetMapping("/api/venta/{ventaId}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerCreditoPorVenta(@PathVariable Long ventaId) {
         try {
             CreditoVentaResponse credito = creditoVentaService.obtenerCreditoPorVentaId(ventaId);
@@ -75,7 +62,6 @@ public class CreditoVentaController {
      * Listar créditos por cliente
      */
     @GetMapping("/api/cliente/{clienteId}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCreditosPorCliente(@PathVariable Long clienteId) {
         try {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosPorCliente(clienteId);
@@ -89,7 +75,6 @@ public class CreditoVentaController {
      * Listar créditos activos
      */
     @GetMapping("/api/activos")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCreditosActivos() {
         try {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosActivos();
@@ -103,7 +88,6 @@ public class CreditoVentaController {
      * Listar créditos vencidos
      */
     @GetMapping("/api/vencidos")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCreditosVencidos() {
         try {
             List<CreditoVentaResponse> creditos = creditoVentaService.listarCreditosVencidos();
@@ -117,7 +101,6 @@ public class CreditoVentaController {
      * Listar créditos próximos a vencer
      */
     @GetMapping("/api/proximos-vencer")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCreditosProximosVencer(
             @RequestParam(defaultValue = "7") int dias) {
         try {
@@ -134,7 +117,6 @@ public class CreditoVentaController {
      * Listar cuotas de un crédito
      */
     @GetMapping("/api/{creditoId}/cuotas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCuotasPorCredito(@PathVariable Long creditoId) {
         try {
             List<CuotaPagoResponse> cuotas = creditoVentaService.listarCuotasPorCredito(creditoId);
@@ -148,7 +130,6 @@ public class CreditoVentaController {
      * Obtener detalle de una cuota
      */
     @GetMapping("/api/cuotas/{cuotaId}")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> obtenerCuota(@PathVariable Long cuotaId) {
         try {
             CuotaPagoResponse cuota = creditoVentaService.obtenerCuotaPorId(cuotaId);
@@ -164,7 +145,6 @@ public class CreditoVentaController {
      * Listar cuotas vencidas
      */
     @GetMapping("/api/cuotas/vencidas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarCuotasVencidas() {
         try {
             List<CuotaPagoResponse> cuotas = creditoVentaService.listarCuotasVencidas();
@@ -180,7 +160,6 @@ public class CreditoVentaController {
      * Registrar pago de una cuota
      */
     @PostMapping("/api/pagos/registrar")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> registrarPago(
             @Valid @RequestBody RegistrarPagoRequest request,
             BindingResult result,
@@ -218,7 +197,6 @@ public class CreditoVentaController {
      * Listar pagos de un crédito
      */
     @GetMapping("/api/{creditoId}/pagos")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> listarPagosPorCredito(@PathVariable Long creditoId) {
         try {
             List<RegistroPagoResponse> pagos = creditoVentaService.listarPagosPorCredito(creditoId);
@@ -237,7 +215,6 @@ public class CreditoVentaController {
      * Generar reporte de créditos
      */
     @GetMapping("/api/reporte")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> generarReporteCreditos() {
         try {
             ReporteCreditosDTO reporte = creditoVentaService.generarReporteCreditos();
@@ -253,7 +230,6 @@ public class CreditoVentaController {
      * Actualizar estados de créditos
      */
     @PostMapping("/api/actualizar-estados")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarEstadosCreditos() {
         try {
             creditoVentaService.actualizarEstadosCreditos();
@@ -272,7 +248,6 @@ public class CreditoVentaController {
      * Actualizar estados de cuotas
      */
     @PostMapping("/api/actualizar-estados-cuotas")
-    @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarEstadosCuotas() {
         try {
             creditoVentaService.actualizarEstadosCuotas();
