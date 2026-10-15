@@ -42,19 +42,43 @@ export function onAuthFailure(handler: AuthFailureHandler | null): void {
   authFailureHandler = handler
 }
 
+// Mensaje cuando la respuesta no trae uno propio (cuerpo vacío, HTML de un
+// proxy o el JSON por defecto de Spring): al menos dice qué código respondió,
+// en vez de un "error de conexión" que no ayuda a encontrar la causa.
+function mensajePorEstado(status: number): string {
+  if (status === 401) return 'Tu sesión expiró. Vuelve a iniciar sesión.'
+  if (status === 403) return 'No tienes permiso para realizar esta acción'
+  if (status === 404) return 'El recurso solicitado no existe (404)'
+  if (status === 405) return 'El servidor no acepta esta operación en esa ruta (405)'
+  if (status === 502 || status === 503 || status === 504) return `El backend no responde (${status}). ¿Está levantado?`
+  if (status >= 500) return `Error interno del servidor (${status})`
+  return `Respuesta inesperada del servidor (${status})`
+}
+
 async function parseEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {
   let body: ApiEnvelope<T>
   try {
     body = await response.json()
   } catch {
-    throw new ApiError('Error de conexión con el servidor', response.status)
+    throw new ApiError(mensajePorEstado(response.status), response.status)
   }
 
   if (!response.ok || body.success === false) {
-    throw new ApiError(body.message ?? 'Error de conexión con el servidor', response.status, body.errors)
+    const message = typeof body.message === 'string' && body.message !== 'No message available' ? body.message : null
+    throw new ApiError(message ?? mensajePorEstado(response.status), response.status, body.errors)
   }
 
   return body
+}
+
+// fetch solo falla (TypeError) cuando no hubo respuesta: backend caído, sin red
+// o el proxy de Vite sin backend detrás.
+async function fetchApi(path: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(path, init)
+  } catch {
+    throw new ApiError('No se pudo conectar con el servidor. Verifica que el backend esté levantado.', 0)
+  }
 }
 
 // Evita disparar varios POST /api/auth/refresh en paralelo cuando varias
@@ -95,7 +119,7 @@ function authHeaders(hasBody: boolean, extra?: HeadersInit): HeadersInit {
 }
 
 async function request<T = unknown>(path: string, options: RequestInit = {}, allowRetry = true): Promise<ApiEnvelope<T>> {
-  const response = await fetch(path, {
+  const response = await fetchApi(path, {
     ...options,
     headers: authHeaders(Boolean(options.body), options.headers),
   })
@@ -123,7 +147,7 @@ export const apiClient = {
 }
 
 async function uploadRequest(path: string, formData: FormData, allowRetry = true): Promise<ApiEnvelope> {
-  const response = await fetch(path, {
+  const response = await fetchApi(path, {
     method: 'POST',
     headers: authHeaders(false),
     body: formData,
@@ -156,7 +180,7 @@ export interface LoginResult {
 }
 
 export async function loginRequest(usuario: string, clave: string): Promise<LoginResult> {
-  const response = await fetch('/api/auth/login', {
+  const response = await fetchApi('/api/auth/login', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
